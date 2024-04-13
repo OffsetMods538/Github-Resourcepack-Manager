@@ -58,12 +58,24 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven {
+		name = "JitPack"
+		url = "https://jitpack.io"
+		content {
+			includeGroup "top.offsetmonkey538"
+		}
+	}
 }
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_version}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	modImplementation "top.offsetmonkey538:monkeylib538:${project.monkeylib538_version}"
+
+	includeImplementation "io.undertow:undertow-core:${project.undertow_version}"
+	includeImplementation "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"
 }
 
 processResources {
