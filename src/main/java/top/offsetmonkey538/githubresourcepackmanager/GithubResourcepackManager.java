@@ -54,7 +54,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	public void onInitializeServer() {
 		config = ConfigManager.init(new ModConfig(), LOGGER::error);
 
-		if (config.githubUrl == null || config.githubUsername == null || config.githubToken == null) {
+		if (config.githubUrl == null || (config.isPrivate && (config.githubUsername == null || config.githubToken == null))) {
 			LOGGER.error("Please fill in the config file!");
 			throw new RuntimeException("Please fill in the config file!");
 		}
@@ -122,7 +122,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
 		if (minecraftServer == null) return;
 
-		// We're probably on a webserver thread, so
+		// We're probably on a webgithubserver thread, so
 		//  we want to run on the minecraft server thread
 		minecraftServer.execute(() -> {
 
@@ -151,7 +151,8 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	}
 
 	public static void updateRepository(boolean retry) {
-		final CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(config.githubUsername, config.githubToken);
+		CredentialsProvider credentialsProvider = null;
+		if (config.isPrivate) credentialsProvider = new UsernamePasswordCredentialsProvider(config.githubUsername, config.githubToken);
 
 		if (GIT_FOLDER.toFile().exists()) {
 			try (Git git = Git.open(GIT_FOLDER.toFile())) {
