@@ -81,8 +81,10 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	}
 
 	public static void updatePack() {
+		LOGGER.info("Updating resourcepack...");
 		updateRepository();
 		zipThePack();
+		LOGGER.info("Resourcepack updated!");
 	}
 
 	public static void updateRepository() {
@@ -94,7 +96,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 						.setCredentialsProvider(credentialsProvider)
 						.call();
 				if (result.isSuccessful()) {
-					LOGGER.info("Successfully updated repository!");
+					LOGGER.debug("Successfully updated repository!");
 					return;
 				}
 				LOGGER.info("Failed to update repository!");
