@@ -143,7 +143,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			final FileOutputStream fileOutputStream = new FileOutputStream(pack);
 			final ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
 
-			zipFile(GIT_FOLDER.toFile(), "", zipOutputStream);
+			zipDirectory(GIT_FOLDER.toFile(), zipOutputStream);
 
 			zipOutputStream.close();
 			fileOutputStream.close();
@@ -151,6 +151,16 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			LOGGER.error("Failed to find file!", e);
 		} catch (IOException e) {
 			LOGGER.error("Failed to zip resourcepack!", e);
+		}
+	}
+
+	private static void zipDirectory(File directoryToZip, ZipOutputStream zipOutputStream) throws IOException {
+		if (!directoryToZip.isDirectory()) return;
+
+		final File[] children = directoryToZip.listFiles();
+		if (children == null) return;
+		for (File child : children) {
+			zipFile(child, child.getName(), zipOutputStream);
 		}
 	}
 
