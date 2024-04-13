@@ -1,6 +1,12 @@
 package top.offsetmonkey538.githubresourcepackmanager;
 
+import io.undertow.Handlers;
+import io.undertow.Undertow;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.resource.PathResourceManager;
 import net.fabricmc.api.DedicatedServerModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
 import org.eclipse.jgit.api.Git;
@@ -11,6 +17,7 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
+import top.offsetmonkey538.githubresourcepackmanager.networking.WebhookHttpHandler;
 import top.offsetmonkey538.monkeylib538.config.ConfigManager;
 
 import java.io.*;
@@ -47,6 +54,30 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		}
 
 		updatePack();
+
+
+		final Undertow webServer = Undertow.builder()
+				.addHttpListener(config.serverPort, config.serverIp)
+				.setHandler(new HttpHandler() {
+					private final HttpHandler webhookHandler = new WebhookHttpHandler();
+					private final HttpHandler fileHandler = Handlers.resource(new PathResourceManager(OUTPUT_FOLDER, 100));
+
+					@Override
+					public void handleRequest(HttpServerExchange exchange) throws Exception {
+						LOGGER.debug("HTTP request: " + exchange);
+
+						if (config.webhookPath.equals(exchange.getRequestPath())) webhookHandler.handleRequest(exchange);
+						else fileHandler.handleRequest(exchange);
+					}
+				})
+				.build();
+		LOGGER.info("Starting webserver on {}:{}", config.serverIp, config.serverPort);
+		webServer.start();
+
+		ServerLifecycleEvents.SERVER_STOPPING.register(minecraftServer -> {
+			LOGGER.info("Stopping webserver!");
+			webServer.stop();
+		});
 	}
 
 	public static void updatePack() {
