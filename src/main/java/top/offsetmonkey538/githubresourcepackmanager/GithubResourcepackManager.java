@@ -66,7 +66,8 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 					public void handleRequest(HttpServerExchange exchange) throws Exception {
 						LOGGER.debug("HTTP request: " + exchange);
 
-						if (config.webhookPath.equals(exchange.getRequestPath())) webhookHandler.handleRequest(exchange);
+						if (config.webhookPath.equals(exchange.getRequestPath()))
+							webhookHandler.handleRequest(exchange);
 						else fileHandler.handleRequest(exchange);
 					}
 				})
@@ -91,7 +92,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		final CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(config.githubUsername, config.githubToken);
 
 		if (GIT_FOLDER.toFile().exists()) {
-			try	(Git git = Git.open(GIT_FOLDER.toFile())) {
+			try (Git git = Git.open(GIT_FOLDER.toFile())) {
 				final PullResult result = git.pull()
 						.setCredentialsProvider(credentialsProvider)
 						.call();
@@ -149,6 +150,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			zipOutputStream.closeEntry();
 
 			final File[] children = fileToZip.listFiles();
+			if (children == null) return;
 			for (File child : children) {
 				zipFile(child, filename + child.getName(), zipOutputStream);
 			}

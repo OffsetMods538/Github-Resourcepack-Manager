@@ -16,7 +16,7 @@ public class WebhookHttpHandler implements HttpHandler {
     private static final Gson GSON = new GsonBuilder().create();
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) throws Exception {
+    public void handleRequest(HttpServerExchange exchange) {
         final HttpString requestMethod = exchange.getRequestMethod();
 
         // Ignore non-post requests
