@@ -13,9 +13,11 @@ import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.monkeylib538.config.ConfigManager;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class GithubResourcepackManager implements DedicatedServerModInitializer {
 	public static final String MOD_ID = "github-resourcepack-manager";
@@ -49,6 +51,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
 	public static void updatePack() {
 		updateRepository();
+		zipThePack();
 	}
 
 	public static void updateRepository() {
@@ -83,6 +86,53 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		} catch (GitAPIException e) {
 			LOGGER.error("Failed to clone repository!", e);
 		}
+	}
+
+	public static void zipThePack() {
+		try {
+			final File pack = new File(OUTPUT_FOLDER.toFile(), "pack.zip");
+
+			final FileOutputStream fileOutputStream = new FileOutputStream(pack);
+			final ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
+
+			zipFile(GIT_FOLDER.toFile(), "", zipOutputStream);
+
+			zipOutputStream.close();
+			fileOutputStream.close();
+		} catch (FileNotFoundException e) {
+			LOGGER.error("Failed to find file!", e);
+		} catch (IOException e) {
+			LOGGER.error("Failed to zip resourcepack!", e);
+		}
+	}
+
+	private static void zipFile(File fileToZip, String filename, ZipOutputStream zipOutputStream) throws IOException {
+		if (fileToZip.isHidden()) return;
+
+		if (fileToZip.isDirectory()) {
+			filename = filename.endsWith("/") ? filename : filename + "/";
+
+			zipOutputStream.putNextEntry(new ZipEntry(filename));
+			zipOutputStream.closeEntry();
+
+			final File[] children = fileToZip.listFiles();
+			for (File child : children) {
+				zipFile(child, filename + child.getName(), zipOutputStream);
+			}
+			return;
+		}
+
+		final FileInputStream fileInputStream = new FileInputStream(fileToZip);
+		final ZipEntry zipEntry = new ZipEntry(filename);
+
+		zipOutputStream.putNextEntry(zipEntry);
+
+		final byte[] bytes = new byte[1024];
+		int lenght;
+		while ((lenght = fileInputStream.read(bytes)) >= 0) {
+			zipOutputStream.write(bytes, 0, lenght);
+		}
+		fileInputStream.close();
 	}
 
 	public static Identifier id(String path) {
