@@ -7,6 +7,7 @@ import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackMa
 
 public class ModConfig extends Config {
     public int serverPort = 8080;
+    public String serverIp = "0.0.0.0";
     public String webhookPath = "/webhook";
     public String githubRef = "refs/heads/master";
     public String githubUrl = null;
