@@ -84,13 +84,15 @@ dependencies {
 processResources {
 	inputs.properties(Map.of(
 			"modVersion",                 project.mod_version,
-			"supportedMinecraftVersions", project.supported_minecraft_versions
+			"supportedMinecraftVersions", project.supported_minecraft_versions,
+			"monkeylib538Version",        project.monkeylib538_version
 	))
 
 	filesMatching("fabric.mod.json") {
 		expand(Map.of(
 				"modVersion",                 project.mod_version,
-				"supportedMinecraftVersions", project.supported_minecraft_versions
+				"supportedMinecraftVersions", project.supported_minecraft_versions,
+				"monkeylib538Version",        project.monkeylib538_version
 		))
 	}
 
@@ -129,6 +131,7 @@ modrinth {
 	}
 
 	dependencies {
+		required.project "monkeylib538"
 	}
 }
 

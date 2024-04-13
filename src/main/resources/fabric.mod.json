@@ -25,6 +25,7 @@
 	],
 	"accessWidener": "github-resourcepack-manager.accesswidener",
 	"depends": {
-		"minecraft": "${supportedMinecraftVersions}"
+		"minecraft": "${supportedMinecraftVersions}",
+		"monkeylib538": ">=${monkeylib538Version}"
 	}
 }
