@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "github-resourcepack-manager",
+	"version": "${modVersion}",
+	"name": "Github Resourcepack Manager",
+	"description": "Change server resourcepack from GitHub.",
+	"authors": [
+		"OffsetMonkey538"
+	],
+	"contact": {
+		"sources": "https://github.com/OffsetMods538/Github-Resourcepack-manager",
+		"issues": "https://github.com/OffsetMods538/Github-Resourcepack-manager/issues",
+		"homepage": "https://modrinth.com/mod/github-resourcepack-manager"
+	},
+	"license": "MIT",
+	"icon": "assets/github-resourcepack-manager/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager"
+		],
+		"client": [
+			"top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManagerClient"
+		]
+	},
+	"mixins": [
+		"github-resourcepack-manager.mixins.json",
+		{
+			"config": "github-resourcepack-manager.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"accessWidener": "github-resourcepack-manager.accesswidener",
+	"depends": {
+		"minecraft": "${supportedMinecraftVersions}"
+	}
+}

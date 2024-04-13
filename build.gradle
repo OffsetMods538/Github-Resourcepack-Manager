@@ -1,0 +1,123 @@
+plugins {
+	id 'fabric-loom' version '1.4-SNAPSHOT'
+	id 'io.github.dexman545.outlet' version '1.6.1'
+	id 'com.modrinth.minotaur' version '2.+'
+}
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+archivesBaseName = "github-resourcepack-manager"
+version = "${project.mod_version}+${project.minecraft_version}"
+
+outlet {
+	maintainPropertiesFile = System.getenv("DISABLE_PROPERTIES_UPDATE") == null
+	mcVersionRange = project.supported_minecraft_versions
+	propertiesData = [
+			'yarn_version': outlet.yarnVersion(project.minecraft_version),
+			'loader_version': outlet.loaderVersion()
+	]
+}
+
+
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		modid {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+
+	accessWidenerPath = file("src/main/resources/github-resourcepack-manager.accesswidener")
+
+	runs {
+		server {
+			runDir "run/server"
+		}
+	}
+}
+
+// https://gist.github.com/maityyy/3dbcd558d58a6412c3a2a38c72706e8e
+afterEvaluate {
+	loom.runs.configureEach {
+		vmArg "-javaagent:${configurations.compileClasspath.find{ it.name.contains("sponge-mixin") }}"
+	}
+}
+
+configurations {
+	includeModImplementation
+
+	include.extendsFrom           includeModImplementation
+	modImplementation.extendsFrom includeModImplementation
+
+
+	includeImplementation
+
+	include.extendsFrom        includeImplementation
+	implementation.extendsFrom includeImplementation
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_version}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+}
+
+processResources {
+	inputs.properties(Map.of(
+			"modVersion",                 project.mod_version,
+			"supportedMinecraftVersions", project.supported_minecraft_versions
+	))
+
+	filesMatching("fabric.mod.json") {
+		expand(Map.of(
+				"modVersion",                 project.mod_version,
+				"supportedMinecraftVersions", project.supported_minecraft_versions
+		))
+	}
+
+	exclude ".cache/**"
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 17
+}
+
+java {
+	withSourcesJar()
+}
+
+jar {
+	from("LICENSE") {
+		rename { "${it}_${project.archivesBaseName}" }
+	}
+}
+
+modrinth {
+	token = System.getenv("MODRINTH_TOKEN")
+	projectId = "github-resourcepack-manager"
+	def customVersionName = System.getenv("VERSION_NAME")
+	if (customVersionName != null) versionName = customVersionName
+	versionNumber = "${project.version}"
+	versionType = "beta"
+	uploadFile = remapJar.archiveFile
+	//additionalFiles = [sourcesJar.archiveFile, javadocJar.archiveFile]
+	additionalFiles = [sourcesJar.archiveFile]
+	gameVersions = outlet.mcVersions()
+	syncBodyFrom = rootProject.file("README.md").text
+	def changelogFile = rootProject.file("CHANGELOG.md")
+	if (changelogFile.exists()) {
+		changelog = changelogFile.text
+	}
+
+	dependencies {
+	}
+}
+
+tasks.modrinth.dependsOn(tasks.modrinthSyncBody)
