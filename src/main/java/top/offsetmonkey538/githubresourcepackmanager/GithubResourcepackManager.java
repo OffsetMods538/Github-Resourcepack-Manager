@@ -1,5 +1,6 @@
 package top.offsetmonkey538.githubresourcepackmanager;
 
+import com.google.common.hash.Hashing;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
@@ -9,22 +10,30 @@ import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.merge.ContentMergeStrategy;
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
+import top.offsetmonkey538.githubresourcepackmanager.mixin.AbstractPropertiesHandlerMixin;
+import top.offsetmonkey538.githubresourcepackmanager.mixin.ServerPropertiesHandlerMixin;
 import top.offsetmonkey538.githubresourcepackmanager.networking.WebhookHttpHandler;
 import top.offsetmonkey538.monkeylib538.config.ConfigManager;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Random;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -36,7 +45,8 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	public static final Path GIT_FOLDER = RESOURCEPACK_FOLDER.resolve("git");
 	public static final Path OUTPUT_FOLDER = RESOURCEPACK_FOLDER.resolve("output");
 
-	private static MinecraftServer minecraftServer;
+	private static MinecraftDedicatedServer minecraftServer;
+	private static boolean minecraftServerStarted;
 
 	public static ModConfig config;
 
@@ -56,8 +66,6 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			throw new RuntimeException(e);
 		}
 
-		updatePack();
-
 
 		final Undertow webServer = Undertow.builder()
 				.addHttpListener(config.serverPort, config.serverIp)
@@ -75,48 +83,102 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 					}
 				})
 				.build();
-		LOGGER.info("Starting webserver on {}:{}", config.serverIp, config.serverPort);
-		webServer.start();
 
 		ServerLifecycleEvents.SERVER_STOPPING.register(minecraftServer -> {
 			LOGGER.info("Stopping webserver!");
 			webServer.stop();
 		});
 
+		ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer -> {
+			GithubResourcepackManager.minecraftServer = (MinecraftDedicatedServer) minecraftServer;
+
+			updatePack();
+
+			LOGGER.info("Starting webserver on {}:{}", config.serverIp, config.serverPort);
+			webServer.start();
+		});
+
 		ServerLifecycleEvents.SERVER_STARTED.register(minecraftServer -> {
-			GithubResourcepackManager.minecraftServer = minecraftServer;
+			GithubResourcepackManager.minecraftServerStarted = true;
 		});
 	}
 
 	public static void updatePack() {
 		LOGGER.info("Updating resourcepack...");
-		updateRepository();
-		zipThePack();
-		LOGGER.info("Resourcepack updated!");
+
+		final String outputFileName = Math.abs(new Random().nextLong()) + ".zip";
+		final File outputFile = new File(OUTPUT_FOLDER.toFile(), outputFileName);
+
+		final File[] children = OUTPUT_FOLDER.toFile().listFiles();
+		if (children != null) {
+			for (File file : children) {
+				file.delete();
+			}
+		}
+
+		updateRepository(true);
+		zipThePack(outputFile);
 
 
 		if (minecraftServer == null) return;
 
 		// We're probably on a webserver thread, so
 		//  we want to run on the minecraft server thread
-		minecraftServer.execute(() -> minecraftServer.getPlayerManager().broadcast(Text.of("Server resourcepack has been updated!\nPlease rejoin the server to get the most up to date pack."), false));
+		minecraftServer.execute(() -> {
+
+            try {
+				final MinecraftServer.ServerResourcePackProperties original = minecraftServer.getProperties().serverResourcePackProperties.get();
+
+				((ServerPropertiesHandlerMixin) minecraftServer.getProperties()).setServerResourcePackProperties(
+						Optional.of(
+								new MinecraftServer.ServerResourcePackProperties(
+										((AbstractPropertiesHandlerMixin) minecraftServer.getProperties()).invokeGetString("resource-pack","").replace("pack.zip", outputFileName),
+										Hashing.sha1().hashBytes(com.google.common.io.Files.toByteArray(outputFile)).toString(),
+										original.isRequired(),
+										original.prompt()
+								)
+						)
+				);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+
+			if (minecraftServerStarted) minecraftServer.getPlayerManager().broadcast(Text.of("Server resourcepack has been updated!\nPlease rejoin the server to get the most up to date pack."), false);
+		});
+
+		LOGGER.info("Resourcepack updated!");
 	}
 
-	public static void updateRepository() {
+	public static void updateRepository(boolean retry) {
 		final CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(config.githubUsername, config.githubToken);
 
 		if (GIT_FOLDER.toFile().exists()) {
 			try (Git git = Git.open(GIT_FOLDER.toFile())) {
 				final PullResult result = git.pull()
 						.setCredentialsProvider(credentialsProvider)
+						.setContentMergeStrategy(ContentMergeStrategy.THEIRS)
+						.setStrategy(MergeStrategy.THEIRS)
 						.call();
 				if (result.isSuccessful()) {
 					LOGGER.debug("Successfully updated repository!");
 					return;
 				}
-				LOGGER.info("Failed to update repository!");
+				LOGGER.error("Failed to update repository!");
 			} catch (GitAPIException e) {
 				LOGGER.error("Failed to update repository!", e);
+
+				// FIXME: Oh god this is so stupid
+				if (!retry) return;
+				LOGGER.info("Deleting git folder and trying again...");
+
+                try {
+                    FileUtils.deleteDirectory(GIT_FOLDER.toFile());
+                } catch (IOException ex) {
+                    LOGGER.error("Failed to delete directory!", e);
+                }
+
+                updateRepository(false);
 			} catch (IOException e) {
 				LOGGER.error("Failed to open repository!", e);
 			}
@@ -136,13 +198,11 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		}
 	}
 
-	public static void zipThePack() {
+	public static void zipThePack(File outputFile) {
 		try {
 			if (!OUTPUT_FOLDER.toFile().exists()) Files.createDirectories(OUTPUT_FOLDER);
 
-			final File pack = new File(OUTPUT_FOLDER.toFile(), "pack.zip");
-
-			final FileOutputStream fileOutputStream = new FileOutputStream(pack);
+			final FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
 			final ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
 
 			zipDirectory(GIT_FOLDER.toFile(), zipOutputStream);
