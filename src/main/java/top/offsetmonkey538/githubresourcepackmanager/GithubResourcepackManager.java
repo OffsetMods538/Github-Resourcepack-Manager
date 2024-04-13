@@ -8,6 +8,8 @@ import io.undertow.server.handlers.resource.PathResourceManager;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
@@ -34,6 +36,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	public static final Path GIT_FOLDER = RESOURCEPACK_FOLDER.resolve("git");
 	public static final Path OUTPUT_FOLDER = RESOURCEPACK_FOLDER.resolve("output");
 
+	private static MinecraftServer minecraftServer;
 
 	public static ModConfig config;
 
@@ -79,6 +82,10 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			LOGGER.info("Stopping webserver!");
 			webServer.stop();
 		});
+
+		ServerLifecycleEvents.SERVER_STARTED.register(minecraftServer -> {
+			GithubResourcepackManager.minecraftServer = minecraftServer;
+		});
 	}
 
 	public static void updatePack() {
@@ -86,6 +93,13 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		updateRepository();
 		zipThePack();
 		LOGGER.info("Resourcepack updated!");
+
+
+		if (minecraftServer == null) return;
+
+		// We're probably on a webserver thread, so
+		//  we want to run on the minecraft server thread
+		minecraftServer.execute(() -> minecraftServer.getPlayerManager().broadcast(Text.of("Server resourcepack has been updated!\nPlease rejoin the server to get the most up to date pack."), false));
 	}
 
 	public static void updateRepository() {
