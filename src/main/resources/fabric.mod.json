@@ -3,7 +3,7 @@
 	"id": "github-resourcepack-manager",
 	"version": "${modVersion}",
 	"name": "Github Resourcepack Manager",
-	"description": "Change server resourcepack from GitHub.",
+	"description": "Modify server resourcepack from GitHub.",
 	"authors": [
 		"OffsetMonkey538"
 	],
