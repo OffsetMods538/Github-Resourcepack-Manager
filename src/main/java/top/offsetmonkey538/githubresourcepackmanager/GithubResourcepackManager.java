@@ -138,6 +138,8 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
 	public static void zipThePack() {
 		try {
+			if (!OUTPUT_FOLDER.toFile().exists()) Files.createDirectories(OUTPUT_FOLDER);
+
 			final File pack = new File(OUTPUT_FOLDER.toFile(), "pack.zip");
 
 			final FileOutputStream fileOutputStream = new FileOutputStream(pack);
