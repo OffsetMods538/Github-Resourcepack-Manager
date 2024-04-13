@@ -48,7 +48,7 @@ Once you launch the server with the mod installed once, it will generate the con
 	"webhookPath": "/webhook",
 	"githubRef": "refs/heads/master",
 	"githubUrl": null,
-    "isPrivate": false,
+	"isPrivate": false,
 	"githubUsername": null,
 	// PLEASE DON'T SHARE THIS WITH ANYONE EVER
 	"githubToken": null
