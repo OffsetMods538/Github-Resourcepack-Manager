@@ -14,21 +14,14 @@
 	},
 	"license": "MIT",
 	"icon": "assets/github-resourcepack-manager/icon.png",
-	"environment": "*",
+	"environment": "server",
 	"entrypoints": {
-		"main": [
+		"server": [
 			"top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager"
-		],
-		"client": [
-			"top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManagerClient"
 		]
 	},
 	"mixins": [
-		"github-resourcepack-manager.mixins.json",
-		{
-			"config": "github-resourcepack-manager.client.mixins.json",
-			"environment": "client"
-		}
+		"github-resourcepack-manager.mixins.json"
 	],
 	"accessWidener": "github-resourcepack-manager.accesswidener",
 	"depends": {
