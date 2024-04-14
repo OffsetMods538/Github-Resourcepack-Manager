@@ -1,9 +1,8 @@
 package top.offsetmonkey538.githubresourcepackmanager;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public final class ZipUtils {
@@ -44,10 +43,59 @@ public final class ZipUtils {
         zipOutputStream.putNextEntry(zipEntry);
 
         final byte[] bytes = new byte[1024];
-        int lenght;
-        while ((lenght = fileInputStream.read(bytes)) >= 0) {
-            zipOutputStream.write(bytes, 0, lenght);
+        int length;
+        while ((length = fileInputStream.read(bytes)) >= 0) {
+            zipOutputStream.write(bytes, 0, length);
         }
         fileInputStream.close();
+    }
+
+    public static void unzipFile(File fileToUnzip, File destinationDir) throws IOException {
+        final ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(fileToUnzip));
+
+        final byte[] buffer = new byte[1024];
+        ZipEntry zipEntry = zipInputStream.getNextEntry();
+
+        while (zipEntry != null) {
+            final File newFile = newFileFromZipEntry(destinationDir, zipEntry);
+            if (zipEntry.isDirectory()) {
+                if (!newFile.isDirectory() && !newFile.mkdirs()) {
+                    throw new IOException("Failed to create directory " + newFile);
+                }
+                zipEntry = zipInputStream.getNextEntry();
+                continue;
+            }
+
+            final File parent = newFile.getParentFile();
+            if (!parent.isDirectory() && !parent.mkdirs()) {
+                throw new IOException("Failed to create directory " + newFile);
+            }
+
+            // Write file content
+            try (final FileOutputStream fileOutputStream = new FileOutputStream(newFile)) {
+                int length;
+                while ((length = zipInputStream.read(buffer)) >= 0) {
+                    fileOutputStream.write(buffer, 0, length);
+                }
+            }
+
+            zipEntry = zipInputStream.getNextEntry();
+        }
+
+        zipInputStream.closeEntry();
+        zipInputStream.close();
+    }
+
+    private static File newFileFromZipEntry(File destinationDir, ZipEntry zipEntry) throws IOException {
+        final File destinationFile = new File(destinationDir, zipEntry.getName());
+
+        String destinationDirPath = destinationDir.getCanonicalPath();
+        String destinationFilePath = destinationFile.getCanonicalPath();
+
+        if (!destinationFilePath.startsWith(destinationDirPath + File.separator)) {
+            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+        }
+
+        return destinationFile;
     }
 }
