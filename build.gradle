@@ -77,6 +77,7 @@ dependencies {
 
 	modImplementation "top.offsetmonkey538:monkeylib538:${project.monkeylib538_version}"
 
+	include "org.jboss.xnio:xnio-api:${project.xnio_version}"
 	includeImplementation "io.undertow:undertow-core:${project.undertow_version}"
 	includeImplementation "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"
 }
