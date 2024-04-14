@@ -99,6 +99,10 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		final String outputFileName = Math.abs(new Random().nextLong()) + ".zip";
 		final File outputFile = new File(OUTPUT_FOLDER.toFile(), outputFileName);
 
+		if (!outputFile.getParentFile().exists() && !outputFile.getParentFile().mkdirs()) {
+			LOGGER.error("Couldn't create output folder!");
+		}
+
 		cleanOutputDirectory();
 		GitManager.updateRepository(true);
 		try {
