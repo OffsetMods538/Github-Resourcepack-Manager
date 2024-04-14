@@ -77,9 +77,21 @@ dependencies {
 
 	modImplementation "top.offsetmonkey538:monkeylib538:${project.monkeylib538_version}"
 
-	include "org.jboss.xnio:xnio-api:${project.xnio_version}"
-	includeImplementation "io.undertow:undertow-core:${project.undertow_version}"
+
 	includeImplementation "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"
+
+	includeImplementation "io.undertow:undertow-core:${project.undertow_version}"
+	includeImplementation "jakarta.servlet:jakarta.servlet-api:${project.jakarta_servlet_api_version}"
+	includeImplementation "jakarta.annotation:jakarta.annotation-api:${project.jakarta_annotation_api_version}"
+	includeImplementation "jakarta.websocket:jakarta.websocket-client-api:${project.jakarta_websocket_api_version}"
+	includeImplementation "org.jboss.classfilewriter:jboss-classfilewriter:${project.jboss_classfilewriter_version}"
+	includeImplementation "org.jboss.logging:jboss-logging:${project.jboss_logging_version}"
+	includeImplementation "org.jboss.logging:jboss-logging-processor:${project.jboss_logging_processor_version}"
+	includeImplementation "org.jboss.logmanager:jboss-logmanager:${project.jboss_logmanager_version}"
+	includeImplementation "org.jboss.xnio:xnio-api:${xnio_version}"
+	includeImplementation "org.jboss.xnio:xnio-nio:${xnio_version}"
+	includeImplementation "org.jboss.threads:jboss-threads:${project.jboss_threads_version}"
+	includeImplementation "org.wildfly.common:wildfly-common:${project.wildfly_common_version}"
 }
 
 processResources {
