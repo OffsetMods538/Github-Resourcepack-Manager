@@ -33,7 +33,7 @@ If you are using a hosting service, then you should ask their support if they al
     * [Adding packs](#adding-packs)
 
 ## How it works
-If you don't care, you can skip to [installation](#installation) TODO: figure out how to link to a different header thingy
+If you don't care, you can skip to [installation](#installation)
 
 ### HTTP server
 The mod hosts an HTTP server using the [Undertow](https://undertow.io/) library, which *serves* 2 purposes:
