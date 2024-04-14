@@ -1,4 +1,4 @@
-package top.offsetmonkey538.githubresourcepackmanager;
+package top.offsetmonkey538.githubresourcepackmanager.utils;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;

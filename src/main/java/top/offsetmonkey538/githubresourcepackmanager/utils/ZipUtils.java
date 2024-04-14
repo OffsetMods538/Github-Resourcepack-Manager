@@ -1,4 +1,4 @@
-package top.offsetmonkey538.githubresourcepackmanager;
+package top.offsetmonkey538.githubresourcepackmanager.utils;
 
 import java.io.*;
 import java.util.zip.ZipEntry;

@@ -15,6 +15,9 @@ import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.mixin.AbstractPropertiesHandlerMixin;
 import top.offsetmonkey538.githubresourcepackmanager.mixin.ServerPropertiesHandlerMixin;
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
+import top.offsetmonkey538.githubresourcepackmanager.utils.GitManager;
+import top.offsetmonkey538.githubresourcepackmanager.utils.MyFileUtils;
+import top.offsetmonkey538.githubresourcepackmanager.utils.ZipUtils;
 import top.offsetmonkey538.monkeylib538.config.ConfigManager;
 
 import java.io.File;
