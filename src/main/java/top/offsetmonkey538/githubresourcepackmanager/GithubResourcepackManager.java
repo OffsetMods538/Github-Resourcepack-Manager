@@ -177,7 +177,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		}
 
 		final List<File> sourcePacks = Stream.of(sourcePacksArray)
-				.sorted(Comparator.comparingInt(GithubResourcepackManager::extractPriorityFromFile))
+				.sorted(Comparator.comparingInt(GithubResourcepackManager::extractPriorityFromFile).reversed())
 				.toList();
 
 		// Create tmp directory
