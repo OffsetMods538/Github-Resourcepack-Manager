@@ -32,6 +32,7 @@ public final class GitManager {
                     .setCredentialsProvider(credentialsProvider)
                     .setContentMergeStrategy(ContentMergeStrategy.THEIRS)
                     .setStrategy(MergeStrategy.THEIRS)
+                    .setRemoteBranchName(config.githubRef)
                     .call();
             if (result.isSuccessful()) {
                 LOGGER.debug("Successfully updated repository!");
@@ -63,6 +64,7 @@ public final class GitManager {
             Git git = Git.cloneRepository()
                     .setURI(config.githubUrl.endsWith(".git") ? config.githubUrl : config.githubUrl + ".git")
                     .setDirectory(GIT_FOLDER.toFile())
+                    .setBranch(config.githubRef)
                     .setCredentialsProvider(credentialsProvider)
                     .call();
             git.close();
