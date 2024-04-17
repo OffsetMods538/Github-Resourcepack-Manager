@@ -11,7 +11,7 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 import java.io.IOException;
 
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.GIT_FOLDER;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.REPO_ROOT_FOLDER;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
 
@@ -25,9 +25,9 @@ public final class GitManager {
         if (config.isPrivate)
             credentialsProvider = new UsernamePasswordCredentialsProvider(config.githubUsername, config.githubToken);
 
-        if (!GIT_FOLDER.toFile().exists()) cloneRepository(credentialsProvider);
+        if (!REPO_ROOT_FOLDER.toFile().exists()) cloneRepository(credentialsProvider);
 
-        try (Git git = Git.open(GIT_FOLDER.toFile())) {
+        try (Git git = Git.open(REPO_ROOT_FOLDER.toFile())) {
             final PullResult result = git.pull()
                     .setCredentialsProvider(credentialsProvider)
                     .setContentMergeStrategy(ContentMergeStrategy.THEIRS)
@@ -48,7 +48,7 @@ public final class GitManager {
             LOGGER.info("Deleting git folder and trying again...");
 
             try {
-                FileUtils.deleteDirectory(GIT_FOLDER.toFile());
+                FileUtils.deleteDirectory(REPO_ROOT_FOLDER.toFile());
             } catch (IOException ex) {
                 LOGGER.error("Failed to delete directory!", e);
             }
@@ -63,7 +63,7 @@ public final class GitManager {
         try {
             Git git = Git.cloneRepository()
                     .setURI(config.githubUrl.endsWith(".git") ? config.githubUrl : config.githubUrl + ".git")
-                    .setDirectory(GIT_FOLDER.toFile())
+                    .setDirectory(REPO_ROOT_FOLDER.toFile())
                     .setBranch(config.githubRef)
                     .setCredentialsProvider(credentialsProvider)
                     .call();

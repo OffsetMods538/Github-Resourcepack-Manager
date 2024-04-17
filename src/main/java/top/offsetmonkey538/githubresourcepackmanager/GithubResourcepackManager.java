@@ -40,8 +40,8 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	public static final Path RESOURCEPACK_FOLDER = FabricLoader.getInstance().getGameDir().resolve("resourcepack");
-	public static final Path GIT_FOLDER = RESOURCEPACK_FOLDER.resolve("git");
-	public static final Path PACKS_FOLDER = GIT_FOLDER.resolve("packs");
+	public static final Path REPO_ROOT_FOLDER = RESOURCEPACK_FOLDER.resolve("git");
+	public static final Path PACKS_FOLDER = REPO_ROOT_FOLDER.resolve("packs");
 	public static final Path OUTPUT_FOLDER = RESOURCEPACK_FOLDER.resolve("output");
 	public static final Pattern PACK_NAME_PATTERN = Pattern.compile("\\d+-");
 
