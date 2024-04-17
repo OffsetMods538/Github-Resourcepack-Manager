@@ -8,6 +8,7 @@ import org.eclipse.jgit.merge.ContentMergeStrategy;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 
 import java.io.IOException;
 
@@ -20,7 +21,7 @@ public final class GitManager {
 
     }
 
-    public static void updateRepository(boolean retry) {
+    public static void updateRepository(boolean retry) throws GithubResourcepackManagerException {
         CredentialsProvider credentialsProvider = null;
         if (config.isPrivate)
             credentialsProvider = new UsernamePasswordCredentialsProvider(config.githubUsername, config.githubToken);
@@ -44,7 +45,9 @@ public final class GitManager {
 
             // FIXME: Oh god this is so stupid
             //  I guess this should only happen when the local clone is modified so it's fine -_o_-
-            if (!retry) return;
+            if (!retry) {
+                throw new GithubResourcepackManagerException("Failed to update repository!", e);
+            }
             LOGGER.info("Deleting git folder and trying again...");
 
             try {
@@ -55,11 +58,11 @@ public final class GitManager {
 
             updateRepository(false);
         } catch (IOException e) {
-            LOGGER.error("Failed to open repository!", e);
+            throw new GithubResourcepackManagerException("Failed to open repository!", e);
         }
     }
 
-    private static void cloneRepository(CredentialsProvider credentialsProvider) {
+    private static void cloneRepository(CredentialsProvider credentialsProvider) throws GithubResourcepackManagerException {
         try {
             Git git = Git.cloneRepository()
                     .setURI(config.githubUrl.endsWith(".git") ? config.githubUrl : config.githubUrl + ".git")
@@ -69,7 +72,7 @@ public final class GitManager {
                     .call();
             git.close();
         } catch (GitAPIException e) {
-            LOGGER.error("Failed to clone repository!", e);
+            throw new GithubResourcepackManagerException("Failed to clone repository!", e);
         }
     }
 }

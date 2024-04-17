@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
+import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.mixin.AbstractPropertiesHandlerMixin;
 import top.offsetmonkey538.githubresourcepackmanager.mixin.ServerPropertiesHandlerMixin;
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
@@ -98,17 +99,25 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
 		final String outputFileName = Math.abs(new Random().nextLong()) + ".zip";
 		final File outputFile = new File(OUTPUT_FOLDER.toFile(), outputFileName);
+		LOGGER.debug("New pack name: {}", outputFileName);
 
 		if (!outputFile.getParentFile().exists() && !outputFile.getParentFile().mkdirs()) {
-			LOGGER.error("Couldn't create output folder!");
+			LOGGER.error("Failed to create output folder!");
+			return;
 		}
 
 		cleanOutputDirectory();
-		GitManager.updateRepository(true);
-		try {
+        try {
+            GitManager.updateRepository(true);
+        } catch (GithubResourcepackManagerException e) {
+            LOGGER.error("Failed to update git repository!", e);
+			return;
+        }
+        try {
 			createThePack(outputFile);
-		} catch (IOException e) {
-            throw new RuntimeException("Couldn't create final pack!", e);
+		} catch (GithubResourcepackManagerException e) {
+			LOGGER.error("Failed to create final pack!", e);
+			return;
         }
 
         afterPackUpdate(outputFileName, outputFile);
@@ -119,7 +128,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	private static void afterPackUpdate(final String outputFileName, final File outputFile) {
 		if (minecraftServer == null) return;
 
-		// We're probably on a webgithubserver thread, so
+		// We're probably on a webserver thread, so
 		//  we want to run on the minecraft server thread
 		minecraftServer.execute(() -> {
 			updateResourcePackProperties(outputFileName, outputFile);
@@ -163,20 +172,20 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		}
 	}
 
-	private static void createThePack(File outputFile) throws IOException {
+	private static void createThePack(File outputFile) throws GithubResourcepackManagerException {
 		LOGGER.info("Checking for 'pack.mcmeta' in repository root...");
 		final boolean hasPackMcmeta = REPO_ROOT_FOLDER.resolve("pack.mcmeta").toFile().exists();
 		LOGGER.info("{}Found!", hasPackMcmeta ? "" : "Not ");
-
 
 		LOGGER.info("Checking for 'packs' directory in repository root...");
 		final boolean hasPacksFolder = PACKS_FOLDER.toFile().exists() && PACKS_FOLDER.toFile().isDirectory();
 		LOGGER.info("{}Found!", hasPacksFolder ? "" : "Not ");
 
 		if (hasPackMcmeta && hasPacksFolder) {
-			LOGGER.error("Found both 'pack.mcmeta' and the 'packs' directory in repository root!");
-			return;
+			throw new GithubResourcepackManagerException("Found both 'pack.mcmeta' and the 'packs' directory in repository root!");
 		}
+
+
 		if (hasPackMcmeta) {
 			LOGGER.info("Using repository root as resource pack.");
 			createPackFromRepositoryRoot(outputFile);
@@ -184,14 +193,13 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			LOGGER.info("Using 'packs' directory for resource packs.");
 			createPackFromPacksFolder(outputFile);
 		}
-
 	}
 
-	private static void createPackFromRepositoryRoot(File outputFile) {
+	private static void createPackFromRepositoryRoot(File outputFile) throws GithubResourcepackManagerException {
 		zipItUp(REPO_ROOT_FOLDER.toFile(), outputFile);
 	}
 
-	private static void createPackFromPacksFolder(File outputFile) throws IOException {
+	private static void createPackFromPacksFolder(File outputFile) throws GithubResourcepackManagerException {
 		// Gather resource packs in correct order
 		final File[] sourcePacksArray = PACKS_FOLDER.toFile().listFiles();
 		if (sourcePacksArray == null) {
@@ -204,13 +212,24 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 				.toList();
 
 		// Create tmp directory
-		final Path tmpDir = Files.createTempDirectory("github-resourcepack-manager");
-		final File packsExtractDir = MyFileUtils.createDir(tmpDir.resolve("extractedPacks").toFile());
+        final Path tmpDir;
+        try {
+            tmpDir = Files.createTempDirectory("github-resourcepack-manager");
+        } catch (IOException e) {
+            throw new GithubResourcepackManagerException("Failed to create temporary directory!", e);
+        }
+        final File packsExtractDir = MyFileUtils.createDir(tmpDir.resolve("extractedPacks").toFile());
 		final File outputDir = MyFileUtils.createDir(tmpDir.resolve("output").toFile());
 
 		// Extract all source packs
 		for (File pack : sourcePacks) {
-			if (pack.isDirectory()) FileUtils.copyDirectory(pack, outputDir);
+			if (pack.isDirectory()) {
+                try {
+                    FileUtils.copyDirectory(pack, outputDir);
+                } catch (IOException e) {
+                    throw new GithubResourcepackManagerException("Failed to copy pack '%s' to '%s'!", e, pack, outputDir);
+                }
+            }
 			else if (pack.getName().endsWith(".zip")) extractPack(pack, MyFileUtils.createDir(new File(packsExtractDir, pack.getName())), outputDir);
 			else LOGGER.error("'{}' is not a valid pack! Ignoring...", pack);
 		}
@@ -225,24 +244,26 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			fileContent.append("- ").append(nameWithoutPriorityString(pack)).append("\n");
 		}
 
-		Files.writeString(inputPacksFilePath, fileContent);
+        try {
+            Files.writeString(inputPacksFilePath, fileContent);
+        } catch (IOException e) {
+            throw new GithubResourcepackManagerException("Failed to write to file '%s'!", e, inputPacksFilePath);
+        }
 
-		zipItUp(outputDir, outputFile);
+        zipItUp(outputDir, outputFile);
 	}
 
-	private static void extractPack(File pack, File tempExtractDir, File finalOutputDir) {
-        try {
-            ZipUtils.unzipFile(pack, tempExtractDir);
-        } catch (IOException e) {
-            LOGGER.error("Couldn't unzip pack " + pack, e);
-        }
+	private static void extractPack(File pack, File tempExtractDir, File finalOutputDir) throws GithubResourcepackManagerException {
+		ZipUtils.unzipFile(pack, tempExtractDir);
 
-        try {
-            FileUtils.copyDirectory(tempExtractDir, finalOutputDir);
-        } catch (IOException e) {
+		try {
+			FileUtils.copyDirectory(tempExtractDir, finalOutputDir);
+		} catch (IOException e) {
 			LOGGER.error("Couldn't copy pack " + pack, e);
-        }
-    }
+
+			throw new GithubResourcepackManagerException("Failed to copy pack '%s' to '%s'!", e, pack, finalOutputDir);
+		}
+	}
 
 	private static int extractPriorityFromFile(File file) {
 		final String filename = file.getName();
@@ -267,7 +288,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		return filename.replace(matcher.group(), "").strip();
 	}
 
-	private static void zipItUp(File source, File outputFile) {
+	private static void zipItUp(File source, File outputFile) throws GithubResourcepackManagerException {
 		try {
 			if (!source.exists()) Files.createDirectories(source.toPath());
 
@@ -279,9 +300,9 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			zipOutputStream.close();
 			fileOutputStream.close();
 		} catch (FileNotFoundException e) {
-			LOGGER.error("Failed to find file!", e);
+			throw new GithubResourcepackManagerException("Failed to find file '%s'!", e, outputFile);
 		} catch (IOException e) {
-			LOGGER.error("Failed to zip resourcepack!", e);
+			throw new GithubResourcepackManagerException("Failed to zip resource pack!", e);
 		}
 	}
 }

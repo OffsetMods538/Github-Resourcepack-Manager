@@ -1,5 +1,7 @@
 package top.offsetmonkey538.githubresourcepackmanager.utils;
 
+import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
+
 import java.io.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -10,7 +12,7 @@ public final class ZipUtils {
 
     }
 
-    public static void zipDirectory(File directoryToZip, ZipOutputStream zipOutputStream) throws IOException {
+    public static void zipDirectory(File directoryToZip, ZipOutputStream zipOutputStream) throws GithubResourcepackManagerException {
         if (!directoryToZip.isDirectory()) return;
 
         final File[] children = directoryToZip.listFiles();
@@ -20,14 +22,18 @@ public final class ZipUtils {
         }
     }
 
-    private static void zipFile(File fileToZip, String filename, ZipOutputStream zipOutputStream) throws IOException {
+    private static void zipFile(File fileToZip, String filename, ZipOutputStream zipOutputStream) throws GithubResourcepackManagerException {
         if (fileToZip.isHidden()) return;
 
         if (fileToZip.isDirectory()) {
             filename = filename.endsWith("/") ? filename : filename + "/";
 
-            zipOutputStream.putNextEntry(new ZipEntry(filename));
-            zipOutputStream.closeEntry();
+            try {
+                zipOutputStream.putNextEntry(new ZipEntry(filename));
+                zipOutputStream.closeEntry();
+            } catch (IOException e) {
+                throw new GithubResourcepackManagerException("Failed to add directory '%s' to zip file!", e, filename);
+            }
 
             final File[] children = fileToZip.listFiles();
             if (children == null) return;
@@ -37,38 +43,63 @@ public final class ZipUtils {
             return;
         }
 
-        final FileInputStream fileInputStream = new FileInputStream(fileToZip);
-        final ZipEntry zipEntry = new ZipEntry(filename);
+        try (final FileInputStream fileInputStream = new FileInputStream(fileToZip)) {
+            final ZipEntry zipEntry = new ZipEntry(filename);
 
-        zipOutputStream.putNextEntry(zipEntry);
+            zipOutputStream.putNextEntry(zipEntry);
 
-        final byte[] bytes = new byte[1024];
-        int length;
-        while ((length = fileInputStream.read(bytes)) >= 0) {
-            zipOutputStream.write(bytes, 0, length);
+            final byte[] bytes = new byte[1024];
+            int length;
+            while ((length = fileInputStream.read(bytes)) >= 0) {
+                zipOutputStream.write(bytes, 0, length);
+            }
+        } catch (IOException e) {
+            throw new GithubResourcepackManagerException("Failed to add file '%s' to zip file!", e, filename);
         }
-        fileInputStream.close();
     }
 
-    public static void unzipFile(File fileToUnzip, File destinationDir) throws IOException {
-        final ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(fileToUnzip));
+    public static void unzipFile(File fileToUnzip, File destinationDir) throws GithubResourcepackManagerException {
+        final ZipInputStream zipInputStream;
+        try {
+            zipInputStream = new ZipInputStream(new FileInputStream(fileToUnzip));
+        } catch (FileNotFoundException e) {
+            throw new GithubResourcepackManagerException("Failed to find zip file '%s'!", e, fileToUnzip);
+        }
 
         final byte[] buffer = new byte[1024];
-        ZipEntry zipEntry = zipInputStream.getNextEntry();
+        ZipEntry zipEntry;
+        try {
+            zipEntry = zipInputStream.getNextEntry();
+        } catch (IOException e) {
+            throw new GithubResourcepackManagerException("Failed to get next entry in zip file '%'!", e, fileToUnzip);
+        }
 
         while (zipEntry != null) {
-            final File newFile = newFileFromZipEntry(destinationDir, zipEntry);
+            final File newFile;
+            try {
+                newFile = newFileFromZipEntry(destinationDir, zipEntry);
+            } catch (IOException e) {
+                throw new GithubResourcepackManagerException("Failed to create file from zip entry '%s'!", e, zipEntry);
+            }
+
+
             if (zipEntry.isDirectory()) {
                 if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                    throw new IOException("Failed to create directory " + newFile);
+                    throw new GithubResourcepackManagerException("Failed to create directory '%s'!", newFile);
                 }
-                zipEntry = zipInputStream.getNextEntry();
+
+                try {
+                    zipEntry = zipInputStream.getNextEntry();
+                } catch (IOException e) {
+                    throw new GithubResourcepackManagerException("Failed to get next entry in zip file '%'!", e, fileToUnzip);
+                }
+
                 continue;
             }
 
             final File parent = newFile.getParentFile();
             if (!parent.isDirectory() && !parent.mkdirs()) {
-                throw new IOException("Failed to create directory " + newFile);
+                throw new GithubResourcepackManagerException("Failed to create directory '%s'", newFile);
             }
 
             // Write file content
@@ -77,13 +108,25 @@ public final class ZipUtils {
                 while ((length = zipInputStream.read(buffer)) >= 0) {
                     fileOutputStream.write(buffer, 0, length);
                 }
+            } catch (FileNotFoundException e) {
+                throw new GithubResourcepackManagerException("Failed to find file!", e);
+            } catch (IOException e) {
+                throw new GithubResourcepackManagerException("Failed to write file content!", e);
             }
 
-            zipEntry = zipInputStream.getNextEntry();
+            try {
+                zipEntry = zipInputStream.getNextEntry();
+            } catch (IOException e) {
+                throw new GithubResourcepackManagerException("Failed to get next entry in zip file '%'!", e, fileToUnzip);
+            }
         }
 
-        zipInputStream.closeEntry();
-        zipInputStream.close();
+        try {
+            zipInputStream.closeEntry();
+            zipInputStream.close();
+        } catch (IOException e) {
+            throw new GithubResourcepackManagerException("Failed to close zip file '%s'!", e, fileToUnzip);
+        }
     }
 
     private static File newFileFromZipEntry(File destinationDir, ZipEntry zipEntry) throws IOException {
@@ -93,7 +136,7 @@ public final class ZipUtils {
         String destinationFilePath = destinationFile.getCanonicalPath();
 
         if (!destinationFilePath.startsWith(destinationDirPath + File.separator)) {
-            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+            throw new IOException("Entry is outside of the target dir '" + zipEntry.getName() + "'!");
         }
 
         return destinationFile;
