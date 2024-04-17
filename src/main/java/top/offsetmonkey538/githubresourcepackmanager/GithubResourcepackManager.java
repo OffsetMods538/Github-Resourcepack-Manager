@@ -164,15 +164,34 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	}
 
 	private static void createThePack(File outputFile) throws IOException {
-		if (!PACKS_FOLDER.toFile().exists()) {
-			LOGGER.error("Repository doesn't contain 'packs' folder!");
+		LOGGER.info("Checking for 'pack.mcmeta' in repository root...");
+		final boolean hasPackMcmeta = REPO_ROOT_FOLDER.resolve("pack.mcmeta").toFile().exists();
+		LOGGER.info("{}Found!", hasPackMcmeta ? "" : "Not ");
+
+
+		LOGGER.info("Checking for 'packs' directory in repository root...");
+		final boolean hasPacksFolder = PACKS_FOLDER.toFile().exists() && PACKS_FOLDER.toFile().isDirectory();
+		LOGGER.info("{}Found!", hasPacksFolder ? "" : "Not ");
+
+		if (hasPackMcmeta && hasPacksFolder) {
+			LOGGER.error("Found both 'pack.mcmeta' and the 'packs' directory in repository root!");
 			return;
 		}
-		if (!PACKS_FOLDER.toFile().isDirectory()) {
-			LOGGER.error("Repository contains 'packs' file, expected a folder!");
-			return;
+		if (hasPackMcmeta) {
+			LOGGER.info("Using repository root as resource pack.");
+			createPackFromRepositoryRoot(outputFile);
+		} else {
+			LOGGER.info("Using 'packs' directory for resource packs.");
+			createPackFromPacksFolder(outputFile);
 		}
 
+	}
+
+	private static void createPackFromRepositoryRoot(File outputFile) {
+		zipItUp(REPO_ROOT_FOLDER.toFile(), outputFile);
+	}
+
+	private static void createPackFromPacksFolder(File outputFile) throws IOException {
 		// Gather resource packs in correct order
 		final File[] sourcePacksArray = PACKS_FOLDER.toFile().listFiles();
 		if (sourcePacksArray == null) {
