@@ -184,6 +184,9 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		if (hasPackMcmeta && hasPacksFolder) {
 			throw new GithubResourcepackManagerException("Found both 'pack.mcmeta' and the 'packs' directory in repository root!");
 		}
+		if (!hasPackMcmeta && !hasPacksFolder) {
+			throw new GithubResourcepackManagerException("Found neither 'pack.mcmeta' nor the 'packs' directory in repository root!");
+		}
 
 
 		if (hasPackMcmeta) {
