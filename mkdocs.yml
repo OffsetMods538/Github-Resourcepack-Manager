@@ -31,3 +31,19 @@ extra:
       link: https://github.com/OffsetMods538/Github-Resourcepack-Manager
     - icon: fontawesome/brands/discord
       link: https://discord.offsetmonkey538.top
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.mark
+  - admonition
+  - attr_list
