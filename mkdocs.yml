@@ -24,3 +24,10 @@ theme:
         name: Switch to light mode
       primary: teal
       accent: lime
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/OffsetMods538/Github-Resourcepack-Manager
+    - icon: fontawesome/brands/discord
+      link: https://discord.offsetmonkey538.top
