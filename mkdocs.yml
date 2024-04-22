@@ -1,3 +1,26 @@
 site_name: GitHub Resourcepack Merger
 theme:
   name: material
+  features:
+    - navigation.tabs
+    - navigation.selections
+    - navigation.top
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - content.code.annotation
+    - content.code.copy
+  language: en
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+      primary: teal
+      accent: purple
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+      primary: teal
+      accent: lime
