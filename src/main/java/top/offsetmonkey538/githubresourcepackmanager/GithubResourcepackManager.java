@@ -5,7 +5,6 @@ import io.undertow.Undertow;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.text.Text;
 import org.apache.commons.io.FileUtils;
@@ -13,12 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
-import top.offsetmonkey538.githubresourcepackmanager.mixin.ServerPropertiesHandlerMixin;
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.utils.GitManager;
 import top.offsetmonkey538.githubresourcepackmanager.utils.MyFileUtils;
 import top.offsetmonkey538.githubresourcepackmanager.utils.ZipUtils;
 import top.offsetmonkey538.monkeylib538.config.ConfigManager;
+import top.offsetmonkey538.monkeylib538.duck.ServerPropertiesHandlerDuck;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -141,21 +139,10 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
 	private static void updateResourcePackProperties(final String outputFileName, final File outputFile) {
 		try {
-			final Optional<MinecraftServer.ServerResourcePackProperties> originalOptional = minecraftServer.getProperties().serverResourcePackProperties;
-
-			if (originalOptional.isEmpty()) return;
-			final MinecraftServer.ServerResourcePackProperties original = originalOptional.get();
-
 			//noinspection deprecation
-			((ServerPropertiesHandlerMixin) minecraftServer.getProperties()).setServerResourcePackProperties(
-					Optional.of(
-							new MinecraftServer.ServerResourcePackProperties(
-									config.resourcepackUrl.replace("pack.zip", outputFileName),
-									Hashing.sha1().hashBytes(com.google.common.io.Files.toByteArray(outputFile)).toString(),
-									original.isRequired(),
-									original.prompt()
-							)
-					)
+			((ServerPropertiesHandlerDuck) minecraftServer.getProperties()).monkeylib538$setResourcePackProperties(
+					config.resourcepackUrl.replace("pack.zip", outputFileName),
+					Hashing.sha1().hashBytes(com.google.common.io.Files.toByteArray(outputFile)).toString()
 			);
 		} catch (IOException e) {
 			throw new RuntimeException(e);

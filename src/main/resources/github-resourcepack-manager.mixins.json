@@ -3,7 +3,7 @@
 	"package": "top.offsetmonkey538.githubresourcepackmanager.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-		"ServerPropertiesHandlerMixin"
+
 	],
 	"injectors": {
 		"defaultRequire": 1

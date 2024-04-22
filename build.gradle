@@ -60,10 +60,10 @@ configurations {
 repositories {
 	mavenCentral()
 	maven {
-		name = "JitPack"
-		url = "https://jitpack.io"
+		name = "OffsetMods538"
+		url = "https://maven.offsetmonkey538.top/releases"
 		content {
-			includeGroup "top.offsetmonkey538"
+			includeGroup "top.offsetmonkey538.monkeylib538"
 		}
 	}
 }
@@ -75,7 +75,7 @@ dependencies {
 
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fapi_version}"
 
-	modImplementation "top.offsetmonkey538:monkeylib538:${project.monkeylib538_version}"
+	modImplementation "top.offsetmonkey538.monkeylib538:monkeylib538:${project.monkeylib538_version}"
 
 
 	includeImplementation "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"
