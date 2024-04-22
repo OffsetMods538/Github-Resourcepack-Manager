@@ -10,6 +10,7 @@ public class ModConfig extends Config {
     public String serverIp = "0.0.0.0";
     public String webhookPath = "/webhook";
     public String githubRef = "refs/heads/master";
+    public String resourcepackUrl = null;
     public String githubUrl = null;
     public boolean isPrivate = false;
     public String githubUsername = null;

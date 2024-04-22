@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
-import top.offsetmonkey538.githubresourcepackmanager.mixin.AbstractPropertiesHandlerMixin;
 import top.offsetmonkey538.githubresourcepackmanager.mixin.ServerPropertiesHandlerMixin;
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.utils.GitManager;
@@ -55,7 +54,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	public void onInitializeServer() {
 		config = ConfigManager.init(new ModConfig(), LOGGER::error);
 
-		if (config.githubUrl == null || (config.isPrivate && (config.githubUsername == null || config.githubToken == null))) {
+		if (config.resourcepackUrl == null || config.githubUrl == null || (config.isPrivate && (config.githubUsername == null || config.githubToken == null))) {
 			LOGGER.error("Please fill in the config file!");
 			throw new RuntimeException("Please fill in the config file!");
 		}
@@ -151,7 +150,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			((ServerPropertiesHandlerMixin) minecraftServer.getProperties()).setServerResourcePackProperties(
 					Optional.of(
 							new MinecraftServer.ServerResourcePackProperties(
-									((AbstractPropertiesHandlerMixin) minecraftServer.getProperties()).invokeGetString("resource-pack", "").replace("pack.zip", outputFileName),
+									config.resourcepackUrl.replace("pack.zip", outputFileName),
 									Hashing.sha1().hashBytes(com.google.common.io.Files.toByteArray(outputFile)).toString(),
 									original.isRequired(),
 									original.prompt()
