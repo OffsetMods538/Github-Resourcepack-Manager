@@ -8,6 +8,7 @@ theme:
     - navigation.tabs
     - navigation.selections
     - navigation.top
+    - navigation.footer
     - search.suggest
     - search.highlight
     - content.code.annotation
