@@ -1,29 +1,33 @@
 site_name: GitHub Resourcepack Merger
+repo_name: OffsetMods538/Github-Resourcepack-Manager
+repo_url: https://github.com/OffsetMods538/Github-Resourcepack-Manager
+edit_uri: /tree/docs/docs
 theme:
   name: material
   features:
     - navigation.tabs
     - navigation.selections
     - navigation.top
-    - toc.integrate
     - search.suggest
     - search.highlight
     - content.code.annotation
     - content.code.copy
   language: en
   palette:
-    - scheme: default
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: purple
+      accent: teal
       toggle:
-        icon: material/toggle-switch-off-outline
+        icon: material/lightbulb-outline
         name: Switch to dark mode
-      primary: teal
-      accent: purple
-    - scheme: slate
-      toggle:
-        icon: material/toggle-switch
-        name: Switch to light mode
-      primary: teal
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: purple
       accent: lime
+      toggle:
+        icon: material/lightbulb
+        name: Switch to light mode
 
 extra:
   social:
