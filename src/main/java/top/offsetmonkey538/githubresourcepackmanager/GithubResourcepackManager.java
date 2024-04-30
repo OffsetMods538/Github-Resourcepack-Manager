@@ -58,7 +58,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	public void onInitializeServer() {
 		config = ConfigManager.init(new ModConfig(), LOGGER::error);
 
-		if (config.githubUrl == null || config.resourcepackUrl == null || (config.isPrivate && (config.githubUsername == null || config.githubToken == null))) {
+		if (config.resourcepackUrl == null || config.githubUrl == null || (config.isPrivate && (config.githubUsername == null || config.githubToken == null))) {
 			LOGGER.error("Please fill in the config file!");
 			throw new RuntimeException("Please fill in the config file!");
 		}
