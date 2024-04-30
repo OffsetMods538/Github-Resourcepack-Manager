@@ -5,16 +5,18 @@ import io.undertow.Undertow;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
+import net.minecraft.server.dedicated.ServerPropertiesHandler;
+import net.minecraft.server.dedicated.ServerPropertiesLoader;
 import net.minecraft.text.Text;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
-import top.offsetmonkey538.githubresourcepackmanager.mixin.AbstractPropertiesHandlerMixin;
-import top.offsetmonkey538.githubresourcepackmanager.mixin.ServerPropertiesHandlerMixin;
+import top.offsetmonkey538.githubresourcepackmanager.mixin.AbstractPropertiesHandlerAccessor;
+import top.offsetmonkey538.githubresourcepackmanager.mixin.MinecraftDedicatedServerAccessor;
+import top.offsetmonkey538.githubresourcepackmanager.mixin.ServerPropertiesLoaderAccessor;
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.utils.GitManager;
 import top.offsetmonkey538.githubresourcepackmanager.utils.MyFileUtils;
@@ -29,8 +31,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
+import java.util.Properties;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -55,7 +58,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	public void onInitializeServer() {
 		config = ConfigManager.init(new ModConfig(), LOGGER::error);
 
-		if (config.githubUrl == null || (config.isPrivate && (config.githubUsername == null || config.githubToken == null))) {
+		if (config.githubUrl == null || config.resourcepackUrl == null || (config.isPrivate && (config.githubUsername == null || config.githubToken == null))) {
 			LOGGER.error("Please fill in the config file!");
 			throw new RuntimeException("Please fill in the config file!");
 		}
@@ -120,47 +123,61 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			return;
         }
 
-        afterPackUpdate(outputFileName, outputFile);
+        try {
+            afterPackUpdate(outputFileName, outputFile);
+        } catch (GithubResourcepackManagerException e) {
+            LOGGER.error("Failed to complete tasks after updating pack!", e);
+			return;
+        }
 
-		LOGGER.info("Resourcepack updated!");
+        LOGGER.info("Resourcepack updated!");
 	}
 
-	private static void afterPackUpdate(final String outputFileName, final File outputFile) {
+	private static void afterPackUpdate(final String outputFileName, final File outputFile) throws GithubResourcepackManagerException {
 		if (minecraftServer == null) return;
 
 		// We're probably on a webserver thread, so
 		//  we want to run on the minecraft server thread
+		AtomicReference<GithubResourcepackManagerException> failure = new AtomicReference<>(null);
 		minecraftServer.execute(() -> {
-			updateResourcePackProperties(outputFileName, outputFile);
+            try {
+                updateResourcePackProperties(outputFileName, outputFile);
+            } catch (GithubResourcepackManagerException e) {
+				failure.set(new GithubResourcepackManagerException("Failed to update resource pack properties!", e));
+            }
 
-			if (!minecraftServerStarted) return;
+            if (!minecraftServerStarted) return;
 
 			minecraftServer.getPlayerManager().broadcast(Text.of("Server resourcepack has been updated!"), false);
 			minecraftServer.getPlayerManager().broadcast(Text.of("Please rejoin the server to get the most up to date pack."), false);
 		});
+		if (failure.get() != null) throw failure.get();
 	}
 
-	private static void updateResourcePackProperties(final String outputFileName, final File outputFile) {
-		try {
-			final Optional<MinecraftServer.ServerResourcePackProperties> originalOptional = minecraftServer.getProperties().serverResourcePackProperties;
+	private static void updateResourcePackProperties(final String outputFileName, final File outputFile) throws GithubResourcepackManagerException {
+		final ServerPropertiesLoader propertiesLoader = ((MinecraftDedicatedServerAccessor) minecraftServer).getPropertiesLoader();
 
-			if (originalOptional.isEmpty()) return;
-			final MinecraftServer.ServerResourcePackProperties original = originalOptional.get();
+		AtomicReference<GithubResourcepackManagerException> failure = new AtomicReference<>(null);
+		propertiesLoader.apply(properties -> {
+			final AbstractPropertiesHandlerAccessor propertiesHandler = ((AbstractPropertiesHandlerAccessor) properties);
+			final Properties serverProperties = propertiesHandler.getProperties();
 
-			//noinspection deprecation
-			((ServerPropertiesHandlerMixin) minecraftServer.getProperties()).setServerResourcePackProperties(
-					Optional.of(
-							new MinecraftServer.ServerResourcePackProperties(
-									((AbstractPropertiesHandlerMixin) minecraftServer.getProperties()).invokeGetString("resource-pack", "").replace("pack.zip", outputFileName),
-									Hashing.sha1().hashBytes(com.google.common.io.Files.toByteArray(outputFile)).toString(),
-									original.isRequired(),
-									original.prompt()
-							)
-					)
-			);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+			serverProperties.setProperty("resource-pack", config.resourcepackUrl.replace("pack.zip", outputFileName));
+			try {
+				//noinspection deprecation
+				serverProperties.setProperty("resource-pack-sha1", Hashing.sha1().hashBytes(com.google.common.io.Files.toByteArray(outputFile)).toString());
+			} catch (IOException e) {
+				failure.set(new GithubResourcepackManagerException("Failed to get sha1 hash from pack file '%s'!", e, outputFile));
+			}
+
+			return properties;
+		});
+		if (failure.get() != null) throw failure.get();
+
+		propertiesLoader.store();
+
+		final ServerPropertiesLoaderAccessor propertiesLoaderAccess = (ServerPropertiesLoaderAccessor) propertiesLoader;
+		propertiesLoaderAccess.setPropertiesHandler(ServerPropertiesHandler.load(propertiesLoaderAccess.getPath()));
 	}
 
 	private static void cleanOutputDirectory() {
