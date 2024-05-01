@@ -157,27 +157,32 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	private static void updateResourcePackProperties(final String outputFileName, final File outputFile) throws GithubResourcepackManagerException {
 		final ServerPropertiesLoader propertiesLoader = ((MinecraftDedicatedServerAccessor) minecraftServer).getPropertiesLoader();
 
-		AtomicReference<GithubResourcepackManagerException> failure = new AtomicReference<>(null);
-		propertiesLoader.apply(properties -> {
-			final AbstractPropertiesHandlerAccessor propertiesHandler = ((AbstractPropertiesHandlerAccessor) properties);
-			final Properties serverProperties = propertiesHandler.getProperties();
+		final String resourcePackUrl = config.resourcepackUrl.replace("pack.zip", outputFileName);
+		final String resourcePackSha1;
+		try {
+			//noinspection deprecation
+			resourcePackSha1 = Hashing.sha1().hashBytes(com.google.common.io.Files.toByteArray(outputFile)).toString();
+		} catch (IOException e) {
+			throw new GithubResourcepackManagerException("Failed to get sha1 hash from pack file '%s'!", e, outputFile);
+		}
 
-			serverProperties.setProperty("resource-pack", config.resourcepackUrl.replace("pack.zip", outputFileName));
-			try {
-				//noinspection deprecation
-				serverProperties.setProperty("resource-pack-sha1", Hashing.sha1().hashBytes(com.google.common.io.Files.toByteArray(outputFile)).toString());
-			} catch (IOException e) {
-				failure.set(new GithubResourcepackManagerException("Failed to get sha1 hash from pack file '%s'!", e, outputFile));
-			}
+		LOGGER.info("Saving new resource pack properties to 'server.properties' file...");
+		LOGGER.info("New resource pack url: '{}'", resourcePackUrl);
+		LOGGER.info("New resource pack sha1: '{}'", resourcePackSha1);
+		propertiesLoader.apply(properties -> {
+			final Properties serverProperties = ((AbstractPropertiesHandlerAccessor) properties).getProperties();
+
+			serverProperties.setProperty("resource-pack", resourcePackUrl);
+			serverProperties.setProperty("resource-pack-sha1", resourcePackSha1);
 
 			return properties;
 		});
-		if (failure.get() != null) throw failure.get();
+		LOGGER.info("New resource pack properties saved!");
 
-		propertiesLoader.store();
-
+		LOGGER.info("Reloading properties from 'server.properties' file...");
 		final ServerPropertiesLoaderAccessor propertiesLoaderAccess = (ServerPropertiesLoaderAccessor) propertiesLoader;
 		propertiesLoaderAccess.setPropertiesHandler(ServerPropertiesHandler.load(propertiesLoaderAccess.getPath()));
+		LOGGER.info("Properties from 'server.properties' file reloaded!");
 	}
 
 	private static void cleanOutputDirectory() {
