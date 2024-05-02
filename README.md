@@ -9,6 +9,8 @@ I saw in one of XisumaVoid's videos that they have a mod on HermitCraft which al
 
 If you are using a hosting service, then you should ask their support if they allow using this mod. Some hosts may not like you hosting an HTTP server.
 
+## This readme is outdated. I'm working on better documentation and it will be published [here](https://docs.offsetmonkey538.top/Github-Resourcepack-Manager/)
+
 #### Table of contents
 - [How it works](#how-it-works)
     * [HTTP server](#http-server)
