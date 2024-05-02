@@ -10,6 +10,7 @@ import net.minecraft.server.dedicated.ServerPropertiesHandler;
 import net.minecraft.server.dedicated.ServerPropertiesLoader;
 import net.minecraft.text.Text;
 import org.apache.commons.io.FileUtils;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
@@ -18,10 +19,12 @@ import top.offsetmonkey538.githubresourcepackmanager.mixin.AbstractPropertiesHan
 import top.offsetmonkey538.githubresourcepackmanager.mixin.MinecraftDedicatedServerAccessor;
 import top.offsetmonkey538.githubresourcepackmanager.mixin.ServerPropertiesLoaderAccessor;
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
+import top.offsetmonkey538.githubresourcepackmanager.networking.WebhookHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.utils.GitManager;
 import top.offsetmonkey538.githubresourcepackmanager.utils.MyFileUtils;
 import top.offsetmonkey538.githubresourcepackmanager.utils.ZipUtils;
 import top.offsetmonkey538.monkeylib538.config.ConfigManager;
+import top.offsetmonkey538.monkeylib538.text.TextUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -88,7 +91,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer -> {
 			GithubResourcepackManager.minecraftServer = (MinecraftDedicatedServer) minecraftServer;
 
-			updatePack();
+			updatePack(null);
 
 			LOGGER.info("Starting webserver on {}:{}", config.serverIp, config.serverPort);
 			webServer.start();
@@ -97,7 +100,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		ServerLifecycleEvents.SERVER_STARTED.register(minecraftServer -> GithubResourcepackManager.minecraftServerStarted = true);
 	}
 
-	public static void updatePack() {
+	public static void updatePack(@Nullable WebhookHttpHandler.GithubPushProperties pushProperties) {
 		LOGGER.info("Updating resourcepack...");
 
 		final String outputFileName = Math.abs(new Random().nextLong()) + ".zip";
@@ -124,7 +127,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         }
 
         try {
-            afterPackUpdate(outputFileName, outputFile);
+            afterPackUpdate(outputFileName, outputFile, pushProperties);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to complete tasks after updating pack!", e);
 			return;
@@ -133,7 +136,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         LOGGER.info("Resourcepack updated!");
 	}
 
-	private static void afterPackUpdate(final String outputFileName, final File outputFile) throws GithubResourcepackManagerException {
+	private static void afterPackUpdate(final String outputFileName, final File outputFile, @Nullable WebhookHttpHandler.GithubPushProperties pushProperties) throws GithubResourcepackManagerException {
 		if (minecraftServer == null) return;
 
 		// We're probably on a webserver thread, so
@@ -144,12 +147,38 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
                 updateResourcePackProperties(outputFileName, outputFile);
             } catch (GithubResourcepackManagerException e) {
 				failure.set(new GithubResourcepackManagerException("Failed to update resource pack properties!", e));
+				return;
             }
 
             if (!minecraftServerStarted) return;
 
-			minecraftServer.getPlayerManager().broadcast(Text.of("Server resourcepack has been updated!"), false);
-			minecraftServer.getPlayerManager().broadcast(Text.of("Please rejoin the server to get the most up to date pack."), false);
+			String message = config.updateMessage;
+			if (pushProperties != null) {
+				message = message.replace("{ref}", pushProperties.ref());
+				message = message.replace("{lastCommitHash}", pushProperties.lastCommitHash());
+				message = message.replace("{newCommitHash}", pushProperties.newCommitHash());
+				message = message.replace("{repositoryName}", pushProperties.repositoryName());
+				message = message.replace("{repositoryFullName}", pushProperties.repositoryFullName());
+				message = message.replace("{repositoryUrl}", pushProperties.repositoryUrl());
+				message = message.replace("{repositoryVisibility}", pushProperties.repositoryVisibility());
+				message = message.replace("{pusherName}", pushProperties.pusherName());
+				message = message.replace("{headCommitMessage}", pushProperties.headCommitMessage());
+			}
+
+			final String[] splitMessage = message.split("\n");
+
+			for (int lineNumber = 0; lineNumber < splitMessage.length; lineNumber++) {
+				final String currentLineString = splitMessage[lineNumber];
+				final Text currentLine;
+                try {
+                    currentLine = TextUtils.INSTANCE.getStyledText(currentLineString);
+                } catch (Exception e) {
+                    failure.set(new GithubResourcepackManagerException("Failed to style update message at line number '%s'!", e, lineNumber));
+					return;
+                }
+
+                minecraftServer.getPlayerManager().broadcast(currentLine, false);
+			}
 		});
 		if (failure.get() != null) throw failure.get();
 	}

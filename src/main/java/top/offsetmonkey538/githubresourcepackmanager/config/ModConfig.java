@@ -6,6 +6,7 @@ import top.offsetmonkey538.monkeylib538.config.Config;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
 
 public class ModConfig extends Config {
+    public String updateMessage = "Server resourcepack has been updated!\nPlease rejoin the server to get the most up to date pack.";
     public int serverPort = 8080;
     @Comment("Usually shouldn't need changing")
     public String serverIp = "0.0.0.0";
