@@ -52,3 +52,11 @@ markdown_extensions:
   - pymdownx.mark
   - admonition
   - attr_list
+
+nav:
+  - About: index.md
+  - Installation: tutorials/installation.md
+  - Configuration:
+      - GitHub Repository Creation: tutorials/configuration/github-repo-creation.md
+      - Mod Configuration: tutorials/configuration/mod-configuration.md
+      - GitHub Repository Configuration: tutorials/configuration/github-repo-configuration.md
