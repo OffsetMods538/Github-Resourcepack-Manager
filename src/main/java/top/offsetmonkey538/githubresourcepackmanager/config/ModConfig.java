@@ -13,11 +13,11 @@ public class ModConfig extends Config {
     public String webServerBindIp = "0.0.0.0";
     @Comment("Usually shouldn't need changing")
     public String webhookPath = "/webhook";
+    @Comment("The public ip of your server (123.45.67.89 or play.coolserver.net)")
+    public String serverPublicIp = null;
     @Comment("Should be \"refs/heads/[YOUR BRANCH NAME HERE]\"")
     public String githubRef = "refs/heads/master";
     public String githubUrl = null;
-    @Comment("The public ip of your server (123.45.67.89 or play.coolserver.net)")
-    public String serverPublicIp = null;
     public boolean isPrivate = false;
     public String githubUsername = null;
     @Comment("PLEASE DON'T SHARE THIS WITH ANYONE EVER")
