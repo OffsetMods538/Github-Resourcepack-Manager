@@ -61,7 +61,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	public void onInitializeServer() {
 		config = ConfigManager.init(new ModConfig(), LOGGER::error);
 
-		if (config.resourcepackUrl == null || config.githubUrl == null || (config.isPrivate && (config.githubUsername == null || config.githubToken == null))) {
+		if (config.serverPublicIp == null || config.githubUrl == null || (config.isPrivate && (config.githubUsername == null || config.githubToken == null))) {
 			LOGGER.error("Please fill in the config file!");
 			throw new RuntimeException("Please fill in the config file!");
 		}
@@ -75,7 +75,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
 
 		final Undertow webServer = Undertow.builder()
-				.addHttpListener(config.serverPort, config.serverIp)
+				.addHttpListener(config.webServerBindPort, config.webServerBindIp)
 				.setHandler(new MainHttpHandler())
 				.build();
 
@@ -93,7 +93,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
 			updatePack(null);
 
-			LOGGER.info("Starting webserver on {}:{}", config.serverIp, config.serverPort);
+			LOGGER.info("Starting webserver on {}:{}", config.webServerBindIp, config.webServerBindPort);
 			webServer.start();
 		});
 
@@ -152,7 +152,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
             if (!minecraftServerStarted) return;
 
-			String message = config.updateMessage;
+			String message = config.packUpdateMessage;
 			if (pushProperties != null) {
 				message = message.replace("{ref}", pushProperties.ref());
 				message = message.replace("{lastCommitHash}", pushProperties.lastCommitHash());
@@ -186,7 +186,12 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	private static void updateResourcePackProperties(final String outputFileName, final File outputFile) throws GithubResourcepackManagerException {
 		final ServerPropertiesLoader propertiesLoader = ((MinecraftDedicatedServerAccessor) minecraftServer).getPropertiesLoader();
 
-		final String resourcePackUrl = config.resourcepackUrl.replace("pack.zip", outputFileName);
+		final String resourcePackUrl = String.format(
+				"http://%s:%s/%s",
+				config.serverPublicIp,
+				config.webServerBindPort,
+				outputFileName
+		);
 		final String resourcePackSha1;
 		try {
 			//noinspection deprecation
