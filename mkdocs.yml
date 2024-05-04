@@ -12,6 +12,7 @@ theme:
     - search.suggest
     - search.highlight
     - content.code.annotation
+    - content.code.annotate
     - content.code.copy
   language: en
   palette:
@@ -50,6 +51,8 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.superfences
   - pymdownx.mark
+  - pymdownx.betterem
+  - pymdownx.keys
   - admonition
   - attr_list
 
@@ -60,3 +63,4 @@ nav:
       - GitHub Repository Creation: tutorials/configuration/github-repo-creation.md
       - Mod Configuration: tutorials/configuration/mod-configuration.md
       - GitHub Repository Configuration: tutorials/configuration/github-repo-configuration.md
+      - Testing it out: tutorials/testing.md
