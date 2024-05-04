@@ -14,9 +14,9 @@ public class ModConfig extends Config {
     public String webhookPath = "/webhook";
     public String githubRef = "refs/heads/master";
     public String githubUrl = null;
-    public boolean isPrivate = false;
     @Comment("This is *not* the same as githubUrl!")
     public String resourcepackUrl = null;
+    public boolean isPrivate = false;
     public String githubUsername = null;
     @Comment("PLEASE DON'T SHARE THIS WITH ANYONE EVER")
     public String githubToken = null;
