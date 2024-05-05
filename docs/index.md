@@ -1,5 +1,7 @@
 # About
 
+If you have any problems or questions, feel free to reach out to me on Discord by clicking [here](https://discord.offsetmonkey538.top) or the Discord icon at the bottom of your screen :D
+
 ## Why?
 GitHub Resourcepack Manager is a mod meant **only** for **dedicated servers**!
 
