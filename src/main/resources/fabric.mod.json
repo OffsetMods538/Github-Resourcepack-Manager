@@ -26,6 +26,7 @@
 	"accessWidener": "github-resourcepack-manager.accesswidener",
 	"depends": {
 		"minecraft": "${supportedMinecraftVersions}",
-		"monkeylib538": ">=${monkeylib538Version}"
+		"monkeylib538": ">=${monkeylib538Version}",
+		"fabric-api": "*"
 	}
 }
