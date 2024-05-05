@@ -4,6 +4,8 @@ repo_url: https://github.com/OffsetMods538/Github-Resourcepack-Manager
 edit_uri: /tree/docs/docs
 theme:
   name: material
+  logo: images/logo.ico
+  favicon: images/logo.ico
   features:
     - navigation.tabs
     - navigation.selections
