@@ -64,3 +64,5 @@ nav:
       - Mod Configuration: tutorials/configuration/mod-configuration.md
       - GitHub Repository Configuration: tutorials/configuration/github-repo-configuration.md
       - Testing it out: tutorials/testing.md
+  - Reference:
+      - Pack Update Message Format: reference/update-message.md
