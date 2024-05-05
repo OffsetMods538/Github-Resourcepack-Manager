@@ -18,7 +18,7 @@ I'd recommend using the [GitHub Desktop](https://desktop.github.com/) app to mak
 
 ## Adding a pack to a multi pack setup
 Let's try adding the [Fresh Animations](https://modrinth.com/resourcepack/fresh-animations) pack to our server.  
-First download the pack itself, then you need to prefix it with a priority (which you can read more about [here](TODO)).  
+First download the pack itself, then you need to prefix it with a priority (which you can read more about [here](../reference/priority.md)).  
 For example I've renamed it to `10-FreshAnimations_v1.9.zip`.  
 Now all you need to do is just upload this pack to your repository, and you should hopefully receive a message in chat notifying of the update.  
 Now when you disconnect and rejoin, you should hopefully have fresh animations applied!

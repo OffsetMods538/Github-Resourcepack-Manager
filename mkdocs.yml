@@ -66,3 +66,4 @@ nav:
       - Testing it out: tutorials/testing.md
   - Reference:
       - Pack Update Message Format: reference/update-message.md
+      - Pack Priority: reference/priority.md
