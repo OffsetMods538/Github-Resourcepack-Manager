@@ -36,7 +36,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -126,27 +125,21 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			return;
         }
 
-        try {
-            afterPackUpdate(outputFileName, outputFile, pushProperties);
-        } catch (GithubResourcepackManagerException e) {
-            LOGGER.error("Failed to complete tasks after updating pack!", e);
-			return;
-        }
+		afterPackUpdate(outputFileName, outputFile, pushProperties);
 
         LOGGER.info("Resourcepack updated!");
 	}
 
-	private static void afterPackUpdate(final String outputFileName, final File outputFile, @Nullable WebhookHttpHandler.GithubPushProperties pushProperties) throws GithubResourcepackManagerException {
+	private static void afterPackUpdate(final String outputFileName, final File outputFile, @Nullable WebhookHttpHandler.GithubPushProperties pushProperties) {
 		if (minecraftServer == null) return;
 
 		// We're probably on a webserver thread, so
 		//  we want to run on the minecraft server thread
-		AtomicReference<GithubResourcepackManagerException> failure = new AtomicReference<>(null);
 		minecraftServer.execute(() -> {
             try {
                 updateResourcePackProperties(outputFileName, outputFile);
             } catch (GithubResourcepackManagerException e) {
-				failure.set(new GithubResourcepackManagerException("Failed to update resource pack properties!", e));
+				LOGGER.error("Failed to update resource pack properties!", e);
 				return;
             }
 
@@ -173,14 +166,13 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
                 try {
                     currentLine = TextUtils.INSTANCE.getStyledText(currentLineString);
                 } catch (Exception e) {
-                    failure.set(new GithubResourcepackManagerException("Failed to style update message at line number '%s'!", e, lineNumber));
+                    LOGGER.error(String.format("Failed to style update message at line number '%s'!", lineNumber), e);
 					return;
                 }
 
                 minecraftServer.getPlayerManager().broadcast(currentLine, false);
 			}
 		});
-		if (failure.get() != null) throw failure.get();
 	}
 
 	private static void updateResourcePackProperties(final String outputFileName, final File outputFile) throws GithubResourcepackManagerException {
