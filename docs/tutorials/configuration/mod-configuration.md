@@ -11,11 +11,11 @@ It should have generated the config file at `serverLocation/config/github-resour
 	"webServerBindIp": "0.0.0.0",
 	// Usually shouldn't need changing
 	"webhookPath": "/webhook",
+	// The public ip of your server (123.45.67.89 or play.coolserver.net)
+	"serverPublicIp": null,
 	// Should be "refs/heads/[YOUR BRANCH NAME HERE]"
 	"githubRef": "refs/heads/master",
 	"githubUrl": null,
-	// The public ip of your server (123.45.67.89 or play.coolserver.net)
-	"serverPublicIp": null,
 	"isPrivate": false,
 	"githubUsername": null,
 	// PLEASE DON'T SHARE THIS WITH ANYONE EVER
