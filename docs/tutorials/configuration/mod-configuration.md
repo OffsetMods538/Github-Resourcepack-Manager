@@ -38,8 +38,12 @@ The default value just tells it to listen on all addresses, so it should be fine
 
 ### webhookPath
 This is the path where the webhook is hosted.  
-With the default value it would be at `coolServer.net:[serverPort]/webhook`.  
+With the default value it would be at `coolServer.net:[webServerBindPort]/webhook`.  
 This should not need to be changed.
+
+### serverPublicIp
+This is your servers public ip. This is sent to the clients, so they know where to download the pack from.  
+For example: `"1283.45.67.89""` or `"play.offsetmonkey538.top"`
 
 ### githubRef
 This is the git branch/ref that the mod will download the resource pack from.  
@@ -49,10 +53,6 @@ Here's an image showing (in red) where the name of your branch is located:
 ### githubUrl
 This is the url to your GitHub repository.  
 For example: `"https://github.com/OffsetMonkey538/CoolPackYay"`
-
-### serverPublicIp
-This is your servers public ip. This is sent to the clients, so they know where to download the pack from.  
-For example: `"133.45.67.89""` or `"play.offsetmonkey538.top"`
 
 ### isPrivate
 This tells the mod that your GitHub repository is private and that it needs to provide credentials to download it.
