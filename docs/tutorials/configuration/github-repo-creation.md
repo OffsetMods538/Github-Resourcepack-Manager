@@ -9,7 +9,7 @@ There are two ways the mod can operate:
 ## Multi pack from template
 I've made a nice template repository, so you can easily get started with your packs!  
 So, what you'll need to do is visit the template [here](https://github.com/OffsetMods538/Github-Resourcepack-Manager-Pack-Template/).  
-You should see a greed button that says `Use this template`. Click on it and select `Create a new repository`.  
+You should see a green button that says `Use this template`. Click on it and select `Create a new repository`.  
 This should bring you to the repository creation page. Here you can give your repository a name and, if you want, you can make it private as well.
 
 ![Image showing an example configuration on the repository creation page](../../images/create-new-repository.png)
