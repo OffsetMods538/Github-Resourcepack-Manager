@@ -65,7 +65,7 @@ public final class GitManager {
     private static void cloneRepository(CredentialsProvider credentialsProvider) throws GithubResourcepackManagerException {
         try {
             Git git = Git.cloneRepository()
-                    .setURI(config.githubUrl.endsWith(".git") ? config.githubUrl : config.githubUrl + ".git")
+                    .setURI(config.githubUrl)
                     .setDirectory(REPO_ROOT_FOLDER.toFile())
                     .setBranch(config.githubRef)
                     .setCredentialsProvider(credentialsProvider)
