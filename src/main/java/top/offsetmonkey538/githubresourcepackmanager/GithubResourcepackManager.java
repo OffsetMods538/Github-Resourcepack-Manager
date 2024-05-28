@@ -138,6 +138,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		//  we want to run on the minecraft server thread
 		minecraftServer.execute(() -> {
 			final Map<String, String> placeholders = new HashMap<>();
+			placeholders.put("{downloadUrl}", config.getPackUrl(outputFileName));
 			if (pushProperties != null) placeholders.putAll(pushProperties.toPlaceholdersMap());
 
 			try {
