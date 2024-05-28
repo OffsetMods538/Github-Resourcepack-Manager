@@ -27,4 +27,13 @@ public class ModConfig extends Config {
     protected String getName() {
         return MOD_ID;
     }
+
+    public String getPackUrl(String outputFileName) {
+        return String.format(
+                "http://%s:%s/%s",
+                serverPublicIp,
+                webServerBindPort,
+                outputFileName
+        );
+    }
 }

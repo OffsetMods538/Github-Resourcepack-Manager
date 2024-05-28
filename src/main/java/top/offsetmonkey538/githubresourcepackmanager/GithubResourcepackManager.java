@@ -22,6 +22,7 @@ import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.networking.WebhookHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.utils.GitManager;
 import top.offsetmonkey538.githubresourcepackmanager.utils.MyFileUtils;
+import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
 import top.offsetmonkey538.githubresourcepackmanager.utils.ZipUtils;
 import top.offsetmonkey538.monkeylib538.config.ConfigManager;
 import top.offsetmonkey538.monkeylib538.text.TextUtils;
@@ -136,27 +137,21 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		// We're probably on a webserver thread, so
 		//  we want to run on the minecraft server thread
 		minecraftServer.execute(() -> {
-            try {
-                updateResourcePackProperties(outputFileName, outputFile);
-            } catch (GithubResourcepackManagerException e) {
+			final Map<String, String> placeholders = new HashMap<>();
+			if (pushProperties != null) placeholders.putAll(pushProperties.toPlaceholdersMap());
+
+			try {
+				updateResourcePackProperties(outputFileName, outputFile);
+			} catch (GithubResourcepackManagerException e) {
 				LOGGER.error("Failed to update resource pack properties!", e);
 				return;
-            }
+			}
 
-            if (!minecraftServerStarted) return;
+
+			if (!minecraftServerStarted) return;
 
 			String message = config.packUpdateMessage;
-			if (pushProperties != null) {
-				message = message.replace("{ref}", pushProperties.ref());
-				message = message.replace("{lastCommitHash}", pushProperties.lastCommitHash());
-				message = message.replace("{newCommitHash}", pushProperties.newCommitHash());
-				message = message.replace("{repositoryName}", pushProperties.repositoryName());
-				message = message.replace("{repositoryFullName}", pushProperties.repositoryFullName());
-				message = message.replace("{repositoryUrl}", pushProperties.repositoryUrl());
-				message = message.replace("{repositoryVisibility}", pushProperties.repositoryVisibility());
-				message = message.replace("{pusherName}", pushProperties.pusherName());
-				message = message.replace("{headCommitMessage}", pushProperties.headCommitMessage());
-			}
+			message = StringUtils.replacePlaceholders(message, placeholders);
 
 			final String[] splitMessage = message.split("\n");
 
@@ -178,12 +173,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	private static void updateResourcePackProperties(final String outputFileName, final File outputFile) throws GithubResourcepackManagerException {
 		final ServerPropertiesLoader propertiesLoader = ((MinecraftDedicatedServerAccessor) minecraftServer).getPropertiesLoader();
 
-		final String resourcePackUrl = String.format(
-				"http://%s:%s/%s",
-				config.serverPublicIp,
-				config.webServerBindPort,
-				outputFileName
-		);
+		final String resourcePackUrl = config.getPackUrl(outputFileName);
 		final String resourcePackSha1;
 		try {
 			//noinspection deprecation

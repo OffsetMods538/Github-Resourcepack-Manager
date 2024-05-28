@@ -11,6 +11,7 @@ import io.undertow.util.HttpString;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
@@ -86,6 +87,20 @@ public class WebhookHttpHandler implements HttpHandler {
 
             final String newPath = String.join("/", Arrays.copyOfRange(pathSeparated, 1, pathSeparated.length));
             return getValue(newPath, currentElement.getAsJsonObject());
+        }
+
+        public Map<String, String> toPlaceholdersMap() {
+            return Map.of(
+                    "{ref}",                  ref,
+                    "{lastCommitHash}",       lastCommitHash,
+                    "{newCommitHash}",        newCommitHash,
+                    "{repositoryName}",       repositoryName,
+                    "{repositoryFullName}",   repositoryFullName,
+                    "{repositoryUrl}",        repositoryUrl,
+                    "{repositoryVisibility}", repositoryVisibility,
+                    "{pusherName}",           pusherName,
+                    "{headCommitMessage}",    headCommitMessage
+            );
         }
     }
 }
