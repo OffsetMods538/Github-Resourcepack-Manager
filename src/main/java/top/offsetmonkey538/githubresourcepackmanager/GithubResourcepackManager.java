@@ -20,7 +20,6 @@ import top.offsetmonkey538.githubresourcepackmanager.mixin.AbstractPropertiesHan
 import top.offsetmonkey538.githubresourcepackmanager.mixin.MinecraftDedicatedServerAccessor;
 import top.offsetmonkey538.githubresourcepackmanager.mixin.ServerPropertiesLoaderAccessor;
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
-import top.offsetmonkey538.githubresourcepackmanager.networking.WebhookHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.utils.*;
 import top.offsetmonkey538.monkeylib538.config.ConfigManager;
 import top.offsetmonkey538.monkeylib538.text.TextUtils;
@@ -97,7 +96,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer -> {
 			GithubResourcepackManager.minecraftServer = (MinecraftDedicatedServer) minecraftServer;
 
-			updatePack(null);
+			updatePack(false);
 
 			LOGGER.info("Starting webserver on {}:{}", config.webServerBindIp, config.webServerBindPort);
 			webServer.start();
@@ -106,8 +105,10 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		ServerLifecycleEvents.SERVER_STARTED.register(minecraftServer -> GithubResourcepackManager.minecraftServerStarted = true);
 	}
 
-	public static void updatePack(@Nullable WebhookHttpHandler.GithubPushProperties pushProperties) {
+	public static void updatePack(boolean isWebhook) {
 		LOGGER.info("Updating resourcepack...");
+
+		final WebhookSender.UpdateType updateType = isWebhook ? WebhookSender.UpdateType.RUNTIME : WebhookSender.UpdateType.RESTART;
 
 		String outputFileName = Math.abs(new Random().nextLong()) + ".zip";
 		File outputFile = new File(OUTPUT_FOLDER.toFile(), outputFileName);
@@ -118,11 +119,19 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			return;
 		}
 
+		boolean didUpdate = false;
+		GitManager.CommitProperties commitProperties = null;
         try {
+			final String originalCommitHash = GitManager.getLatestCommitHash();
+
             GitManager.updateRepository(true);
-        } catch (GithubResourcepackManagerException e) {
+
+			final String newCommitHash = GitManager.getLatestCommitHash();
+
+			commitProperties = GitManager.getLatestCommitProperties(originalCommitHash, newCommitHash);
+			didUpdate = !newCommitHash.equals(originalCommitHash);
+		} catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to update git repository!", e);
-			return;
         }
         try {
 			createThePack(outputFile);
@@ -132,52 +141,34 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         }
 
 		final Optional<MinecraftServer.ServerResourcePackProperties> resourcePackProperties = minecraftServer.getResourcePackProperties();
-		String oldPackHash = "";
-		String oldPackName = "";
+		Path oldPackPath = null;
 		if (resourcePackProperties.isPresent()) {
-			oldPackHash = resourcePackProperties.get().hash();
-
-			oldPackName = resourcePackProperties.get().url();
+			String oldPackName = resourcePackProperties.get().url();
 			int nameStartIndex = oldPackName.lastIndexOf('/');
 
-			if (nameStartIndex == -1) oldPackName = "";
-			else oldPackName = oldPackName.substring(nameStartIndex + 1);
-		}
-
-		final Path oldPackPath = OUTPUT_FOLDER.resolve(oldPackName);
-		final WebhookSender.UpdateType updateType = pushProperties == null ? WebhookSender.UpdateType.RESTART : WebhookSender.UpdateType.RUNTIME;
-		boolean didUpdate = true;
-
-		if (!oldPackHash.isEmpty() && oldPackPath.toFile().exists()) {
-			try {
-				String newPackHash;
-				try {
-					//noinspection deprecation
-					newPackHash = Hashing.sha1().hashBytes(com.google.common.io.Files.toByteArray(outputFile)).toString();
-				} catch (IOException e) {
-					throw new GithubResourcepackManagerException("Failed to get sha1 hash from pack file '%s'!", e, outputFile);
-				}
-
-				try {
-					if (oldPackHash.equals(newPackHash)) {
-						didUpdate = false;
-
-						Files.delete(outputFile.toPath());
-						outputFile = oldPackPath.toFile();
-						outputFileName = outputFile.getName();
-					} else {
-						Files.delete(oldPackPath);
-					}
-				} catch (IOException e) {
-					throw new GithubResourcepackManagerException("Failed to delete file!", e);
-				}
-			} catch (GithubResourcepackManagerException e) {
-				LOGGER.error("Failed to check if pack has already been generated!", e);
+			if (nameStartIndex != -1) {
+				oldPackPath = OUTPUT_FOLDER.resolve(oldPackName.substring(nameStartIndex + 1));
 			}
 		}
 
+		if (oldPackPath != null && oldPackPath.toFile().exists()) {
+			try {
+				if (didUpdate) {
+					Files.delete(oldPackPath);
+				} else {
+					Files.delete(outputFile.toPath());
+					outputFile = oldPackPath.toFile();
+					outputFileName = outputFile.getName();
+				}
+			} catch (IOException e) {
+				LOGGER.error("Failed to check if pack has already been generated!", new GithubResourcepackManagerException("Failed to delete file!", e));
+			}
+		} else {
+			didUpdate = true;
+		}
+
         try {
-            afterPackUpdate(outputFileName, outputFile, pushProperties, updateType, didUpdate);
+            afterPackUpdate(outputFileName, outputFile, commitProperties, updateType, didUpdate);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to complete tasks after pack update!", e);
         }
@@ -185,12 +176,12 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         LOGGER.info("Resourcepack updated!");
 	}
 
-	private static void afterPackUpdate(final String outputFileName, final File outputFile, @Nullable WebhookHttpHandler.GithubPushProperties pushProperties, WebhookSender.UpdateType updateType, boolean isUpdated) throws GithubResourcepackManagerException {
+	private static void afterPackUpdate(final String outputFileName, final File outputFile, @Nullable GitManager.CommitProperties commitProperties, WebhookSender.UpdateType updateType, boolean isUpdated) throws GithubResourcepackManagerException {
 		if (minecraftServer == null) return;
 
 		final Map<String, String> placeholders = new HashMap<>();
 		placeholders.put("{downloadUrl}", config.getPackUrl(outputFileName));
-		if (pushProperties != null) placeholders.putAll(pushProperties.toPlaceholdersMap());
+		if (commitProperties != null) placeholders.putAll(commitProperties.toPlaceholdersMap());
 
 		// We're probably on a webserver thread, so
 		//  we want to run on the minecraft server thread

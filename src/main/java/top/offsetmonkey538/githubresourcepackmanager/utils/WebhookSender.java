@@ -15,6 +15,8 @@ public final class WebhookSender {
     }
 
     public static void send(String body, URI url, UpdateType updateType, boolean isUpdated) throws GithubResourcepackManagerException {
+        System.out.println(body);
+
         final HttpRequest request = HttpRequest.newBuilder(url)
                 .header("Content-Type", "application/json")
                 .header("X-Resource-Pack-Update-Type", updateType.name())
@@ -26,7 +28,7 @@ public final class WebhookSender {
 
         client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(HttpResponse::statusCode)
-                .thenAccept(response -> LOGGER.info("Http status code: {}", response));
+                .thenAccept(response -> LOGGER.info("Http status code: {}", response)); // TODO: check if status code is a failure and whatever
 
         // From JDK 21 the HttpClient class extends AutoCloseable, but as we want to support Minecraft versions
         //  that use JDK 17, where HttpClient doesn't extend AutoCloseable, we need to check if it's
