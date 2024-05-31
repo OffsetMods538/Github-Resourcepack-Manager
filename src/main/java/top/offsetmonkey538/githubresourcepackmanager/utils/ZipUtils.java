@@ -29,7 +29,10 @@ public final class ZipUtils {
             filename = filename.endsWith("/") ? filename : filename + "/";
 
             try {
-                zipOutputStream.putNextEntry(new ZipEntry(filename));
+                final ZipEntry zipEntry = new ZipEntry(filename);
+                zipEntry.setTime(0); // TODO: Might be worth using jgit to determine if the pack has been updated instead of the hash of the zip file
+
+                zipOutputStream.putNextEntry(zipEntry);
                 zipOutputStream.closeEntry();
             } catch (IOException e) {
                 throw new GithubResourcepackManagerException("Failed to add directory '%s' to zip file!", e, filename);
@@ -45,6 +48,7 @@ public final class ZipUtils {
 
         try (final FileInputStream fileInputStream = new FileInputStream(fileToZip)) {
             final ZipEntry zipEntry = new ZipEntry(filename);
+            zipEntry.setTime(0); // TODO: Might be worth using jgit to determine if the pack has been updated instead of the hash of the zip file
 
             zipOutputStream.putNextEntry(zipEntry);
 

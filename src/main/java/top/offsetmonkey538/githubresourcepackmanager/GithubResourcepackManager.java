@@ -5,6 +5,7 @@ import io.undertow.Undertow;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.server.dedicated.ServerPropertiesHandler;
 import net.minecraft.server.dedicated.ServerPropertiesLoader;
@@ -20,10 +21,7 @@ import top.offsetmonkey538.githubresourcepackmanager.mixin.MinecraftDedicatedSer
 import top.offsetmonkey538.githubresourcepackmanager.mixin.ServerPropertiesLoaderAccessor;
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.networking.WebhookHttpHandler;
-import top.offsetmonkey538.githubresourcepackmanager.utils.GitManager;
-import top.offsetmonkey538.githubresourcepackmanager.utils.MyFileUtils;
-import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
-import top.offsetmonkey538.githubresourcepackmanager.utils.ZipUtils;
+import top.offsetmonkey538.githubresourcepackmanager.utils.*;
 import top.offsetmonkey538.monkeylib538.config.ConfigManager;
 import top.offsetmonkey538.monkeylib538.text.TextUtils;
 
@@ -33,10 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -46,6 +41,8 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	public static final String MOD_ID = "github-resourcepack-manager";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+	public static final Path OLD_CONFIG_FILE_PATH = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".json");
+	public static final Path NEW_CONFIG_FILE_PATH = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json");
 	public static final Path RESOURCEPACK_FOLDER = FabricLoader.getInstance().getGameDir().resolve("resourcepack");
 	public static final Path REPO_ROOT_FOLDER = RESOURCEPACK_FOLDER.resolve("git");
 	public static final Path PACKS_FOLDER = REPO_ROOT_FOLDER.resolve("packs");
@@ -59,6 +56,15 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
 	@Override
 	public void onInitializeServer() {
+		if (Files.exists(OLD_CONFIG_FILE_PATH)) {
+			try {
+				Files.createDirectories(NEW_CONFIG_FILE_PATH.getParent());
+				Files.move(OLD_CONFIG_FILE_PATH, NEW_CONFIG_FILE_PATH);
+			} catch (IOException e) {
+                throw new RuntimeException("Failed to move config file to new location!", e);
+            }
+        }
+
 		config = ConfigManager.init(new ModConfig(), LOGGER::error);
 
 		if (config.serverPublicIp == null || config.githubUrl == null || (config.isPrivate && (config.githubUsername == null || config.githubToken == null))) {
@@ -103,8 +109,8 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 	public static void updatePack(@Nullable WebhookHttpHandler.GithubPushProperties pushProperties) {
 		LOGGER.info("Updating resourcepack...");
 
-		final String outputFileName = Math.abs(new Random().nextLong()) + ".zip";
-		final File outputFile = new File(OUTPUT_FOLDER.toFile(), outputFileName);
+		String outputFileName = Math.abs(new Random().nextLong()) + ".zip";
+		File outputFile = new File(OUTPUT_FOLDER.toFile(), outputFileName);
 		LOGGER.debug("New pack name: {}", outputFileName);
 
 		if (!outputFile.getParentFile().exists() && !outputFile.getParentFile().mkdirs()) {
@@ -112,7 +118,6 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			return;
 		}
 
-		cleanOutputDirectory();
         try {
             GitManager.updateRepository(true);
         } catch (GithubResourcepackManagerException e) {
@@ -126,20 +131,70 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			return;
         }
 
-		afterPackUpdate(outputFileName, outputFile, pushProperties);
+		final Optional<MinecraftServer.ServerResourcePackProperties> resourcePackProperties = minecraftServer.getResourcePackProperties();
+		String oldPackHash = "";
+		String oldPackName = "";
+		if (resourcePackProperties.isPresent()) {
+			oldPackHash = resourcePackProperties.get().hash();
+
+			oldPackName = resourcePackProperties.get().url();
+			int nameStartIndex = oldPackName.lastIndexOf('/');
+
+			if (nameStartIndex == -1) oldPackName = "";
+			else oldPackName = oldPackName.substring(nameStartIndex + 1);
+		}
+
+		final Path oldPackPath = OUTPUT_FOLDER.resolve(oldPackName);
+		final WebhookSender.UpdateType updateType = pushProperties == null ? WebhookSender.UpdateType.RESTART : WebhookSender.UpdateType.RUNTIME;
+		boolean didUpdate = true;
+
+		if (!oldPackHash.isEmpty() && oldPackPath.toFile().exists()) {
+			try {
+				String newPackHash;
+				try {
+					//noinspection deprecation
+					newPackHash = Hashing.sha1().hashBytes(com.google.common.io.Files.toByteArray(outputFile)).toString();
+				} catch (IOException e) {
+					throw new GithubResourcepackManagerException("Failed to get sha1 hash from pack file '%s'!", e, outputFile);
+				}
+
+				try {
+					if (oldPackHash.equals(newPackHash)) {
+						didUpdate = false;
+
+						Files.delete(outputFile.toPath());
+						outputFile = oldPackPath.toFile();
+						outputFileName = outputFile.getName();
+					} else {
+						Files.delete(oldPackPath);
+					}
+				} catch (IOException e) {
+					throw new GithubResourcepackManagerException("Failed to delete file!", e);
+				}
+			} catch (GithubResourcepackManagerException e) {
+				LOGGER.error("Failed to check if pack has already been generated!", e);
+			}
+		}
+
+        try {
+            afterPackUpdate(outputFileName, outputFile, pushProperties, updateType, didUpdate);
+        } catch (GithubResourcepackManagerException e) {
+            LOGGER.error("Failed to complete tasks after pack update!", e);
+        }
 
         LOGGER.info("Resourcepack updated!");
 	}
 
-	private static void afterPackUpdate(final String outputFileName, final File outputFile, @Nullable WebhookHttpHandler.GithubPushProperties pushProperties) {
+	private static void afterPackUpdate(final String outputFileName, final File outputFile, @Nullable WebhookHttpHandler.GithubPushProperties pushProperties, WebhookSender.UpdateType updateType, boolean isUpdated) throws GithubResourcepackManagerException {
 		if (minecraftServer == null) return;
+
+		final Map<String, String> placeholders = new HashMap<>();
+		placeholders.put("{downloadUrl}", config.getPackUrl(outputFileName));
+		if (pushProperties != null) placeholders.putAll(pushProperties.toPlaceholdersMap());
 
 		// We're probably on a webserver thread, so
 		//  we want to run on the minecraft server thread
 		minecraftServer.execute(() -> {
-			final Map<String, String> placeholders = new HashMap<>();
-			placeholders.put("{downloadUrl}", config.getPackUrl(outputFileName));
-			if (pushProperties != null) placeholders.putAll(pushProperties.toPlaceholdersMap());
 
 			try {
 				updateResourcePackProperties(outputFileName, outputFile);
@@ -159,16 +214,28 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			for (int lineNumber = 0; lineNumber < splitMessage.length; lineNumber++) {
 				final String currentLineString = splitMessage[lineNumber];
 				final Text currentLine;
-                try {
-                    currentLine = TextUtils.INSTANCE.getStyledText(currentLineString);
-                } catch (Exception e) {
-                    LOGGER.error(String.format("Failed to style update message at line number '%s'!", lineNumber), e);
+				try {
+					currentLine = TextUtils.INSTANCE.getStyledText(currentLineString);
+				} catch (Exception e) {
+					LOGGER.error(String.format("Failed to style update message at line number '%s'!", lineNumber), e);
 					return;
-                }
+				}
 
-                minecraftServer.getPlayerManager().broadcast(currentLine, false);
+				minecraftServer.getPlayerManager().broadcast(currentLine, false);
 			}
 		});
+
+		// Trigger webhook
+		if (config.webhookBody.toString().contains("discord") && !isUpdated) return;
+
+		try {
+			String webhookBody = Files.readString(config.webhookBody);
+			webhookBody = StringUtils.replacePlaceholders(webhookBody, placeholders);
+
+			WebhookSender.send(webhookBody, config.webhookUrl, updateType, isUpdated);
+		} catch (IOException e) {
+			throw new GithubResourcepackManagerException("Failed to read content of webhook body file '%s'!", e, config.webhookBody);
+		}
 	}
 
 	private static void updateResourcePackProperties(final String outputFileName, final File outputFile) throws GithubResourcepackManagerException {
@@ -200,15 +267,6 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 		final ServerPropertiesLoaderAccessor propertiesLoaderAccess = (ServerPropertiesLoaderAccessor) propertiesLoader;
 		propertiesLoaderAccess.setPropertiesHandler(ServerPropertiesHandler.load(propertiesLoaderAccess.getPath()));
 		LOGGER.info("Properties from 'server.properties' file reloaded!");
-	}
-
-	private static void cleanOutputDirectory() {
-		final File[] files = OUTPUT_FOLDER.toFile().listFiles();
-		if (files == null) return;
-		for (File file : files) {
-			//noinspection ResultOfMethodCallIgnored
-			file.delete();
-		}
 	}
 
 	private static void createThePack(File outputFile) throws GithubResourcepackManagerException {
@@ -254,25 +312,25 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 				.toList();
 
 		// Create tmp directory
-        final Path tmpDir;
-        try {
-            tmpDir = Files.createTempDirectory("github-resourcepack-manager");
-        } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to create temporary directory!", e);
-        }
-        final File packsExtractDir = MyFileUtils.createDir(tmpDir.resolve("extractedPacks").toFile());
+		final Path tmpDir;
+		try {
+			tmpDir = Files.createTempDirectory("github-resourcepack-manager");
+		} catch (IOException e) {
+			throw new GithubResourcepackManagerException("Failed to create temporary directory!", e);
+		}
+		final File packsExtractDir = MyFileUtils.createDir(tmpDir.resolve("extractedPacks").toFile());
 		final File outputDir = MyFileUtils.createDir(tmpDir.resolve("output").toFile());
 
 		// Extract all source packs
 		for (File pack : sourcePacks) {
 			if (pack.isDirectory()) {
-                try {
-                    FileUtils.copyDirectory(pack, outputDir);
-                } catch (IOException e) {
-                    throw new GithubResourcepackManagerException("Failed to copy pack '%s' to '%s'!", e, pack, outputDir);
-                }
-            }
-			else if (pack.getName().endsWith(".zip")) extractPack(pack, MyFileUtils.createDir(new File(packsExtractDir, pack.getName())), outputDir);
+				try {
+					FileUtils.copyDirectory(pack, outputDir);
+				} catch (IOException e) {
+					throw new GithubResourcepackManagerException("Failed to copy pack '%s' to '%s'!", e, pack, outputDir);
+				}
+			} else if (pack.getName().endsWith(".zip"))
+				extractPack(pack, MyFileUtils.createDir(new File(packsExtractDir, pack.getName())), outputDir);
 			else LOGGER.error("'{}' is not a valid pack! Ignoring...", pack);
 		}
 
@@ -286,13 +344,13 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 			fileContent.append("- ").append(nameWithoutPriorityString(pack)).append("\n");
 		}
 
-        try {
-            Files.writeString(inputPacksFilePath, fileContent);
-        } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to write to file '%s'!", e, inputPacksFilePath);
-        }
+		try {
+			Files.writeString(inputPacksFilePath, fileContent);
+		} catch (IOException e) {
+			throw new GithubResourcepackManagerException("Failed to write to file '%s'!", e, inputPacksFilePath);
+		}
 
-        zipItUp(outputDir, outputFile);
+		zipItUp(outputDir, outputFile);
 	}
 
 	private static void extractPack(File pack, File tempExtractDir, File finalOutputDir) throws GithubResourcepackManagerException {
