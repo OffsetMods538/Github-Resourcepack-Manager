@@ -13,8 +13,9 @@ public class MainHttpHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        LOGGER.debug("HTTP request: " + exchange);
+        LOGGER.debug("HTTP request: {}", exchange);
 
+        // TODO: Add config option for an alias to the latest file somehow...
         if (config.webhookPath.equals(exchange.getRequestPath()))
             webhookHandler.handleRequest(exchange);
         else fileHandler.handleRequest(exchange);

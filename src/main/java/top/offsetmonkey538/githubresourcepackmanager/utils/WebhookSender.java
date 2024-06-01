@@ -2,12 +2,11 @@ package top.offsetmonkey538.githubresourcepackmanager.utils;
 
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public final class WebhookSender {
     private WebhookSender() {
@@ -26,9 +25,17 @@ public final class WebhookSender {
 
         final HttpClient client = HttpClient.newHttpClient();
 
-        client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(HttpResponse::statusCode)
-                .thenAccept(response -> LOGGER.info("Http status code: {}", response)); // TODO: check if status code is a failure and whatever
+        final HttpResponse<String> response;
+        try {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            throw new GithubResourcepackManagerException("Failed to send http request!", e);
+        }
+
+        final int statusCode = response.statusCode();
+        if (!(statusCode >= 200 && statusCode < 300)) {
+            throw new GithubResourcepackManagerException("Http status code '%s'! Response was: '%s'.", statusCode, response.body());
+        }
 
         // From JDK 21 the HttpClient class extends AutoCloseable, but as we want to support Minecraft versions
         //  that use JDK 17, where HttpClient doesn't extend AutoCloseable, we need to check if it's

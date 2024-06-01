@@ -12,6 +12,25 @@ public final class ZipUtils {
 
     }
 
+    public static void zipDirectory(File directoryToZip, File destinationFile) throws GithubResourcepackManagerException {
+        if (!directoryToZip.exists())
+            throw new GithubResourcepackManagerException("Directory '%s' does not exist!", directoryToZip);
+
+        try {
+            final FileOutputStream fos = new FileOutputStream(destinationFile);
+            final ZipOutputStream zos = new ZipOutputStream(fos);
+
+            zipDirectory(directoryToZip, zos);
+
+            zos.close();
+            fos.close();
+        } catch (FileNotFoundException e) {
+            throw new GithubResourcepackManagerException("Failed to find file '%s'!", e, destinationFile);
+        } catch (IOException e) {
+            throw new GithubResourcepackManagerException("Failed to zip directory '%s' to file '%s'!", e, directoryToZip, destinationFile);
+        }
+    }
+
     public static void zipDirectory(File directoryToZip, ZipOutputStream zipOutputStream) throws GithubResourcepackManagerException {
         if (!directoryToZip.isDirectory()) return;
 

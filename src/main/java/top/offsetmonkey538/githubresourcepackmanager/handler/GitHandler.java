@@ -1,9 +1,10 @@
-package top.offsetmonkey538.githubresourcepackmanager.utils;
+package top.offsetmonkey538.githubresourcepackmanager.handler;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.RepositoryNotFoundException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.merge.ContentMergeStrategy;
@@ -13,20 +14,37 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
+import top.offsetmonkey538.githubresourcepackmanager.git.CommitProperties;
 
 import java.io.IOException;
-import java.util.Map;
 
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.REPO_ROOT_FOLDER;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
 
-public final class GitManager {
-    private GitManager() {
+public class GitHandler {
 
+    private CommitProperties commitProperties;
+    private boolean wasUpdated;
+
+    public void updateRepositoryAndGenerateCommitProperties() throws GithubResourcepackManagerException {
+        String originalCommitHash;
+        try {
+            originalCommitHash = getLatestCommitHash();
+        } catch (GithubResourcepackManagerException e) {
+            if (!(e.getCause() instanceof RepositoryNotFoundException)) throw e;
+
+            originalCommitHash = "";
+        }
+
+        updateRepository(true);
+
+        final String newCommitHash = getLatestCommitHash();
+
+        commitProperties = getLatestCommitProperties(originalCommitHash, newCommitHash);
+        wasUpdated = !newCommitHash.equals(originalCommitHash);
     }
 
-    public static CommitProperties getLatestCommitProperties(String lastCommitHash, String newCommitHash) throws GithubResourcepackManagerException {
+
+    private static CommitProperties getLatestCommitProperties(String lastCommitHash, String newCommitHash) throws GithubResourcepackManagerException {
         try {
             final Repository repository = getRepository();
             final RevCommit commit = new RevWalk(getRepository()).parseCommit(getLatestCommit().getObjectId());
@@ -46,17 +64,17 @@ public final class GitManager {
         }
     }
 
-    public static String getLatestCommitHash() throws GithubResourcepackManagerException {
-        return getLatestCommit().getObjectId().getName();
-    }
-
-    public static void updateRepository(boolean retry) throws GithubResourcepackManagerException {
+    private static void updateRepository(boolean retry) throws GithubResourcepackManagerException {
+        // Create credentials provider if repository is private
         CredentialsProvider credentialsProvider = null;
         if (config.isPrivate)
             credentialsProvider = new UsernamePasswordCredentialsProvider(config.githubUsername, config.githubToken);
 
+        // If the repo folder doesn't exist, clone the repository.
         if (!REPO_ROOT_FOLDER.toFile().exists()) cloneRepository(credentialsProvider);
 
+        // Pull from the remote
+        boolean updateFailed = false;
         try (Git git = Git.open(REPO_ROOT_FOLDER.toFile())) {
             final PullResult result = git.pull()
                     .setCredentialsProvider(credentialsProvider)
@@ -64,30 +82,36 @@ public final class GitManager {
                     .setStrategy(MergeStrategy.THEIRS)
                     .setRemoteBranchName(config.githubRef)
                     .call();
+
+            // Handle errors
             if (result.isSuccessful()) {
                 LOGGER.debug("Successfully updated repository!");
                 return;
             }
+
             LOGGER.error("Failed to update repository!");
+            updateFailed = true;
         } catch (GitAPIException e) {
             LOGGER.error("Failed to update repository!", e);
-
-            // FIXME: Oh god this is so stupid
-            //  I guess this should only happen when the local clone is modified so it's fine -_o_-
-            if (!retry) {
-                throw new GithubResourcepackManagerException("Failed to update repository!", e);
-            }
-            LOGGER.info("Deleting git folder and trying again...");
-
-            try {
-                FileUtils.deleteDirectory(REPO_ROOT_FOLDER.toFile());
-            } catch (IOException ex) {
-                LOGGER.error("Failed to delete directory!", e);
-            }
-
-            updateRepository(false);
+            updateFailed = true;
         } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to open repository!", e);
+            LOGGER.error("Failed to open repository!", e);
+            updateFailed = true;
+        } finally {
+            if (updateFailed && retry) {
+                // Oh god this is so stupid
+                //  Repository updating *should* only fail when remote repository is changed or
+                //  some files are changed locally, so it should be fine to just delete and re-clone it.
+                LOGGER.info("Deleting git folder and trying again...");
+
+                try {
+                    FileUtils.deleteDirectory(REPO_ROOT_FOLDER.toFile());
+                } catch (IOException e) {
+                    LOGGER.error("Failed to delete directory!", e);
+                }
+
+                updateRepository(false);
+            }
         }
     }
 
@@ -103,6 +127,10 @@ public final class GitManager {
         } catch (GitAPIException e) {
             throw new GithubResourcepackManagerException("Failed to clone repository!", e);
         }
+    }
+
+    private static String getLatestCommitHash() throws GithubResourcepackManagerException {
+        return getLatestCommit().getObjectId().getName();
     }
 
     private static Ref getLatestCommit() throws GithubResourcepackManagerException {
@@ -121,27 +149,11 @@ public final class GitManager {
         }
     }
 
-    public record CommitProperties(
-            String ref,
-            String lastCommitHash,
-            String newCommitHash,
-            String author,
-            String longDescription,
-            String shortDescription,
-            String timeOfCommit
-    ) {
-        public Map<String, String> toPlaceholdersMap() {
-            return Map.ofEntries(
-                    Map.entry("{ref}",               ref),
-                    Map.entry("{lastCommitHash}",    lastCommitHash),
-                    Map.entry("{newCommitHash}",     newCommitHash),
-                    Map.entry("{author}",            author),
-                    Map.entry("{longDescription}",   longDescription),
-                    Map.entry("{shortDescription}",  shortDescription),
-                    Map.entry("{timeOfCommit}",      timeOfCommit),
-                    Map.entry("{pusherName}",        author),
-                    Map.entry("{headCommitMessage}", longDescription)
-            );
-        }
+    public CommitProperties getCommitProperties() {
+        return commitProperties;
+    }
+
+    public boolean getWasUpdated() {
+        return wasUpdated;
     }
 }
