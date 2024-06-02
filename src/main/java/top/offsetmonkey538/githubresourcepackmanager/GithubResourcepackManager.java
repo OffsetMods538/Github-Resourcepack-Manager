@@ -48,6 +48,12 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
     public void onInitializeServer() {
         loadConfig();
 
+        try {
+            createFolderStructure();
+        } catch (GithubResourcepackManagerException e) {
+            LOGGER.error("Failed to create folder structure!", e);
+        }
+
         webserverHandler = new WebserverHandler();
         webserverHandler.initialize();
 
