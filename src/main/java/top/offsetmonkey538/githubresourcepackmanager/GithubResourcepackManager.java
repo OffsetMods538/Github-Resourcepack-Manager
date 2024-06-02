@@ -121,9 +121,9 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         }
 
 
-        // Update server.properties file if pack was updated.
+        // Update server.properties file.
         try {
-            if (wasUpdated) ServerPropertiesUtils.updatePackProperties(minecraftServer, packHandler);
+            ServerPropertiesUtils.updatePackProperties(minecraftServer, packHandler);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to update server.properties file!", e);
         }
