@@ -98,11 +98,15 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         // Git stuff
         gitHandler = new GitHandler();
 
+        LOGGER.info("Updating git repository...");
+        boolean failed = false;
         try {
             gitHandler.updateRepositoryAndGenerateCommitProperties();
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to update git repository!", e);
+            failed = true;
         }
+        if (!failed) LOGGER.info("Successfully updated git repository!");
 
 
         // Get the location of the old pack, if it exists.
@@ -110,15 +114,24 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         final Path oldPackPath = oldPackName == null ? null : OUTPUT_FOLDER.resolve(oldPackName);
 
 
-        // Generate pack
+        // Check if pack was updated
         final boolean wasUpdated = gitHandler.getWasUpdated() || oldPackPath == null || !oldPackPath.toFile().exists();
+        if (!wasUpdated) {
+            LOGGER.info("Pack hasn't changed since last update. Skipping new pack generation.");
+        }
+
+        // Generate pack
         packHandler = new PackHandler();
 
+        LOGGER.info("Getting pack location...");
+        failed = false;
         try {
             packHandler.generatePack(wasUpdated, oldPackPath, oldPackName);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to generate pack!", e);
+            failed = true;
         }
+        if (!failed) LOGGER.info("Pack location is '{}'!", packHandler.getOutputPackPath());
 
 
         // Update server.properties file.
@@ -134,6 +147,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         placeholders.put("{downloadUrl}", config.getPackUrl(packHandler.getOutputPackName()));
         placeholders.put("{updateType}", updateType.name());
         placeholders.put("{wasUpdated}", String.valueOf(wasUpdated));
+        LOGGER.info("Placeholders: {}", placeholders);
 
         // Send chat message
         try {

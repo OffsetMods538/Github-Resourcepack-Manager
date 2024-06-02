@@ -14,8 +14,6 @@ public final class WebhookSender {
     }
 
     public static void send(String body, URI url, UpdateType updateType, boolean isUpdated) throws GithubResourcepackManagerException {
-        System.out.println(body);
-
         final HttpRequest request = HttpRequest.newBuilder(url)
                 .header("Content-Type", "application/json")
                 .header("X-Resource-Pack-Update-Type", updateType.name())
