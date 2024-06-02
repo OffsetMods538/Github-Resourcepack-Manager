@@ -81,13 +81,15 @@ public class PackHandler {
     }
 
     private void writeSourcePacksFile(boolean isMultiPack, List<File> sourcePacks, File outputDir) throws GithubResourcepackManagerException {
+        if (!isMultiPack) return;
+
         final Path sourcePacksFile = outputDir.toPath().resolve("content.txt");
         MyFileUtils.createNewFile(sourcePacksFile.toFile());
 
         StringBuilder fileContent = new StringBuilder("This pack was put together using GitHub Resourcepack Manager from the following packs:\n\n");
 
         for (File pack : sourcePacks) {
-            fileContent.append("- ").append(isMultiPack ? StringUtils.nameWithoutPriorityString(pack) : pack.getName()).append("\n");
+            fileContent.append("- ").append(StringUtils.nameWithoutPriorityString(pack)).append("\n");
         }
 
         try {
