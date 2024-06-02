@@ -137,7 +137,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
         // Send chat message
         try {
-            sendUpdateMessage(placeholders);
+            sendUpdateMessage(wasUpdated, placeholders);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to send update message in chat!", e);
         }
@@ -170,7 +170,12 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         }
     }
 
-    private static void sendUpdateMessage(final Map<String, String> placeholders) throws GithubResourcepackManagerException {
+    private static void sendUpdateMessage(boolean wasUpdated, final Map<String, String> placeholders) throws GithubResourcepackManagerException {
+        if (!wasUpdated) {
+            LOGGER.info("Not sending chat message because pack was not updated.");
+            return;
+        }
+
         String message = config.packUpdateMessage;
         message = StringUtils.replacePlaceholders(message, placeholders);
 
