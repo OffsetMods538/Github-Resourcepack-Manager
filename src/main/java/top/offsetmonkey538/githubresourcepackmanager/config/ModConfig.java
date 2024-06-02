@@ -2,12 +2,21 @@ package top.offsetmonkey538.githubresourcepackmanager.config;
 
 import blue.endless.jankson.Comment;
 import blue.endless.jankson.Jankson;
+import blue.endless.jankson.JsonGrammar;
 import blue.endless.jankson.JsonPrimitive;
+import top.offsetmonkey538.githubresourcepackmanager.config.webhook.BasicWebhook;
+import top.offsetmonkey538.githubresourcepackmanager.config.webhook.DefaultWebhookBody;
+import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.BasicMessage;
+import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.EmbedMessage;
 import top.offsetmonkey538.monkeylib538.config.Config;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
 
 public class ModConfig extends Config {
@@ -45,6 +54,24 @@ public class ModConfig extends Config {
         builder.registerDeserializer(JsonPrimitive.class, Path.class, (json, marsh) -> getFilePath().getParent().resolve(marsh.marshall(String.class, json)));
 
         return builder;
+    }
+
+    public void createDefaultWebhooks() {
+        final Jankson jankson = new Jankson.Builder().build();
+        final List<DefaultWebhookBody> webhookBodies = List.of(new BasicWebhook(), new BasicMessage(), new EmbedMessage());
+
+        for (DefaultWebhookBody webhook : webhookBodies) {
+            final Path location = getFilePath().getParent().resolve(webhook.getName());
+
+            if (Files.exists(location)) continue;
+
+            try {
+                Files.createDirectories(location.getParent());
+                Files.writeString(location, jankson.toJson(webhook).toJson(JsonGrammar.STRICT));
+            } catch (IOException e) {
+                LOGGER.error("Failed to write default webhook body '{}'!", webhook.getName(), e);
+            }
+        }
     }
 
     public String getPackUrl(String outputFileName) {

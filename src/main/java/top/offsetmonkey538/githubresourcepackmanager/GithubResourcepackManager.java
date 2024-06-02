@@ -78,6 +78,9 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
         config = ConfigManager.init(new ModConfig(), LOGGER::error);
 
+        LOGGER.info("Writing default webhook bodies");
+        config.createDefaultWebhooks();
+
         if (config.serverPublicIp == null || config.githubUrl == null || (config.isPrivate && (config.githubUsername == null || config.githubToken == null))) {
             LOGGER.error("Please fill in the config file!");
             throw new RuntimeException("Please fill in the config file!");
