@@ -48,12 +48,6 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
     public void onInitializeServer() {
         loadConfig();
 
-        try {
-            createFolderStructure();
-        } catch (GithubResourcepackManagerException e) {
-            LOGGER.error("Failed to create folder structure!", e);
-        }
-
         webserverHandler = new WebserverHandler();
         webserverHandler.initialize();
 
@@ -92,6 +86,12 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
     public static void updatePack(boolean isWebhook) {
         LOGGER.info("Updating resourcepack...");
+
+        try {
+            createFolderStructure();
+        } catch (GithubResourcepackManagerException e) {
+            LOGGER.error("Failed to create folder structure!", e);
+        }
 
         final WebhookSender.UpdateType updateType = isWebhook ? WebhookSender.UpdateType.RUNTIME : WebhookSender.UpdateType.RESTART;
 
