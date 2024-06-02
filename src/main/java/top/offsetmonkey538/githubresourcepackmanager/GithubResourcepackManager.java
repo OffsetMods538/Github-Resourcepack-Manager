@@ -177,12 +177,10 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         }
 
         String message = config.packUpdateMessage;
-        message = StringUtils.replacePlaceholders(message, placeholders);
-
         final String[] splitMessage = message.split("\n");
 
         for (int lineNumber = 0; lineNumber < splitMessage.length; lineNumber++) {
-            final String currentLineString = splitMessage[lineNumber];
+            final String currentLineString = StringUtils.replacePlaceholders(splitMessage[lineNumber], placeholders).replace("\\n", "\n");
             final Text currentLine;
             try {
                 currentLine = TextUtils.INSTANCE.getStyledText(currentLineString);
