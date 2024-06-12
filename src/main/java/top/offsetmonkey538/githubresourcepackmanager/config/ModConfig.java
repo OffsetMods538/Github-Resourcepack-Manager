@@ -3,7 +3,6 @@ package top.offsetmonkey538.githubresourcepackmanager.config;
 import blue.endless.jankson.Comment;
 import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonGrammar;
-import blue.endless.jankson.JsonPrimitive;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.BasicWebhook;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.DefaultWebhookBody;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.BasicMessage;
@@ -37,23 +36,12 @@ public class ModConfig extends Config {
     public String githubUsername = null;
     @Comment("PLEASE DON'T SHARE THIS WITH ANYONE EVER")
     public String githubToken = null;
-    public URI webhookUrl = null;
-    public Path webhookBody = null;
+    public String webhookUrl = null;
+    public String webhookBody = null;
 
     @Override
     protected String getName() {
         return MOD_ID + "/" + MOD_ID;
-    }
-
-    @Override
-    protected Jankson.Builder configureJankson(Jankson.Builder builder) {
-        builder.registerSerializer(URI.class, (uri, marsh) -> marsh.serialize(uri.toString()));
-        builder.registerDeserializer(JsonPrimitive.class, URI.class, (json, marsh) -> URI.create(marsh.marshall(String.class, json)));
-
-        builder.registerSerializer(Path.class, (path, marsh) -> marsh.serialize(path.toString()));
-        builder.registerDeserializer(JsonPrimitive.class, Path.class, (json, marsh) -> getFilePath().getParent().resolve(marsh.marshall(String.class, json)));
-
-        return builder;
     }
 
     public void createDefaultWebhooks() {
@@ -81,5 +69,13 @@ public class ModConfig extends Config {
                 webServerBindPort,
                 outputFileName
         );
+    }
+
+    public URI getWebhookUrl() {
+        return URI.create(webhookUrl);
+    }
+
+    public Path getWebhookBody() {
+        return getFilePath().getParent().resolve(webhookBody);
     }
 }

@@ -83,6 +83,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         }
 
         config = ConfigManager.init(new ModConfig(), LOGGER::error);
+        ConfigManager.save(config, LOGGER::error);
 
         LOGGER.info("Writing default webhook bodies");
         config.createDefaultWebhooks();
@@ -178,16 +179,16 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
     private static void triggerWebhook(boolean wasUpdated, Map<String, String> placeholders, WebhookSender.UpdateType updateType) throws GithubResourcepackManagerException {
         if (config.webhookUrl == null || config.webhookBody == null) return;
-        if (config.webhookBody.toString().contains("discord") && !wasUpdated) {
+        if (config.webhookBody.contains("discord") && !wasUpdated) {
             LOGGER.info("Not sending discord webhook because pack was not updated.");
             return;
         }
 
         try {
-            String webhookBody = Files.readString(config.webhookBody);
+            String webhookBody = Files.readString(config.getWebhookBody());
             webhookBody = StringUtils.replacePlaceholders(webhookBody, placeholders);
 
-            WebhookSender.send(webhookBody, config.webhookUrl, updateType, gitHandler.getWasUpdated());
+            WebhookSender.send(webhookBody, config.getWebhookUrl(), updateType, gitHandler.getWasUpdated());
         } catch (IOException e) {
             throw new GithubResourcepackManagerException("Failed to read content of webhook body file '%s'!", e, config.webhookBody);
         }
