@@ -15,7 +15,7 @@ import top.offsetmonkey538.githubresourcepackmanager.handler.PackHandler;
 import top.offsetmonkey538.githubresourcepackmanager.handler.WebserverHandler;
 import top.offsetmonkey538.githubresourcepackmanager.utils.*;
 import top.offsetmonkey538.monkeylib538.config.ConfigManager;
-import top.offsetmonkey538.monkeylib538.text.TextUtils;
+import top.offsetmonkey538.monkeylib538.utils.TextUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
