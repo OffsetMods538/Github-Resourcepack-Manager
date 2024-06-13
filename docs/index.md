@@ -1,5 +1,10 @@
 # About
 
+!!! warning "This wiki was made for `3.1.0`"
+    This wiki has not yet been updated to the `3.2.0` version of the mod.  
+    Some parts of the wiki may not be correct.  
+    If you have any questions, don't hesitate to ask me on [discord](https://discord.offsetmonkey538.top/).
+
 If you have any problems or questions, feel free to reach out to me on Discord by clicking [here](https://discord.offsetmonkey538.top) or the Discord icon at the bottom of your screen :D
 
 ## Why?
