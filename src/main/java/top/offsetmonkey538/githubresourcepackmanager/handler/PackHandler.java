@@ -173,13 +173,13 @@ public class PackHandler {
     }
 
 
-    private Path handleOldPackAndGetOutputPackPath(boolean wasUpdated, Path oldPackPath, String oldPackName) {
+    private Path handleOldPackAndGetOutputPackPath(boolean wasUpdated, @Nullable Path oldPackPath, String oldPackName) {
         if (!wasUpdated) return oldPackPath;
 
         final String newPackName = generateRandomPackName(oldPackName);
 
         try {
-            if (Files.exists(oldPackPath)) Files.delete(oldPackPath);
+            if (oldPackPath != null && Files.exists(oldPackPath)) Files.delete(oldPackPath);
         } catch (IOException e) {
             LOGGER.error("Failed to delete old pack!", new GithubResourcepackManagerException("Failed to delete old pack '%s'!", e, oldPackPath));
         }
