@@ -3,6 +3,7 @@ package top.offsetmonkey538.githubresourcepackmanager.config;
 import blue.endless.jankson.Comment;
 import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonGrammar;
+import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.BasicWebhook;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.DefaultWebhookBody;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.BasicMessage;
@@ -71,11 +72,15 @@ public class ModConfig extends Config {
         );
     }
 
+    @Nullable
     public URI getWebhookUrl() {
+        if (webhookUrl == null) return null;
         return URI.create(webhookUrl);
     }
 
+    @Nullable
     public Path getWebhookBody() {
+        if (webhookBody == null) return null;
         return getFilePath().getParent().resolve(webhookBody);
     }
 }
