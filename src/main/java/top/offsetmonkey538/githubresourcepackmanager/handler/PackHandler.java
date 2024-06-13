@@ -2,6 +2,7 @@ package top.offsetmonkey538.githubresourcepackmanager.handler;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
+import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.utils.MyFileUtils;
 import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
@@ -185,10 +186,10 @@ public class PackHandler {
         return OUTPUT_FOLDER.resolve(newPackName);
     }
 
-    private String generateRandomPackName(String oldPackNameString) {
+    private String generateRandomPackName(@Nullable String oldPackNameString) {
         long oldPackName = -1;
 
-        try {
+        if (oldPackNameString != null) try {
             oldPackName = Long.parseLong(oldPackNameString.replace(".zip", ""));
         } catch (NumberFormatException ignored) {}
 
