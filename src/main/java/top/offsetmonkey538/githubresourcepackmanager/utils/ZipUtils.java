@@ -92,7 +92,7 @@ public final class ZipUtils {
         try {
             zipEntry = zipInputStream.getNextEntry();
         } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to get next entry in zip file '%'!", e, fileToUnzip);
+            throw new GithubResourcepackManagerException("Failed to get next entry in zip file '%s'!", e, fileToUnzip);
         }
 
         while (zipEntry != null) {
