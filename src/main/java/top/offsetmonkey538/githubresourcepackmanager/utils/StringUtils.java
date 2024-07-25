@@ -16,14 +16,31 @@ public final class StringUtils {
 
     /**
      * Replaces all instances of the keys in the placeholders map with their values.
+     * <p>
+     * Same as calling {@link StringUtils#replacePlaceholders(String, Map, boolean)} with {@code escapeQuotes} false.
      *
      * @param string The string to replace placeholders in.
      * @param placeholders The placeholders to replace.
      * @return The original string with all instances of the keys in the placeholders map replaced with their values.
      */
     public static String replacePlaceholders(String string, Map<String, String> placeholders) {
+        return replacePlaceholders(string, placeholders, false);
+    }
+
+    /**
+     * Replaces all instances of the keys in the placeholders map with their values.
+     * <p>
+     * Replaces {@code "} with {@code \"} in the placeholders if {@code escapeQuotes} is true.
+     *
+     * @param string The string to replace placeholders in.
+     * @param placeholders The placeholders to replace.
+     * @param escapeQuotes Whether quotes should be escaped.
+     * @return The original string with all instances of the keys in the placeholders map replaced with their values.
+     */
+    public static String replacePlaceholders(String string, Map<String, String> placeholders, boolean escapeQuotes) {
         for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-            string = string.replace(entry.getKey(), entry.getValue());
+            // I love strings. "\"" matches " and "\\\"" matches \"
+            string = string.replace(entry.getKey(), escapeQuotes ? entry.getValue().replace("\"", "\\\"") : entry.getValue());
         }
         return string;
     }

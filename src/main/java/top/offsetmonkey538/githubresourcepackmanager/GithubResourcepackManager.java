@@ -186,8 +186,9 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         }
 
         try {
+            //noinspection DataFlowIssue: Only returns null when `config.webhookBody` is null, which we have already checked
             String webhookBody = Files.readString(config.getWebhookBody());
-            webhookBody = StringUtils.replacePlaceholders(webhookBody, placeholders);
+            webhookBody = StringUtils.replacePlaceholders(webhookBody, placeholders, true);
 
             WebhookSender.send(webhookBody, config.getWebhookUrl(), updateType, gitHandler.getWasUpdated());
         } catch (IOException e) {
