@@ -44,6 +44,7 @@ loom {
 afterEvaluate {
 	loom.runs.configureEach {
 		vmArg "-javaagent:${configurations.compileClasspath.find{ it.name.contains("sponge-mixin") }}"
+		if (System.getenv("DISABLE_PROPERTIES_UPDATE") == null) vmArg "-Ddevauth.enabled=true"
 	}
 }
 
@@ -64,6 +65,13 @@ repositories {
 	mavenCentral()
 	mavenLocal()
 	maven {
+		name = "DevAuth"
+		url = "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1"
+		content {
+			includeGroup "me.djtheredstoner"
+		}
+	}
+	maven {
 		name = "OffsetMods538"
 		url = "https://maven.offsetmonkey538.top/releases"
 		content {
@@ -76,6 +84,8 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_version}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	modRuntimeOnly "me.djtheredstoner:DevAuth-fabric:${devauth_version}"
 
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fapi_version}"
 
@@ -99,18 +109,16 @@ dependencies {
 }
 
 processResources {
-	inputs.properties(Map.of(
+	final Map properties = Map<String, String>.of(
 			"modVersion",                 project.mod_version,
 			"supportedMinecraftVersions", project.supported_minecraft_versions,
 			"monkeylib538Version",        project.monkeylib538_version
-	))
+	)
+
+	inputs.properties(properties)
 
 	filesMatching("fabric.mod.json") {
-		expand(Map.of(
-				"modVersion",                 project.mod_version,
-				"supportedMinecraftVersions", project.supported_minecraft_versions,
-				"monkeylib538Version",        project.monkeylib538_version
-		))
+		expand(properties)
 	}
 
 	exclude ".cache/**"
@@ -142,10 +150,8 @@ modrinth {
 	additionalFiles = [sourcesJar.archiveFile]
 	gameVersions = outlet.mcVersions()
 	syncBodyFrom = rootProject.file("README.md").text
-	def changelogFile = rootProject.file("CHANGELOG.md")
-	if (changelogFile.exists()) {
-		changelog = changelogFile.text
-	}
+	def changelogEnv = System.getenv("VERSION_CHANGELOG")
+	if (changelogEnv != null) changelog = changelogEnv
 
 	dependencies {
 		required.project "monkeylib538"

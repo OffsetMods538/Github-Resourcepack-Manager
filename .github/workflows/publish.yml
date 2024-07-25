@@ -23,6 +23,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: false
 
       - name: Build with Gradle
         run: ./gradlew build
@@ -32,15 +34,11 @@ jobs:
       - name: Upload to Modrinth
         run: ./gradlew modrinth
         env:
-          DISABLE_PROPERTIES_UPDATE: true
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
           VERSION_NAME: ${{ github.event.release.name }}
+          VERSION_CHANGELOG: ${{ github.event.release.body }}
 
       - name: Upload to GitHub
-        uses: svenstaro/upload-release-action@v2
+        uses: softprops/action-gh-release@v2
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/libs/*.jar
-          tag: ${{ github.ref }}
-          overwrite: true
-          file_glob: true
+          files: build/libs/*.jar
