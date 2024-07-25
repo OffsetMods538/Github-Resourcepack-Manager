@@ -5,7 +5,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
-import net.minecraft.text.Text;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.MutableText;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
@@ -200,22 +201,35 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
             return;
         }
 
+        final PlayerManager playerManager = minecraftServer.getPlayerManager();
+        if (playerManager == null) return;
+
         String message = config.packUpdateMessage;
         final String[] splitMessage = message.split("\n");
 
+        final HoverEvent hoverEvent;
+        try {
+            hoverEvent = config.packUpdateMessageHoverMessage == null ? null : new HoverEvent(
+                    HoverEvent.Action.SHOW_TEXT,
+                    TextUtils.INSTANCE.getStyledText(
+                            StringUtils.replacePlaceholders(config.packUpdateMessageHoverMessage, placeholders).replace("\\n", "\n")
+                    )
+            );
+        } catch (Exception e) {
+            throw new GithubResourcepackManagerException("Failed to style update hover message!", e);
+        }
+
         for (int lineNumber = 0; lineNumber < splitMessage.length; lineNumber++) {
             final String currentLineString = StringUtils.replacePlaceholders(splitMessage[lineNumber], placeholders).replace("\\n", "\n");
-            final Text currentLine;
+            final MutableText currentLine;
             try {
                 currentLine = TextUtils.INSTANCE.getStyledText(currentLineString);
+                if (hoverEvent != null) currentLine.setStyle(currentLine.getStyle().withHoverEvent(hoverEvent));
             } catch (Exception e) {
                 throw new GithubResourcepackManagerException("Failed to style update message at line number '%s'!", e, lineNumber);
             }
 
-
-            final PlayerManager playerManager = minecraftServer.getPlayerManager();
-
-            if (playerManager != null) playerManager.broadcast(currentLine, false);
+            playerManager.broadcast(currentLine, false);
         }
     }
 
