@@ -36,9 +36,6 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
     public static final Path OUTPUT_FOLDER = RESOURCEPACK_FOLDER.resolve("output");
     public static final Pattern PACK_NAME_PATTERN = Pattern.compile("\\d+-");
 
-
-    public static ModConfig config;
-
     public static MinecraftDedicatedServer minecraftServer;
     public static WebserverHandler webserverHandler;
     public static GitHandler gitHandler;
@@ -83,16 +80,20 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
             }
         }
 
-        config = ConfigManager.init(new ModConfig(), LOGGER::error);
-        ConfigManager.save(config, LOGGER::error);
+        ConfigManager.init(new ModConfig(), LOGGER::error);
+        ConfigManager.save(config(), LOGGER::error);
 
         LOGGER.info("Writing default webhook bodies");
-        config.createDefaultWebhooks();
+        config().createDefaultWebhooks();
 
-        if (config.serverPublicIp == null || config.githubUrl == null || (config.isPrivate && (config.githubUsername == null || config.githubToken == null))) {
+        if (config().serverPublicIp == null || config().githubUrl == null || (config().isPrivate && (config().githubUsername == null || config().githubToken == null))) {
             LOGGER.error("Please fill in the config file!");
             throw new RuntimeException("Please fill in the config file!");
         }
+    }
+
+    public static ModConfig config() {
+        return ConfigManager.getConfig(new ModConfig());
     }
 
     public static void updatePack(boolean isWebhook) {
@@ -155,7 +156,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         // Generate placeholder map
         final Map<String, String> placeholders = new HashMap<>();
         if (gitHandler.getCommitProperties() != null) placeholders.putAll(gitHandler.getCommitProperties().toPlaceholdersMap());
-        placeholders.put("{downloadUrl}", config.getPackUrl(packHandler.getOutputPackName()));
+        placeholders.put("{downloadUrl}", config().getPackUrl(packHandler.getOutputPackName()));
         placeholders.put("{updateType}", updateType.name());
         placeholders.put("{wasUpdated}", String.valueOf(wasUpdated));
         LOGGER.info("Placeholders: {}", placeholders);
@@ -179,20 +180,20 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
     }
 
     private static void triggerWebhook(boolean wasUpdated, Map<String, String> placeholders, WebhookSender.UpdateType updateType) throws GithubResourcepackManagerException {
-        if (config.webhookUrl == null || config.webhookBody == null) return;
-        if (config.webhookBody.contains("discord") && !wasUpdated) {
+        if (config().webhookUrl == null || config().webhookBody == null) return;
+        if (config().webhookBody.contains("discord") && !wasUpdated) {
             LOGGER.info("Not sending discord webhook because pack was not updated.");
             return;
         }
 
         try {
-            //noinspection DataFlowIssue: Only returns null when `config.webhookBody` is null, which we have already checked
-            String webhookBody = Files.readString(config.getWebhookBody());
+            //noinspection DataFlowIssue: Only returns null when `config().webhookBody` is null, which we have already checked
+            String webhookBody = Files.readString(config().getWebhookBody());
             webhookBody = StringUtils.replacePlaceholders(webhookBody, placeholders, true);
 
-            WebhookSender.send(webhookBody, config.getWebhookUrl(), updateType, gitHandler.getWasUpdated());
+            WebhookSender.send(webhookBody, config().getWebhookUrl(), updateType, gitHandler.getWasUpdated());
         } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to read content of webhook body file '%s'!", e, config.webhookBody);
+            throw new GithubResourcepackManagerException("Failed to read content of webhook body file '%s'!", e, config().webhookBody);
         }
     }
 
@@ -205,15 +206,15 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         final PlayerManager playerManager = minecraftServer.getPlayerManager();
         if (playerManager == null) return;
 
-        String message = config.packUpdateMessage;
+        String message = config().packUpdateMessage;
         final String[] splitMessage = message.split("\n");
 
         final HoverEvent hoverEvent;
         try {
-            hoverEvent = config.packUpdateMessageHoverMessage == null ? null : new HoverEvent(
+            hoverEvent = config().packUpdateMessageHoverMessage == null ? null : new HoverEvent(
                     HoverEvent.Action.SHOW_TEXT,
                     TextUtils.INSTANCE.getStyledText(
-                            StringUtils.replacePlaceholders(config.packUpdateMessageHoverMessage, placeholders).replace("\\n", "\n")
+                            StringUtils.replacePlaceholders(config().packUpdateMessageHoverMessage, placeholders).replace("\\n", "\n")
                     )
             );
         } catch (Exception e) {

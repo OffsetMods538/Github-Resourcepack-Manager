@@ -14,8 +14,9 @@ public class MainHttpHandler implements HttpHandler {
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         LOGGER.debug("HTTP request: {}", exchange);
 
+        // TODO: remove this comment:
         // TODO: Add config option for an alias to the latest file somehow...
-        if (config.webhookPath.equals(exchange.getRequestPath()))
+        if (config().webhookPath.equals(exchange.getRequestPath()))
             webhookHandler.handleRequest(exchange);
         else fileHandler.handleRequest(exchange);
     }

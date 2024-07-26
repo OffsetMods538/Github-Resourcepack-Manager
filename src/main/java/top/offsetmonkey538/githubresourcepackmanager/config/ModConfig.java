@@ -19,7 +19,7 @@ import java.util.List;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
 
-public class ModConfig extends Config {
+public class ModConfig extends Config<ModConfig> {
     @Comment("!!!!Please check the wiki for how to set up the mod. It is linked on both the Modrinth and GitHub pages!!!!")
     public String packUpdateMessage = "Server resourcepack has been updated!\nPlease rejoin the server to get the most up to date pack.";
     public String packUpdateMessageHoverMessage = "{longDescription}";
@@ -44,6 +44,11 @@ public class ModConfig extends Config {
     @Override
     protected String getName() {
         return MOD_ID + "/" + MOD_ID;
+    }
+
+    @Override
+    public ModConfig getDefaultConfig() {
+        return new ModConfig();
     }
 
     public void createDefaultWebhooks() {

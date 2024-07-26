@@ -13,7 +13,7 @@ public class WebserverHandler {
 
     public WebserverHandler() {
         this.webserver = Undertow.builder()
-                .addHttpListener(config.webServerBindPort, config.webServerBindIp)
+                .addHttpListener(config().webServerBindPort, config().webServerBindIp)
                 .setHandler(new MainHttpHandler())
                 .build();
     }
@@ -25,7 +25,7 @@ public class WebserverHandler {
         });
 
         ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer -> {
-            LOGGER.info("Starting webserver on {}:{}", config.webServerBindIp, config.webServerBindPort);
+            LOGGER.info("Starting webserver on {}:{}", config().webServerBindIp, config().webServerBindPort);
             webserver.start();
         });
     }

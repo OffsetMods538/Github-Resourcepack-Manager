@@ -31,7 +31,7 @@ public final class ServerPropertiesUtils {
     public static void updatePackProperties(MinecraftServer server, PackHandler packHandler) throws GithubResourcepackManagerException {
         final ServerPropertiesLoader propertiesLoader = ((MinecraftDedicatedServerAccessor) server).getPropertiesLoader();
 
-        final String resourcePackUrl = config.getPackUrl(packHandler.getOutputPackName());
+        final String resourcePackUrl = config().getPackUrl(packHandler.getOutputPackName());
         final String resourcePackSha1;
         try {
             // Ignore the fact that sha1 hashing is deprecated as Minecraft uses it for validating server resource packs.
