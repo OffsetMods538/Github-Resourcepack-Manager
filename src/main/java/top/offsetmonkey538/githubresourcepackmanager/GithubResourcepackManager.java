@@ -2,6 +2,7 @@ package top.offsetmonkey538.githubresourcepackmanager;
 
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
@@ -44,6 +45,8 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
     public static PackHandler packHandler;
 
 
+    private static boolean configIncomplete = false;
+
     @Override
     public void onInitializeServer() {
         loadConfig();
@@ -60,7 +63,18 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer -> {
             GithubResourcepackManager.minecraftServer = (MinecraftDedicatedServer) minecraftServer;
 
-            updatePack(false);
+            if (configIncomplete) LOGGER.error("Please fill in the config file!");
+            else updatePack(false);
+        });
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            final ServerPlayerEntity player = handler.player;
+            if (!configIncomplete || !player.hasPermissionLevel(server.getOpPermissionLevel())) return;
+
+            player.sendMessage(Text.literal("GitHub Resource Pack Manager is not configured!!"));
+            player.sendMessage(Text.literal("Please click ").append(Text.literal("here").setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://docs.offsetmonkey538.top/Github-Resourcepack-Manager/")).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to open link"))).withColor(Formatting.BLUE).withFormatting(Formatting.UNDERLINE))).append(Text.literal(" to open the wiki.")));
+            player.sendMessage(Text.literal("The config file is located at '" + NEW_CONFIG_FILE_PATH + "'."));
+            player.sendMessage(Text.empty());
+            player.sendMessage(Text.literal("You can also use the ").append(Text.literal("/monkeylib538 config").setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/monkeylib538 config set github-resourcepack-manager/main")).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to run command"))).withFormatting(Formatting.UNDERLINE).withColor(Formatting.GOLD))).append(Text.literal(" command to configure the mod.")));
         });
     }
 
@@ -97,8 +111,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         config().createDefaultWebhooks();
 
         if (config().serverPublicIp == null || config().githubUrl == null || (config().isPrivate && (config().githubUsername == null || config().githubToken == null))) {
-            LOGGER.error("Please fill in the config file!");
-            throw new RuntimeException("Please fill in the config file!");
+            configIncomplete = true;
         }
     }
 
