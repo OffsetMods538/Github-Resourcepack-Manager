@@ -26,6 +26,9 @@ public class GitHandler {
     private boolean wasUpdated;
 
     public void updateRepositoryAndGenerateCommitProperties() throws GithubResourcepackManagerException {
+        // TODO: check if url is different and nuke everything if souuuj
+
+
         String originalCommitHash;
         try {
             originalCommitHash = getLatestCommitHash();
