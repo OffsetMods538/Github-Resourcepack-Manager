@@ -43,7 +43,7 @@ public class ModConfig extends Config<ModConfig> {
 
     @Override
     protected String getName() {
-        return MOD_ID + "/" + MOD_ID;
+        return MOD_ID + "/" + "main";
     }
 
     @Override

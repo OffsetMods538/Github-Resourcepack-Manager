@@ -5,8 +5,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.*;
+import net.minecraft.util.Formatting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
@@ -28,8 +29,9 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
     public static final String MOD_ID = "github-resourcepack-manager";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    public static final Path OLD_CONFIG_FILE_PATH = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".json");
-    public static final Path NEW_CONFIG_FILE_PATH = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json");
+    public static final Path OLD_OLD_CONFIG_FILE_PATH = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".json");
+    public static final Path OLD_CONFIG_FILE_PATH = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json");
+    public static final Path NEW_CONFIG_FILE_PATH = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID).resolve("main.json");
     public static final Path RESOURCEPACK_FOLDER = FabricLoader.getInstance().getGameDir().resolve("resourcepack");
     public static final Path REPO_ROOT_FOLDER = RESOURCEPACK_FOLDER.resolve("git");
     public static final Path PACKS_FOLDER = REPO_ROOT_FOLDER.resolve("packs");
@@ -71,6 +73,14 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
     }
 
     private static void loadConfig() {
+        if (Files.exists(OLD_OLD_CONFIG_FILE_PATH)) {
+            try {
+                Files.createDirectories(NEW_CONFIG_FILE_PATH.getParent());
+                Files.move(OLD_OLD_CONFIG_FILE_PATH, NEW_CONFIG_FILE_PATH);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to move config file to new location!", e);
+            }
+        }
         if (Files.exists(OLD_CONFIG_FILE_PATH)) {
             try {
                 Files.createDirectories(NEW_CONFIG_FILE_PATH.getParent());
