@@ -92,6 +92,8 @@ dependencies {
 	modImplementation "top.offsetmonkey538.monkeylib538:monkeylib538:${project.monkeylib538_version}"
 
 
+	includeImplementation "io.netty:netty-codec-http:${project.netty_version}"
+
 	includeImplementation "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"
 
 	includeImplementation "io.undertow:undertow-core:${project.undertow_version}"
