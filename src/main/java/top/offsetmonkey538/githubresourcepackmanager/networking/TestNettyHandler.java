@@ -1,21 +1,16 @@
 package top.offsetmonkey538.githubresourcepackmanager.networking;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
-import io.netty.util.CharsetUtil;
-
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-
-import static io.netty.handler.codec.http.HttpHeaderNames.*;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import top.offsetmonkey538.githubresourcepackmanager.networking.http.MainHttpHandler;
+import top.offsetmonkey538.githubresourcepackmanager.networking.http.OtherNettyHandler;
 
 public class TestNettyHandler extends ChannelInboundHandlerAdapter {
     public static final String NAME = "github-resourcepack-manager-fileserver";
+    public static final String NAME_CODEC = NAME + "/http-codec";
+    public static final String NAME_AGGREGATOR = NAME + "/http-aggregator";
+
     private final HttpServerCodec httpCodec = new HttpServerCodec();
     private final HttpObjectAggregator httpAggregator = new HttpObjectAggregator(65536);
 
@@ -47,9 +42,9 @@ public class TestNettyHandler extends ChannelInboundHandlerAdapter {
 
             // These need to be before Minecraft handlers,
             //  so add them to the front in reverse order.
-            pipeline.addAfter(NAME, NAME + "/http-codec", new HttpServerCodec());
-            pipeline.addAfter(NAME + "/http-codec", NAME + "/http-aggregator", new HttpObjectAggregator(65536));
-            pipeline.addAfter(NAME + "/http-aggregator", NAME + "/actually-the-handler-now-lol", new OtherNettyHandler());
+            pipeline.addAfter(NAME, NAME_CODEC, new HttpServerCodec());
+            pipeline.addAfter(NAME_CODEC, NAME_AGGREGATOR, new HttpObjectAggregator(65536));
+            pipeline.addAfter(NAME_AGGREGATOR, MainHttpHandler.NAME, new MainHttpHandler());
         }
 
         // This handler won't be needed anymore for this interaction

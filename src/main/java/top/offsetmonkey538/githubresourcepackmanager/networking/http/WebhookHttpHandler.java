@@ -1,0 +1,68 @@
+package top.offsetmonkey538.githubresourcepackmanager.networking.http;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.*;
+import io.netty.handler.codec.http.*;
+import io.netty.util.CharsetUtil;
+import io.undertow.util.HeaderValues;
+import io.undertow.util.HttpString;
+import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
+import top.offsetmonkey538.githubresourcepackmanager.networking.TestNettyHandler;
+import top.offsetmonkey538.githubresourcepackmanager.utils.HttpUtils;
+
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
+
+public final class WebhookHttpHandler {
+    private WebhookHttpHandler() {}
+
+    private static final Gson GSON = new GsonBuilder().create();
+
+    public static void handleRequest(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
+        if (!request.uri().equals(config.webhookPath)) {
+            LOGGER.warn(String.format("Bad request: POST request made to '%s', which isn't the webhook path '%s'", request.uri(), config.webhookPath));
+            HttpUtils.sendError(ctx, BAD_REQUEST);
+            return;
+        }
+        if (!"application/json".contentEquals(HttpUtil.getMimeType(request))) {
+            LOGGER.warn(String.format("Bad request: POST request made with incorrect mime type '%s', expected 'application/json'", HttpUtil.getMimeType(request)));
+            HttpUtils.sendError(ctx, BAD_REQUEST);
+            return;
+        }
+
+
+        // Get the event header
+        final String githubEvent = request.headers().get("x-github-event");
+
+        if (!githubEvent.contains("push")) return;
+        LOGGER.debug("Received github push event");
+
+        // Get payload
+        final JsonObject payload = GSON.fromJson(request.content().toString(StandardCharsets.UTF_8), JsonObject.class);
+
+        // Respond with "yeh bro everythins alright"
+        ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, OK), ctx.newPromise().addListener(ChannelFutureListener.CLOSE));
+
+        // Check which branch was pushed to
+        final String ref = payload.get("ref").getAsString();
+        LOGGER.debug("Ref: {}", ref);
+
+        if (!config.githubRef.equals(ref)) return;
+
+        LOGGER.debug("Tracked branch has been updated, updating local pack...");
+        GithubResourcepackManager.updatePack(true);
+        LOGGER.debug("Local pack has been updated.");
+    }
+}
