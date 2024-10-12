@@ -5,6 +5,7 @@
 	"mixins": [
 		"AbstractPropertiesHandlerAccessor",
 		"MinecraftDedicatedServerAccessor",
+		"ServerNetworkIoMixin",
 		"ServerPropertiesLoaderAccessor"
 	],
 	"injectors": {
