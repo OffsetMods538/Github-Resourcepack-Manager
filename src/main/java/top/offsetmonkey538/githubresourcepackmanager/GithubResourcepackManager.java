@@ -13,8 +13,9 @@ import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.handler.GitHandler;
 import top.offsetmonkey538.githubresourcepackmanager.handler.PackHandler;
-import top.offsetmonkey538.githubresourcepackmanager.handler.WebserverHandler;
+import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.utils.*;
+import top.offsetmonkey538.meshlib.api.HttpHandlerRegistry;
 import top.offsetmonkey538.monkeylib538.config.ConfigManager;
 import top.offsetmonkey538.monkeylib538.utils.TextUtils;
 
@@ -40,7 +41,6 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
     public static ModConfig config;
 
     public static MinecraftDedicatedServer minecraftServer;
-    public static WebserverHandler webserverHandler;
     public static GitHandler gitHandler;
     public static PackHandler packHandler;
 
@@ -55,8 +55,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
             LOGGER.error("Failed to create folder structure!", e);
         }
 
-        webserverHandler = new WebserverHandler();
-        webserverHandler.initialize();
+        HttpHandlerRegistry.INSTANCE.register("gh-rp-mg", new MainHttpHandler());
 
         ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer -> {
             GithubResourcepackManager.minecraftServer = (MinecraftDedicatedServer) minecraftServer;

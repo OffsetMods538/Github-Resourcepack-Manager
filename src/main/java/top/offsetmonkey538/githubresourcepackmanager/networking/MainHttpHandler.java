@@ -1,22 +1,38 @@
 package top.offsetmonkey538.githubresourcepackmanager.networking;
 
-import io.undertow.Handlers;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
+import org.jetbrains.annotations.NotNull;
+import top.offsetmonkey538.meshlib.api.HttpHandler;
 
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 
 public class MainHttpHandler implements HttpHandler {
-    private final HttpHandler webhookHandler = new WebhookHttpHandler();
-    private final HttpHandler fileHandler = Handlers.resource(new PackResourceManager(OUTPUT_FOLDER));
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) throws Exception {
-        LOGGER.debug("HTTP request: {}", exchange);
+    public void handleRequest(@NotNull ChannelHandlerContext ctx, @NotNull FullHttpRequest request) throws Exception {
+        if (!request.decoderResult().isSuccess()) {
+            HttpHandler.sendError(ctx, BAD_REQUEST);
+            return;
+        }
 
-        // TODO: Add config option for an alias to the latest file somehow...
-        if (config.webhookPath.equals(exchange.getRequestPath()))
-            webhookHandler.handleRequest(exchange);
-        else fileHandler.handleRequest(exchange);
+
+        final HttpMethod method = request.method();
+
+        // GET request should go to fileserver
+        if (method == HttpMethod.GET) {
+            FileHttpHandler.handleRequest(ctx, request);
+            return;
+        }
+
+        // POST request should go to the webhook handler
+        if (method == HttpMethod.POST) {
+            WebhookHttpHandler.handleRequest(ctx, request);
+            return;
+        }
+
+        // If we reach this point, then the request method isn't supported
+        HttpHandler.sendError(ctx, METHOD_NOT_ALLOWED);
     }
 }

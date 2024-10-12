@@ -76,6 +76,7 @@ repositories {
 		url = "https://maven.offsetmonkey538.top/releases"
 		content {
 			includeGroup "top.offsetmonkey538.monkeylib538"
+			includeGroup "top.offsetmonkey538.meshlib"
 		}
 	}
 }
@@ -91,8 +92,8 @@ dependencies {
 
 	modImplementation "top.offsetmonkey538.monkeylib538:monkeylib538:${project.monkeylib538_version}"
 
+	includeModImplementation "top.offsetmonkey538.meshlib:mesh-lib:${project.mesh_lib_version}"
 
-	includeImplementation "io.netty:netty-codec-http:${project.netty_version}"
 
 	includeImplementation "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"
 

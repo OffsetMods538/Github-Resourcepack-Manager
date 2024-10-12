@@ -1,29 +1,23 @@
-package top.offsetmonkey538.githubresourcepackmanager.networking.http;
+package top.offsetmonkey538.githubresourcepackmanager.networking;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
-import io.netty.util.CharsetUtil;
-import top.offsetmonkey538.githubresourcepackmanager.networking.TestNettyHandler;
 
 import java.io.File;
 import java.nio.file.Files;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.packHandler;
 
-public final class OtherNettyHandler {
-    private OtherNettyHandler() {}
-
-    public static final String NAME = TestNettyHandler.NAME + "/http-fileserver";
-
-    private static final File fileToServe = new File("/home/dave/testthingy/respak.zip");
+public final class FileHttpHandler {
+    private FileHttpHandler() {}
 
     public static void handleRequest(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
+        final File fileToServe = packHandler.getOutputPackFile();
+
         final long fileLength = fileToServe.length();
 
         final HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
