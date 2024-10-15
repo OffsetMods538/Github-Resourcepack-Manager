@@ -3,6 +3,7 @@ package top.offsetmonkey538.githubresourcepackmanager.config;
 import blue.endless.jankson.Comment;
 import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonGrammar;
+import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.BasicWebhook;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.DefaultWebhookBody;
@@ -23,12 +24,6 @@ public class ModConfig extends Config {
     @Comment("!!!!Please check the wiki for how to set up the mod. It is linked on both the Modrinth and GitHub pages!!!!")
     public String packUpdateMessage = "Server resourcepack has been updated!\nPlease rejoin the server to get the most up to date pack.";
     public String packUpdateMessageHoverMessage = "{longDescription}";
-    @Comment("The port that the *webserver* binds to. *NOT* the same as your minecraft servers port")
-    public int webServerBindPort = 8080;
-    @Comment("Usually shouldn't need changing")
-    public String webServerBindIp = "0.0.0.0";
-    @Comment("Usually shouldn't need changing")
-    public String webhookPath = "/webhook";
     @Comment("The public ip of your server (123.45.67.89 or play.coolserver.net)")
     public String serverPublicIp = null;
     @Comment("Should be \"refs/heads/[YOUR BRANCH NAME HERE]\"")
@@ -64,11 +59,11 @@ public class ModConfig extends Config {
         }
     }
 
-    public String getPackUrl(String outputFileName) {
+    public String getPackUrl(String outputFileName, MinecraftServer server) {
         return String.format(
                 "http://%s:%s/%s",
                 serverPublicIp,
-                webServerBindPort,
+                server.getServerPort(),
                 outputFileName
         );
     }

@@ -154,7 +154,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         // Generate placeholder map
         final Map<String, String> placeholders = new HashMap<>();
         if (gitHandler.getCommitProperties() != null) placeholders.putAll(gitHandler.getCommitProperties().toPlaceholdersMap());
-        placeholders.put("{downloadUrl}", config.getPackUrl(packHandler.getOutputPackName()));
+        placeholders.put("{downloadUrl}", config.getPackUrl(packHandler.getOutputPackName(), minecraftServer));
         placeholders.put("{updateType}", updateType.name());
         placeholders.put("{wasUpdated}", String.valueOf(wasUpdated));
         LOGGER.info("Placeholders: {}", placeholders);
