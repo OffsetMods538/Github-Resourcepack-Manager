@@ -33,7 +33,6 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
     public static final Path NEW_CONFIG_FILE_PATH = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json");
     public static final Path RESOURCEPACK_FOLDER = FabricLoader.getInstance().getGameDir().resolve("resourcepack");
     public static final Path REPO_ROOT_FOLDER = RESOURCEPACK_FOLDER.resolve("git");
-    public static final Path PACKS_FOLDER = REPO_ROOT_FOLDER.resolve("packs");
     public static final Path OUTPUT_FOLDER = RESOURCEPACK_FOLDER.resolve("output");
     public static final Pattern PACK_NAME_PATTERN = Pattern.compile("\\d+-");
     public static final UUID PACK_UUID = UUID.fromString("60ab8dc7-08d1-4f5f-a9a8-9a01d048b7b9");

@@ -16,8 +16,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
 
 public class ModConfig extends Config {
     @Comment("!!!!Please check the wiki for how to set up the mod. It is linked on both the Modrinth and GitHub pages!!!!")
@@ -40,6 +40,8 @@ public class ModConfig extends Config {
     public String githubToken = null;
     public String webhookUrl = null;
     public String webhookBody = null;
+    @Comment("Where the mod will search for resource packs in the cloned repository")
+    public String resourcePackRoot = "";
 
     @Override
     protected String getName() {
@@ -83,5 +85,12 @@ public class ModConfig extends Config {
     public Path getWebhookBody() {
         if (webhookBody == null) return null;
         return getFilePath().getParent().resolve(webhookBody);
+    }
+
+    public Path getResourcePackRoot() {
+        return REPO_ROOT_FOLDER.resolve(config.resourcePackRoot.startsWith("/") ? config.resourcePackRoot.substring(1) : config.resourcePackRoot);
+    }
+    public Path getPacksDir() {
+        return getResourcePackRoot().resolve("packs");
     }
 }

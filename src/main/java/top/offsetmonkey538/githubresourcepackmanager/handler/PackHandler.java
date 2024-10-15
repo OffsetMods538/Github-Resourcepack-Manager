@@ -104,7 +104,7 @@ public class PackHandler {
         // Gather source packs
         final List<File> sourcePacks;
 
-        if (!isMultiPack) sourcePacks = List.of(REPO_ROOT_FOLDER.toFile());
+        if (!isMultiPack) sourcePacks = List.of(config.getResourcePackRoot().toFile());
         else sourcePacks = gatherSourcePacks();
 
         // Extract source packs
@@ -131,7 +131,7 @@ public class PackHandler {
 
     private List<File> gatherSourcePacks() throws GithubResourcepackManagerException {
         // Gather resource packs
-        final File[] sourcePacksArray = PACKS_FOLDER.toFile().listFiles();
+        final File[] sourcePacksArray = config.getPacksDir().toFile().listFiles();
         if (sourcePacksArray == null) throw new GithubResourcepackManagerException("Repository contains empty 'packs' folder!");
 
         // Return source packs sorted in correct order.
@@ -148,18 +148,18 @@ public class PackHandler {
      */
     private boolean getPackType() throws GithubResourcepackManagerException {
         LOGGER.info("Checking for 'pack.mcmeta' in repository root...");
-        final boolean hasPackMcmeta = REPO_ROOT_FOLDER.resolve("pack.mcmeta").toFile().exists();
+        final boolean hasPackMcmeta = config.getResourcePackRoot().resolve("pack.mcmeta").toFile().exists();
         LOGGER.info("{}Found!", hasPackMcmeta ? "" : "Not ");
 
         LOGGER.info("Checking for 'packs' directory in repository root...");
-        final boolean hasPacksFolder = PACKS_FOLDER.toFile().exists() && PACKS_FOLDER.toFile().isDirectory();
+        final boolean hasPacksFolder = config.getPacksDir().toFile().exists() && config.getPacksDir().toFile().isDirectory();
         LOGGER.info("{}Found!", hasPacksFolder ? "" : "Not ");
 
         if (hasPackMcmeta && hasPacksFolder) {
-            throw new GithubResourcepackManagerException("Found both 'pack.mcmeta' and the 'packs' directory in repository root!");
+            throw new GithubResourcepackManagerException("Found both 'pack.mcmeta' and the 'packs' directory in repository root '%s'!", config.getPacksDir().toAbsolutePath());
         }
         if (!hasPackMcmeta && !hasPacksFolder) {
-            throw new GithubResourcepackManagerException("Found neither 'pack.mcmeta' nor the 'packs' directory in repository root!");
+            throw new GithubResourcepackManagerException("Found neither 'pack.mcmeta' nor the 'packs' directory in repository root '%s'!", config.getPacksDir().toAbsolutePath());
         }
 
 
