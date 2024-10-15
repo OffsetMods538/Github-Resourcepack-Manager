@@ -21,11 +21,6 @@ public final class WebhookHttpHandler {
     private static final Gson GSON = new GsonBuilder().create();
 
     public static void handleRequest(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
-        if (!request.uri().endsWith(config.webhookPath)) {
-            LOGGER.warn(String.format("Bad request: POST request made to '%s', which doesn't end with webhook path '%s'", request.uri(), config.webhookPath));
-            HttpHandler.sendError(ctx, BAD_REQUEST);
-            return;
-        }
         if (!"application/json".contentEquals(HttpUtil.getMimeType(request))) {
             LOGGER.warn(String.format("Bad request: POST request made with incorrect mime type '%s', expected 'application/json'", HttpUtil.getMimeType(request)));
             HttpHandler.sendError(ctx, BAD_REQUEST);
