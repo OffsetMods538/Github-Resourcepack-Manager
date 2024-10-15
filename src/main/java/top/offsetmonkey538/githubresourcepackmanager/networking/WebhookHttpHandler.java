@@ -31,11 +31,23 @@ public final class WebhookHttpHandler {
         // Get the event header
         final String githubEvent = request.headers().get("x-github-event");
 
-        if (!githubEvent.contains("push")) return;
+        if (githubEvent == null || githubEvent.isBlank()) {
+            HttpHandler.sendError(ctx, BAD_REQUEST, "Request headers don't contain 'x-github-event'");
+            return;
+        }
+
+        if (!githubEvent.contains("push")) {
+            HttpHandler.sendError(ctx, BAD_REQUEST, "Request isn't for push event");
+            return;
+        }
         LOGGER.debug("Received github push event");
 
         // Get payload
         final JsonObject payload = GSON.fromJson(request.content().toString(StandardCharsets.UTF_8), JsonObject.class);
+        if (payload == null) {
+            HttpHandler.sendError(ctx, BAD_REQUEST, "Request doesn't contain content");
+            return;
+        }
 
         // Respond with "yeh bro everythins alright"
         ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, OK)).addListener(ChannelFutureListener.CLOSE);
