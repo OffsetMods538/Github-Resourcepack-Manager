@@ -55,7 +55,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
             LOGGER.error("Failed to create folder structure!", e);
         }
 
-        HttpHandlerRegistry.INSTANCE.register("gh-rp-mg", new MainHttpHandler());
+        HttpHandlerRegistry.INSTANCE.register("gh-rp-manager", new MainHttpHandler());
 
         ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer -> {
             GithubResourcepackManager.minecraftServer = (MinecraftDedicatedServer) minecraftServer;
