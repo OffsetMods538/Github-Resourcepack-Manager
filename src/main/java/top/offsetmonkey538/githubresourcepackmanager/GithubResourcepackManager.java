@@ -6,8 +6,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
+import net.minecraft.text.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.command.GhRpManagerCommand;
@@ -227,10 +226,33 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
         for (int lineNumber = 0; lineNumber < splitMessage.length; lineNumber++) {
             final String currentLineString = StringUtils.replacePlaceholders(splitMessage[lineNumber], placeholders).replace("\\n", "\n");
-            final MutableText currentLine;
+            final MutableText currentLine = Text.empty();
             try {
-                currentLine = TextUtils.INSTANCE.getStyledText(currentLineString);
-                if (hoverEvent != null) currentLine.setStyle(currentLine.getStyle().withHoverEvent(hoverEvent));
+                for (Text currentLineSibling : TextUtils.INSTANCE.getStyledText(currentLineString).getSiblings()) {
+                    final MutableText sibling = currentLineSibling.copy();
+
+                    if (hoverEvent != null) sibling.setStyle(sibling.getStyle().withHoverEvent(hoverEvent));
+
+                    final String siblingString = sibling.getString();
+                    if (!siblingString.contains("{packUpdateCommand}")) {
+                        currentLine.append(sibling);
+                        continue;
+                    }
+
+                    final Style siblingStyle = sibling.getStyle();
+                    final String[] splitSibling = siblingString.split("\\{packUpdateCommand}");
+
+                    if (splitSibling.length > 0)
+                        currentLine.append(Text.literal(splitSibling[0]).setStyle(siblingStyle));
+
+                    currentLine.append(Text.literal("[HERE]").setStyle(siblingStyle
+                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("Click to update pack")))
+                            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/gh-rp-manager request-pack"))
+                    ));
+
+                    if (splitSibling.length > 1)
+                        currentLine.append(Text.literal(splitSibling[1]).setStyle(siblingStyle));
+                }
             } catch (Exception e) {
                 throw new GithubResourcepackManagerException("Failed to style update message at line number '%s'!", e, lineNumber);
             }
