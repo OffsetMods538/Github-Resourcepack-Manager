@@ -1,6 +1,7 @@
 package top.offsetmonkey538.githubresourcepackmanager;
 
 import net.fabricmc.api.DedicatedServerModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.PlayerManager;
@@ -9,6 +10,7 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.offsetmonkey538.githubresourcepackmanager.command.GhRpManagerCommand;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.handler.GitHandler;
@@ -35,6 +37,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
     public static final Path PACKS_FOLDER = REPO_ROOT_FOLDER.resolve("packs");
     public static final Path OUTPUT_FOLDER = RESOURCEPACK_FOLDER.resolve("output");
     public static final Pattern PACK_NAME_PATTERN = Pattern.compile("\\d+-");
+    public static final UUID PACK_UUID = UUID.fromString("60ab8dc7-08d1-4f5f-a9a8-9a01d048b7b9");
 
 
     public static ModConfig config;
@@ -47,6 +50,8 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
     @Override
     public void onInitializeServer() {
+        CommandRegistrationCallback.EVENT.register(GhRpManagerCommand::register);
+
         loadConfig();
 
         try {
