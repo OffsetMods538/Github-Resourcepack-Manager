@@ -21,7 +21,7 @@ import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackMa
 
 public class ModConfig extends Config {
     @Comment("!!!!Please check the wiki for how to set up the mod. It is linked on both the Modrinth and GitHub pages!!!!")
-    public String packUpdateMessage = "Server resourcepack has been updated!\nPlease rejoin the server to get the most up to date pack.";
+    public String packUpdateMessage = "Server resourcepack has been updated!\nPlease click {packUpdateCommand} to get the most up to date pack.";
     public String packUpdateMessageHoverMessage = "{longDescription}";
     @Comment("The port that the *webserver* binds to. *NOT* the same as your minecraft servers port")
     public int webServerBindPort = 8080;

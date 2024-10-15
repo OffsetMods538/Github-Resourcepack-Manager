@@ -16,6 +16,7 @@ import java.util.Properties;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.PACK_UUID;
 
 public final class ServerPropertiesUtils {
     private ServerPropertiesUtils() {
@@ -47,6 +48,7 @@ public final class ServerPropertiesUtils {
         propertiesLoader.apply(properties -> {
             final Properties serverProperties = ((AbstractPropertiesHandlerAccessor) properties).getProperties();
 
+            serverProperties.setProperty("resource-pack-id", PACK_UUID.toString());
             serverProperties.setProperty("resource-pack", resourcePackUrl);
             serverProperties.setProperty("resource-pack-sha1", resourcePackSha1);
 
