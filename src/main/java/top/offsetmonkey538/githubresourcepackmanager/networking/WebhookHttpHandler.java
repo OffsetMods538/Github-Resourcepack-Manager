@@ -56,7 +56,7 @@ public final class WebhookHttpHandler {
         final String ref = payload.get("ref").getAsString();
         LOGGER.debug("Ref: {}", ref);
 
-        if (!config.githubRef.equals(ref)) return;
+        if (!config.getGithubRef().equals(ref)) return;
 
         LOGGER.debug("Tracked branch has been updated, updating local pack...");
         GithubResourcepackManager.updatePack(true);

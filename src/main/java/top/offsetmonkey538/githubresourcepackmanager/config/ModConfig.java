@@ -26,8 +26,8 @@ public class ModConfig extends Config {
     public String packUpdateMessageHoverMessage = "{longDescription}";
     @Comment("The public ip of your server (123.45.67.89 or play.coolserver.net)")
     public String serverPublicIp = null;
-    @Comment("Should be \"refs/heads/[YOUR BRANCH NAME HERE]\"")
-    public String githubRef = "refs/heads/master";
+    @Comment("Should be \"[YOUR BRANCH NAME HERE]\"")
+    public String githubBranch = "master";
     public String githubUrl = null;
     public boolean isPrivate = false;
     public String githubUsername = null;
@@ -87,5 +87,9 @@ public class ModConfig extends Config {
     }
     public Path getPacksDir() {
         return getResourcePackRoot().resolve("packs");
+    }
+
+    public String getGithubRef() {
+        return "refs/heads/" + githubBranch;
     }
 }

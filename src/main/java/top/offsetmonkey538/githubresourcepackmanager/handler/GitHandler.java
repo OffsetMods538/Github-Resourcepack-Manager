@@ -80,7 +80,7 @@ public class GitHandler {
                     .setCredentialsProvider(credentialsProvider)
                     .setContentMergeStrategy(ContentMergeStrategy.THEIRS)
                     .setStrategy(MergeStrategy.THEIRS)
-                    .setRemoteBranchName(config.githubRef)
+                    .setRemoteBranchName(config.getGithubRef())
                     .call();
 
             // Handle errors
@@ -120,7 +120,7 @@ public class GitHandler {
             Git git = Git.cloneRepository()
                     .setURI(config.githubUrl)
                     .setDirectory(REPO_ROOT_FOLDER.toFile())
-                    .setBranch(config.githubRef)
+                    .setBranch(config.getGithubRef())
                     .setCredentialsProvider(credentialsProvider)
                     .call();
             git.close();
