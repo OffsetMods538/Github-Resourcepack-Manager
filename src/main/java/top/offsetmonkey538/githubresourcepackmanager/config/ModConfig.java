@@ -10,6 +10,7 @@ import top.offsetmonkey538.githubresourcepackmanager.config.webhook.DefaultWebho
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.BasicMessage;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.EmbedMessage;
 import top.offsetmonkey538.monkeylib538.config.Config;
+import top.offsetmonkey538.monkeylib538.config.Datafixer;
 
 import java.io.IOException;
 import java.net.URI;
@@ -27,20 +28,37 @@ public class ModConfig extends Config {
     @Comment("The public ip of your server (123.45.67.89 or play.coolserver.net)")
     public String serverPublicIp = null;
     @Comment("Should be \"[YOUR BRANCH NAME HERE]\"")
-    public String githubBranch = "master";
-    public String githubUrl = null;
-    public boolean isPrivate = false;
+    public String branch = "master";
+    public String repoUrl = null;
+    @Comment("Where the mod will search for resource packs in the cloned repository")
+    public String resourcePackRoot = "";
+    public boolean isRepoPrivate = false;
     public String githubUsername = null;
     @Comment("PLEASE DON'T SHARE THIS WITH ANYONE EVER")
     public String githubToken = null;
     public String webhookUrl = null;
     public String webhookBody = null;
-    @Comment("Where the mod will search for resource packs in the cloned repository")
-    public String resourcePackRoot = "";
 
     @Override
     protected String getName() {
         return MOD_ID + "/" + MOD_ID;
+    }
+
+    @Override
+    protected int getConfigVersion() {
+        return 1;
+    }
+
+    @Override
+    protected List<Datafixer> getDatafixers() {
+        return List.of(
+                (original, jankson) -> {
+                    // 0 -> 1
+                    original.put("branch", jankson.toJson(jankson.getMarshaller().marshall(String.class, original.get("githubRef")).replace("refs/heads/", "")));
+                    original.put("repoUrl", original.get("githubUrl"));
+                    original.put("isRepoPrivate", original.get("isPrivate"));
+                }
+        );
     }
 
     public void createDefaultWebhooks() {
@@ -90,6 +108,6 @@ public class ModConfig extends Config {
     }
 
     public String getGithubRef() {
-        return "refs/heads/" + githubBranch;
+        return "refs/heads/" + branch;
     }
 }

@@ -67,7 +67,7 @@ public class GitHandler {
     private static void updateRepository(boolean retry) throws GithubResourcepackManagerException {
         // Create credentials provider if repository is private
         CredentialsProvider credentialsProvider = null;
-        if (config.isPrivate)
+        if (config.isRepoPrivate)
             credentialsProvider = new UsernamePasswordCredentialsProvider(config.githubUsername, config.githubToken);
 
         // If the repo folder doesn't exist, clone the repository.
@@ -118,7 +118,7 @@ public class GitHandler {
     private static void cloneRepository(CredentialsProvider credentialsProvider) throws GithubResourcepackManagerException {
         try {
             Git git = Git.cloneRepository()
-                    .setURI(config.githubUrl)
+                    .setURI(config.repoUrl)
                     .setDirectory(REPO_ROOT_FOLDER.toFile())
                     .setBranch(config.getGithubRef())
                     .setCredentialsProvider(credentialsProvider)
