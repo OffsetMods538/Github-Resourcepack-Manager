@@ -37,6 +37,10 @@ loom {
 		server {
 			runDir "run/server"
 		}
+
+		client {
+			runDir "run/client"
+		}
 	}
 }
 
