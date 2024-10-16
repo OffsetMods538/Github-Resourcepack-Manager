@@ -31,7 +31,7 @@ public final class ServerPropertiesUtils {
         final ServerPropertiesLoader propertiesLoader = ((MinecraftDedicatedServerAccessor) server).getPropertiesLoader();
 
         final String resourcePackUrl = String.format(
-                "http://%s:%s/"+ URI + "/%s",
+                "http://%s:%s/"+ MOD_URI + "/%s",
                 config.serverPublicIp,
                 propertiesLoader.getPropertiesHandler().serverPort,
                 packHandler.getOutputPackName()

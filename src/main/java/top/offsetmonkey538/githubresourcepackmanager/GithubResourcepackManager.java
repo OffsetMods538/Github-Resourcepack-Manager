@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 
 public class GithubResourcepackManager implements DedicatedServerModInitializer {
     public static final String MOD_ID = "github-resourcepack-manager";
-    public static final String URI = "gh-rp-manager";
+    public static final String MOD_URI = "gh-rp-manager";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public static final Path OLD_CONFIG_FILE_PATH = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".json");
@@ -59,7 +59,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
             LOGGER.error("Failed to create folder structure!", e);
         }
 
-        HttpHandlerRegistry.INSTANCE.register(URI, new MainHttpHandler());
+        HttpHandlerRegistry.INSTANCE.register(MOD_URI, new MainHttpHandler());
 
         ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer -> {
             GithubResourcepackManager.minecraftServer = (MinecraftDedicatedServer) minecraftServer;
