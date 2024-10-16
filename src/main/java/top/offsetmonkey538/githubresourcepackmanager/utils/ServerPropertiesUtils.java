@@ -14,9 +14,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
 
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.PACK_UUID;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
 
 public final class ServerPropertiesUtils {
     private ServerPropertiesUtils() {
@@ -33,7 +31,7 @@ public final class ServerPropertiesUtils {
         final ServerPropertiesLoader propertiesLoader = ((MinecraftDedicatedServerAccessor) server).getPropertiesLoader();
 
         final String resourcePackUrl = String.format(
-                "http://%s:%s/gh-rp-mg/%s",
+                "http://%s:%s/"+ URI + "/%s",
                 config.serverPublicIp,
                 propertiesLoader.getPropertiesHandler().serverPort,
                 packHandler.getOutputPackName()
