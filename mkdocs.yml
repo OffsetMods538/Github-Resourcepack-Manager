@@ -69,3 +69,4 @@ nav:
   - Reference:
       - Pack Update Message Format: reference/update-message.md
       - Pack Priority: reference/priority.md
+      - Discord Webhook: reference/discord-webhook.md

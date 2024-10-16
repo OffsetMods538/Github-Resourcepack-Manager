@@ -6,8 +6,8 @@ On the sidebar you need to find and click on `Webhooks`.
 Here click on the `Add webhook` button.
 
 Now that you're on the webhook creation page, you'll need to fill in some values.  
-For `Payload URL` put `http://[YOUR_SERVER_IP]:[THE_MOD_PORT]/[THE_WEBHOOK_PATH]`.  
-For example if your server ip is `123.45.67.89`, the port `8080` and webhook path `/webhook`, the url would be `http://123.45.67.89:8080/webhook`.
+For `Payload URL` put `http://[YOUR_SERVER_IP]:[YOUR_SERVER_PORT]/gh-rp-manager`.  
+For example if your server ip is `123.45.67.89`, the port `25565`, the url would be `http://123.45.67.89:25565/gh-rp-manager`.
 
 Then set `Content type` to `application/json`.
 

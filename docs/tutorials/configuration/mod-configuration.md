@@ -1,25 +1,27 @@
 Once you have the mod and its dependencies installed, you can launch the server once. It should crash telling you to `Fill in the config file`.  
 Let's do that!
 
-It should have generated the config file at `serverLocation/config/github-resourcepack-manager.json` and it should look something like this:
+It should have generated the config file at `serverLocation/config/github-resourcepack-manager/github-resourcepack-manager.json` and it should look something like this:
 ```json
 {
-	"packUpdateMessage": "Server resourcepack has been updated!\nPlease rejoin the server to get the most up to date pack.",
-	// The port that the *webserver* binds to. *NOT* the same as your minecraft servers port
-	"webServerBindPort": 8080,
-	// Usually shouldn't need changing
-	"webServerBindIp": "0.0.0.0",
-	// Usually shouldn't need changing
-	"webhookPath": "/webhook",
+	// !!!!Please check the wiki for how to set up the mod. It is linked on both the Modrinth and GitHub pages!!!!
+	"packUpdateMessage": "Server resourcepack has been updated!\nPlease click {packUpdateCommand} to get the most up to date pack.",
+	"packUpdateMessageHoverMessage": "{longDescription}",
 	// The public ip of your server (123.45.67.89 or play.coolserver.net)
 	"serverPublicIp": null,
-	// Should be "refs/heads/[YOUR BRANCH NAME HERE]"
-	"githubRef": "refs/heads/master",
-	"githubUrl": null,
-	"isPrivate": false,
+	// Should be "[YOUR BRANCH NAME HERE]"
+	"branch": "master",
+	"repoUrl": null,
+	// Where the mod will search for resource packs in the cloned repository
+	"resourcePackRoot": "",
+	"isRepoPrivate": false,
 	"githubUsername": null,
 	// PLEASE DON'T SHARE THIS WITH ANYONE EVER
-	"githubToken": null
+	"githubToken": null,
+	"webhookUrl": null,
+	"webhookBody": null,
+	// !!!!! DO NOT MODIFY THIS VALUE !!!!
+	"!!!version": 1
 }
 ```
 
@@ -63,30 +65,13 @@ In most cases using `null` for a string will result in an unexpected error, but 
 This message will be displayed after an update to the resource pack.  
 It can contain color codes (including hex), new lines and information about the commit, which you can read more about [here](../../reference/update-message.md).
 
-### webServerBindPort
-!!! info ""
-    Type: `Integer`  
-    Default Value: `8080`  
-    May be null: `no`
-This is the port that the webserver binds to.  
-When self-hosting, port-forward this port. When using a Minecraft host, ask them to open up another port and edit this value.
-
-### webServerBindIp
+### packUpdateMessageHoverMessage
 !!! info ""
     Type: `String`  
-    Default Value: `"0.0.0.0"`  
-    May be null: `no`
-This is the ip that the webserver binds to.  
-The default value just tells it to listen on all addresses, so it should be fine.
-
-### webhookPath
-!!! info ""
-    Type: `String`  
-    Default Value: `"/webhook"`  
-    May be null: `no`
-This is the path where the webhook is hosted.  
-With the default value it would be at `coolServer.net:[webServerBindPort]/webhook`.  
-This should not need to be changed.
+    Default Value: `"{longDescription}"`  
+    May be null: `yes`
+This message will be displayed when a player hovers over the pack update message in chat.  
+It may *not* contain color codes, but can contain new lines and information about the commit, which you can read more about [here](../../reference/update-message.md).
 
 ### serverPublicIp
 !!! info ""
@@ -96,16 +81,16 @@ This should not need to be changed.
 This is your servers public ip. This is sent to the clients, so they know where to download the pack from.  
 For example: `"1283.45.67.89""` or `"play.offsetmonkey538.top"`
 
-### githubRef
+### branch
 !!! info ""
     Type: `String`  
-    Default Value: `"refs/heads/master"`  
+    Default Value: `"master"`  
     May be null: `no`
-This is the git branch/ref that the mod will download the resource pack from.  
+This is the git branch that the mod will download the resource pack from.  
 Here's an image showing (in red) where the name of your branch is located:  
 ![Image showing where to find the name of your branch](../../images/repository-branch-location.png)
 
-### githubUrl
+### repoUrl
 !!! info ""
     Type: `String`  
     Default Value: `null`  
@@ -113,7 +98,15 @@ Here's an image showing (in red) where the name of your branch is located:
 This is the url to your GitHub repository.  
 For example: `"https://github.com/OffsetMonkey538/CoolPackYay"`
 
-### isPrivate
+### resourcePackRoot
+!!! info ""
+    Type: `String`  
+    Default Value: `""`  
+    May be null: `no`
+This is where in the repo the mod will search for the pack.mcmeta or packs directory.  
+Only change if the resource pack isn't stored in the root of the repository.
+
+### isRepoPrivate
 !!! info ""
     Type: `Boolean`  
     Default Value: `false`  
@@ -135,9 +128,28 @@ If your GitHub repository is private, you need to set this to your GitHub userna
     Default Value: `null`  
     May be null: `yes`
 The token the mod provides for credentials when downloading a private pack.  
-If your GitHub repository is private, you'll need to generate a token and paste it here.
+If your GitHub repository is private, you'll need to generate a token and paste it here.  
+See [here](#generating-the-token-for-private-repositories) for how to generate a token. 
 
-#### Generating the token
+### webhookUrl
+!!! info ""
+    Type: `String`  
+    Default Value: `null`  
+    May be null: `yes`
+Webhook triggered after a pack update is finished.  
+For example sending a message in Discord.  
+More info [here](../../reference/discord-webhook.md).
+
+### webhookBody
+!!! info ""
+    Type: `String`  
+    Default Value: `null`  
+    May be null: `yes`
+Webhook triggered after a pack update is finished.  
+For example sending a message in Discord.  
+More info [here](../../reference/discord-webhook.md).
+
+#### Generating the token for private repositories
 To generate a token, go [here](https://github.com/settings/tokens?type=beta) and click the `Generate new token` button.  
 This should bring you to the token generation page. Here you'll need to give it a name and, if you want, modify the expiration date and description.
 
