@@ -3,7 +3,7 @@
 If you have any problems or questions, feel free to reach out to me on Discord by clicking [here](https://discord.offsetmonkey538.top) or the Discord icon at the bottom of your screen :D
 
 ## Why?
-GitHub Resourcepack Manager is a mod meant **only** for **dedicated servers**!
+GitHub Resourcepack Manager is a mod meant **only** for **servers**, this isn't in any way useful for **singleplayer** or opening to LAN!
 
 I saw in one of XisumaVoid's videos ([here](https://youtu.be/cUfTlbO2Tgg?si=yD_3v4F9irS6VCGA&t=206)) that they have a mod on HermitCraft which allows them to update their resource pack through GitHub.  
 I tried searching for it on the internet, but couldn't find it, which is why I created this.
