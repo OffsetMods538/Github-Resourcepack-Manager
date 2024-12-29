@@ -36,9 +36,13 @@ jobs:
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
           VERSION_NAME: ${{ github.event.release.name }}
+          VERSION_IS_PRERELEASE: ${{ github.event.release.prerelease }}
           VERSION_CHANGELOG: ${{ github.event.release.body }}
+
+      - name: Delete common libs
+        run: rm -r ./common/build/libs
 
       - name: Upload to GitHub
         uses: softprops/action-gh-release@v2
         with:
-          files: build/libs/*.jar
+          files: ./*/build/libs/*.jar
