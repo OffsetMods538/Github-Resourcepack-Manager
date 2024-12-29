@@ -1,0 +1,128 @@
+import dex.plugins.outlet.v2.util.ReleaseType
+
+plugins {
+    id 'fabric-loom' version '1.9-SNAPSHOT'
+    id 'io.github.dexman545.outlet' version '1.6.1'
+}
+
+outlet {
+    maintainPropertiesFile = System.getenv("DISABLE_PROPERTIES_UPDATE") == null
+    mcVersionRange = rootProject.supported_minecraft_versions
+    allowedReleaseTypes = Set.of(ReleaseType.RELEASE)
+    propertiesData = [
+            'yarn_version': outlet.yarnVersion(rootProject.minecraft_version),
+            'loader_version': outlet.loaderVersion(),
+            'fapi_version': outlet.fapiVersion(rootProject.minecraft_version)
+    ]
+}
+
+
+loom {
+    mods {
+        modid {
+            sourceSet sourceSets.main
+        }
+    }
+
+    accessWidenerPath = file("src/main/resources/github-resourcepack-manager.accesswidener")
+
+    runs {
+        server {
+            runDir "run/server"
+        }
+
+        client {
+            runDir "run/client"
+        }
+    }
+}
+
+// https://gist.github.com/maityyy/3dbcd558d58a6412c3a2a38c72706e8e
+afterEvaluate {
+    loom.runs.configureEach {
+        vmArg "-javaagent:${project.configurations.compileClasspath.find{ it.name.contains("sponge-mixin") }}"
+        if (System.getenv("DISABLE_PROPERTIES_UPDATE") == null) vmArg "-Ddevauth.enabled=true"
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {
+        name = "DevAuth"
+        url = "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1"
+        content {
+            includeGroup "me.djtheredstoner"
+        }
+    }
+    maven {
+        name = "OffsetMods538"
+        url = "https://maven.offsetmonkey538.top/releases"
+        content {
+            includeGroup "top.offsetmonkey538.monkeylib538"
+            includeGroup "top.offsetmonkey538.meshlib"
+        }
+    }
+}
+
+configurations {
+    includeModImplementation
+
+    include.extendsFrom           includeModImplementation
+    modImplementation.extendsFrom includeModImplementation
+
+
+    includeImplementation
+
+    include.extendsFrom        includeImplementation
+    implementation.extendsFrom includeImplementation
+
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    api.extendsFrom common
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_version}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    modRuntimeOnly "me.djtheredstoner:DevAuth-fabric:${devauth_version}"
+
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fapi_version}"
+
+    modImplementation "top.offsetmonkey538.monkeylib538:monkeylib538:${project.monkeylib538_version}"
+
+    includeModImplementation "top.offsetmonkey538.meshlib:mesh-lib-fabric:${rootProject.meshlib_version}"
+
+    include project(path: ":common", configuration: "shadow")
+    common project(":common")
+}
+
+processResources {
+    final Map properties = Map<String, String>.of(
+            "modVersion",                 project.mod_version,
+            "supportedMinecraftVersions", project.supported_minecraft_versions,
+            "monkeylib538Version",        project.monkeylib538_version
+    )
+
+    inputs.properties(properties)
+
+    filesMatching("fabric.mod.json") {
+        expand(properties)
+    }
+
+    exclude ".cache/**"
+}
+
+modrinth {
+    loaders = ["fabric"]
+    uploadFile = remapJar.archiveFile
+
+    dependencies {
+        required.project "monkeylib538"
+        required.project "fabric-api"
+    }
+}

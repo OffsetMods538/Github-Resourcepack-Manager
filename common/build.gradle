@@ -1,0 +1,12 @@
+plugins {
+    id 'com.gradleup.shadow' version '9.0.0-beta4'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"
+}
+tasks.build.dependsOn(shadowJar)

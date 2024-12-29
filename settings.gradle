@@ -8,3 +8,10 @@ pluginManagement {
 		gradlePluginPortal()
 	}
 }
+
+rootProject.name = "github-resourcepack-manager"
+
+
+include "common"
+
+include "fabric"
