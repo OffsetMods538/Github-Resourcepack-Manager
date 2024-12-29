@@ -1,24 +1,18 @@
 package top.offsetmonkey538.githubresourcepackmanager;
 
-import net.fabricmc.api.DedicatedServerModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.dedicated.MinecraftDedicatedServer;
-import net.minecraft.text.*;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import top.offsetmonkey538.githubresourcepackmanager.command.GhRpManagerCommand;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.handler.GitHandler;
 import top.offsetmonkey538.githubresourcepackmanager.handler.PackHandler;
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
+import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformCommand;
+import top.offsetmonkey538.githubresourcepackmanager.config.ConfigManager;
+import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
+import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformServerProperties;
+import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformText;
 import top.offsetmonkey538.githubresourcepackmanager.utils.*;
 import top.offsetmonkey538.meshlib.api.HttpHandlerRegistry;
-import top.offsetmonkey538.monkeylib538.config.ConfigManager;
-import top.offsetmonkey538.monkeylib538.utils.TextUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,14 +20,16 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class GithubResourcepackManager implements DedicatedServerModInitializer {
+public final class GithubResourcepackManager {
+    private GithubResourcepackManager() {
+
+    }
+
     public static final String MOD_ID = "github-resourcepack-manager";
     public static final String MOD_URI = "gh-rp-manager";
-    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    public static final Logger LOGGER = PlatformMain.INSTANCE.getLogger();
 
-    public static final Path OLD_CONFIG_FILE_PATH = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".json");
-    public static final Path NEW_CONFIG_FILE_PATH = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json");
-    public static final Path RESOURCEPACK_FOLDER = FabricLoader.getInstance().getGameDir().resolve("resourcepack");
+    public static final Path RESOURCEPACK_FOLDER =  PlatformMain.INSTANCE.getGameDir().resolve("resourcepack");
     public static final Path REPO_ROOT_FOLDER = RESOURCEPACK_FOLDER.resolve("git");
     public static final Path OUTPUT_FOLDER = RESOURCEPACK_FOLDER.resolve("output");
     public static final Pattern PACK_NAME_PATTERN = Pattern.compile("\\d+-");
@@ -42,16 +38,14 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
     public static ModConfig config;
 
-    public static MinecraftDedicatedServer minecraftServer;
     public static GitHandler gitHandler;
     public static PackHandler packHandler;
 
 
-    @Override
-    public void onInitializeServer() {
-        CommandRegistrationCallback.EVENT.register(GhRpManagerCommand::register);
+    public void onInitialize() {
+        PlatformCommand.INSTANCE.registerGithubRpManagerCommand();
 
-        loadConfig();
+        ConfigManager.loadConfig();
 
         try {
             createFolderStructure();
@@ -61,11 +55,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
         HttpHandlerRegistry.INSTANCE.register(MOD_URI, new MainHttpHandler());
 
-        ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer -> {
-            GithubResourcepackManager.minecraftServer = (MinecraftDedicatedServer) minecraftServer;
-
-            updatePack(false);
-        });
+        PlatformMain.INSTANCE.runOnServerStart(() -> updatePack(false));
     }
 
     private static void createFolderStructure() throws GithubResourcepackManagerException {
@@ -73,28 +63,6 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
             Files.createDirectories(OUTPUT_FOLDER);
         } catch (IOException e) {
             throw new GithubResourcepackManagerException("Failed to create directory '%s'!", OUTPUT_FOLDER);
-        }
-    }
-
-    private static void loadConfig() {
-        if (Files.exists(OLD_CONFIG_FILE_PATH)) {
-            try {
-                Files.createDirectories(NEW_CONFIG_FILE_PATH.getParent());
-                Files.move(OLD_CONFIG_FILE_PATH, NEW_CONFIG_FILE_PATH);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to move config file to new location!", e);
-            }
-        }
-
-        config = ConfigManager.init(new ModConfig(), LOGGER::error);
-        ConfigManager.save(config, LOGGER::error);
-
-        LOGGER.info("Writing default webhook bodies");
-        config.createDefaultWebhooks();
-
-        if (config.serverPublicIp == null || config.repoUrl == null || (config.isRepoPrivate && (config.githubUsername == null || config.githubToken == null))) {
-            LOGGER.error("Please fill in the config file!");
-            throw new RuntimeException("Please fill in the config file!");
         }
     }
 
@@ -150,7 +118,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
 
         // Update server.properties file.
         try {
-            ServerPropertiesUtils.updatePackProperties(minecraftServer, packHandler);
+            ServerPropertiesUtils.updatePackProperties(packHandler);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to update server.properties file!", e);
         }
@@ -158,7 +126,7 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         // Generate placeholder map
         final Map<String, String> placeholders = new HashMap<>();
         if (gitHandler.getCommitProperties() != null) placeholders.putAll(gitHandler.getCommitProperties().toPlaceholdersMap());
-        placeholders.put("{downloadUrl}", config.getPackUrl(packHandler.getOutputPackName(), minecraftServer));
+        placeholders.put("{downloadUrl}", config.getPackUrl(packHandler.getOutputPackName()));
         placeholders.put("{updateType}", updateType.name());
         placeholders.put("{wasUpdated}", String.valueOf(wasUpdated));
         LOGGER.info("Placeholders: {}", placeholders);
@@ -205,63 +173,11 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
             return;
         }
 
-        final PlayerManager playerManager = minecraftServer.getPlayerManager();
-        if (playerManager == null) return;
-
-        String message = config.packUpdateMessage;
-        final String[] splitMessage = message.split("\n");
-
-        final HoverEvent hoverEvent;
-        try {
-            hoverEvent = config.packUpdateMessageHoverMessage == null ? null : new HoverEvent(
-                    HoverEvent.Action.SHOW_TEXT,
-                    TextUtils.INSTANCE.getStyledText(
-                            StringUtils.replacePlaceholders(config.packUpdateMessageHoverMessage, placeholders).replace("\\n", "\n")
-                    )
-            );
-        } catch (Exception e) {
-            throw new GithubResourcepackManagerException("Failed to style update hover message!", e);
-        }
-
-        for (int lineNumber = 0; lineNumber < splitMessage.length; lineNumber++) {
-            final String currentLineString = StringUtils.replacePlaceholders(splitMessage[lineNumber], placeholders).replace("\\n", "\n");
-            final MutableText currentLine = Text.empty();
-            try {
-                for (Text currentLineSibling : TextUtils.INSTANCE.getStyledText(currentLineString).getSiblings()) {
-                    final MutableText sibling = currentLineSibling.copy();
-
-                    if (hoverEvent != null) sibling.setStyle(sibling.getStyle().withHoverEvent(hoverEvent));
-
-                    final String siblingString = sibling.getString();
-                    if (!siblingString.contains("{packUpdateCommand}")) {
-                        currentLine.append(sibling);
-                        continue;
-                    }
-
-                    final Style siblingStyle = sibling.getStyle();
-                    final String[] splitSibling = siblingString.split("\\{packUpdateCommand}");
-
-                    if (splitSibling.length > 0)
-                        currentLine.append(Text.literal(splitSibling[0]).setStyle(siblingStyle));
-
-                    currentLine.append(Text.literal("[HERE]").setStyle(siblingStyle
-                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("Click to update pack")))
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/gh-rp-manager request-pack"))
-                    ));
-
-                    if (splitSibling.length > 1)
-                        currentLine.append(Text.literal(splitSibling[1]).setStyle(siblingStyle));
-                }
-            } catch (Exception e) {
-                throw new GithubResourcepackManagerException("Failed to style update message at line number '%s'!", e, lineNumber);
-            }
-
-            playerManager.broadcast(currentLine, false);
-        }
+        PlatformText.INSTANCE.sendUpdateMessage(placeholders);
     }
 
     private static String getOldPackName() {
-        final String oldPackUrl = ServerPropertiesUtils.getResourcePackUrl(minecraftServer);
+        final String oldPackUrl = PlatformServerProperties.INSTANCE.getResourcePackUrl();
         if (oldPackUrl == null) return null;
 
         int nameStartIndex = oldPackUrl.lastIndexOf('/');

@@ -3,14 +3,11 @@ package top.offsetmonkey538.githubresourcepackmanager.config;
 import blue.endless.jankson.Comment;
 import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonGrammar;
-import net.minecraft.server.MinecraftServer;
-import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.BasicWebhook;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.DefaultWebhookBody;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.BasicMessage;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.EmbedMessage;
-import top.offsetmonkey538.monkeylib538.config.Config;
-import top.offsetmonkey538.monkeylib538.config.Datafixer;
+import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformServerProperties;
 
 import java.io.IOException;
 import java.net.URI;
@@ -20,8 +17,9 @@ import java.util.List;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
+import static top.offsetmonkey538.githubresourcepackmanager.config.ConfigManager.CURRENT_CONFIG_FILE_PATH;
 
-public class ModConfig extends Config {
+public class ModConfig {
     @Comment("!!!!Please check the wiki for how to set up the mod. It is linked on both the Modrinth and GitHub pages!!!!")
     public String packUpdateMessage = "Server resourcepack has been updated!\nPlease click {packUpdateCommand} to get the most up to date pack.";
     public String packUpdateMessageHoverMessage = "{longDescription}";
@@ -39,18 +37,16 @@ public class ModConfig extends Config {
     public String webhookUrl = null;
     public String webhookBody = null;
 
-    @Override
+
     protected String getName() {
         return MOD_ID + "/" + MOD_ID;
     }
 
-    @Override
     protected int getConfigVersion() {
         return 1;
     }
 
-    @Override
-    protected List<Datafixer> getDatafixers() {
+    protected List<ConfigManager.Datafixer> getDatafixers() {
         return List.of(
                 (original, jankson) -> {
                     // 0 -> 1
@@ -66,7 +62,7 @@ public class ModConfig extends Config {
         final List<DefaultWebhookBody> webhookBodies = List.of(new BasicWebhook(), new BasicMessage(), new EmbedMessage());
 
         for (DefaultWebhookBody webhook : webhookBodies) {
-            final Path location = getFilePath().getParent().resolve(webhook.getName());
+            final Path location = CURRENT_CONFIG_FILE_PATH.getParent().resolve(webhook.getName());
 
             if (Files.exists(location)) continue;
 
@@ -79,25 +75,23 @@ public class ModConfig extends Config {
         }
     }
 
-    public String getPackUrl(String outputFileName, MinecraftServer server) {
+    public String getPackUrl(String outputFileName) {
         return String.format(
                 "http://%s:%s/%s",
                 serverPublicIp,
-                server.getServerPort(),
+                PlatformServerProperties.INSTANCE.getServerPort(),
                 outputFileName
         );
     }
 
-    @Nullable
     public URI getWebhookUrl() {
         if (webhookUrl == null) return null;
         return URI.create(webhookUrl);
     }
 
-    @Nullable
     public Path getWebhookBody() {
         if (webhookBody == null) return null;
-        return getFilePath().getParent().resolve(webhookBody);
+        return CURRENT_CONFIG_FILE_PATH.getParent().resolve(webhookBody);
     }
 
     public Path getResourcePackRoot() {

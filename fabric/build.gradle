@@ -95,7 +95,7 @@ dependencies {
 
     modImplementation "top.offsetmonkey538.monkeylib538:monkeylib538:${project.monkeylib538_version}"
 
-    includeModImplementation "top.offsetmonkey538.meshlib:mesh-lib-fabric:${rootProject.meshlib_version}"
+    include "top.offsetmonkey538.meshlib:mesh-lib-fabric:${rootProject.meshlib_version}"
 
     include project(path: ":common", configuration: "shadow")
     common project(":common")

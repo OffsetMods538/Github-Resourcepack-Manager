@@ -1,4 +1,4 @@
-package top.offsetmonkey538.githubresourcepackmanager.command;
+package top.offsetmonkey538.githubresourcepackmanager.platform.fabric.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandRegistryAccess;
