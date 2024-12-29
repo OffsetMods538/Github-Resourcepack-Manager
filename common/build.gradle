@@ -4,9 +4,27 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven {
+        name = "OffsetMods538"
+        url = "https://maven.offsetmonkey538.top/releases"
+        content {
+            includeGroup "top.offsetmonkey538.meshlib"
+        }
+    }
 }
 
 dependencies {
     implementation "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"
+    implementation "blue.endless:jankson:${project.jankson_version}"
+
+    shadow compileOnly("top.offsetmonkey538.meshlib:mesh-lib-api:${project.meshlib_version}")
+
+    // should be bundeled with minecraft
+    shadow compileOnly("com.google.guava:guava:${project.guava_version}")
+    shadow compileOnly("commons-io:commons-io:${project.commons_version}")
+    shadow compileOnly("com.google.code.gson:gson:${project.gson_version}")
+
+    // Jetbrains annotations for gud code
+    shadow compileOnly("org.jetbrains:annotations:24.0.0")
 }
 tasks.build.dependsOn(shadowJar)

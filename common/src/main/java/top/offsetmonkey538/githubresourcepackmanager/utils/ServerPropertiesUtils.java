@@ -1,18 +1,12 @@
 package top.offsetmonkey538.githubresourcepackmanager.utils;
 
 import com.google.common.hash.Hashing;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.dedicated.ServerPropertiesHandler;
-import net.minecraft.server.dedicated.ServerPropertiesLoader;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.handler.PackHandler;
-import top.offsetmonkey538.githubresourcepackmanager.mixin.AbstractPropertiesHandlerAccessor;
-import top.offsetmonkey538.githubresourcepackmanager.mixin.MinecraftDedicatedServerAccessor;
-import top.offsetmonkey538.githubresourcepackmanager.mixin.ServerPropertiesLoaderAccessor;
+import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformServerProperties;
 
 import java.io.IOException;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.Map;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
 
@@ -21,19 +15,11 @@ public final class ServerPropertiesUtils {
 
     }
 
-    public static String getResourcePackUrl(MinecraftServer server) {
-        final Optional<MinecraftServer.ServerResourcePackProperties> resourcePackProperties = server.getResourcePackProperties();
-
-        return resourcePackProperties.map(MinecraftServer.ServerResourcePackProperties::url).orElse(null);
-    }
-
-    public static void updatePackProperties(MinecraftServer server, PackHandler packHandler) throws GithubResourcepackManagerException {
-        final ServerPropertiesLoader propertiesLoader = ((MinecraftDedicatedServerAccessor) server).getPropertiesLoader();
-
+    public static void updatePackProperties(PackHandler packHandler) throws GithubResourcepackManagerException {
         final String resourcePackUrl = String.format(
                 "http://%s:%s/"+ MOD_URI + "/%s",
                 config.serverPublicIp,
-                propertiesLoader.getPropertiesHandler().serverPort,
+                PlatformServerProperties.INSTANCE.getServerPort(),
                 packHandler.getOutputPackName()
         );
         final String resourcePackSha1;
@@ -48,20 +34,15 @@ public final class ServerPropertiesUtils {
         LOGGER.info("Saving new resource pack properties to 'server.properties' file...");
         LOGGER.info("New resource pack url: '{}'", resourcePackUrl);
         LOGGER.info("New resource pack sha1: '{}'", resourcePackSha1);
-        propertiesLoader.apply(properties -> {
-            final Properties serverProperties = ((AbstractPropertiesHandlerAccessor) properties).getProperties();
-
-            serverProperties.setProperty("resource-pack-id", PACK_UUID.toString());
-            serverProperties.setProperty("resource-pack", resourcePackUrl);
-            serverProperties.setProperty("resource-pack-sha1", resourcePackSha1);
-
-            return properties;
-        });
+        PlatformServerProperties.INSTANCE.setProperties(Map.of(
+                "resource-pack-id", PACK_UUID.toString(),
+                "resource-pack", resourcePackUrl,
+                "resource-pack-sha1", resourcePackSha1
+        ));
         LOGGER.info("New resource pack properties saved!");
 
         LOGGER.info("Reloading properties from 'server.properties' file...");
-        final ServerPropertiesLoaderAccessor propertiesLoaderAccess = (ServerPropertiesLoaderAccessor) propertiesLoader;
-        propertiesLoaderAccess.setPropertiesHandler(ServerPropertiesHandler.load(propertiesLoaderAccess.getPath()));
+        PlatformServerProperties.INSTANCE.reload();
         LOGGER.info("Properties from 'server.properties' file reloaded!");
     }
 }
