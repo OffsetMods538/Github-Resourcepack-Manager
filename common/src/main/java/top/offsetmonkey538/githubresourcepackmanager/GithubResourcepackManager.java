@@ -42,7 +42,7 @@ public final class GithubResourcepackManager {
     public static PackHandler packHandler;
 
 
-    public void onInitialize() {
+    public static void initialize() {
         PlatformCommand.INSTANCE.registerGithubRpManagerCommand();
 
         ConfigManager.loadConfig();
@@ -118,7 +118,7 @@ public final class GithubResourcepackManager {
 
         // Update server.properties file.
         try {
-            ServerPropertiesUtils.updatePackProperties(packHandler);
+            PlatformServerProperties.INSTANCE.updatePackProperties(packHandler);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to update server.properties file!", e);
         }

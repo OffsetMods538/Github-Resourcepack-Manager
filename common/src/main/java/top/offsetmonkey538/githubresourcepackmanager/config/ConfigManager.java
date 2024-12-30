@@ -1,7 +1,9 @@
 package top.offsetmonkey538.githubresourcepackmanager.config;
 
 import blue.endless.jankson.Jankson;
+import blue.endless.jankson.JsonElement;
 import blue.endless.jankson.JsonObject;
+import blue.endless.jankson.JsonPrimitive;
 import blue.endless.jankson.api.SyntaxError;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
 
@@ -101,7 +103,27 @@ public final class ConfigManager {
     }
 
     private static void save(ModConfig config) {
+        final Jankson jankson = Jankson.builder().build();
 
+        // Convert config to json
+        final JsonElement jsonAsElement = jankson.toJson(config);
+        if (!(jsonAsElement instanceof final JsonObject json)) {
+            LOGGER.error("Could not cast '{}' to 'JsonObject'! Config will not be saved!", jsonAsElement.getClass().getName());
+            return;
+        }
+
+        // Write config version
+        json.put(VERSION_KEY, new JsonPrimitive(config.getConfigVersion()), "!!!!! DO NOT MODIFY THIS VALUE !!!!");
+
+        // Convert final json to string
+        final String result = json.toJson(true, true);
+
+        try {
+            Files.createDirectories(CURRENT_CONFIG_FILE_PATH.getParent());
+            Files.writeString(CURRENT_CONFIG_FILE_PATH, result);
+        } catch (IOException e) {
+            LOGGER.error("Config file '" + CURRENT_CONFIG_FILE_PATH + "' could not be written to!", e);
+        }
     }
 
     @FunctionalInterface
