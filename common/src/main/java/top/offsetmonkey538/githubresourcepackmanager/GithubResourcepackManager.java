@@ -20,6 +20,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
+
 public final class GithubResourcepackManager {
     private GithubResourcepackManager() {
 
@@ -27,9 +29,8 @@ public final class GithubResourcepackManager {
 
     public static final String MOD_ID = "github-resourcepack-manager";
     public static final String MOD_URI = "gh-rp-manager";
-    public static final Logger LOGGER = PlatformMain.INSTANCE.getLogger();
 
-    public static final Path RESOURCEPACK_FOLDER =  PlatformMain.INSTANCE.getGameDir().resolve("resourcepack");
+    public static final Path RESOURCEPACK_FOLDER =  PlatformMain.INSTANCE.getConfigDir().resolve(".resource-pack");
     public static final Path REPO_ROOT_FOLDER = RESOURCEPACK_FOLDER.resolve("git");
     public static final Path OUTPUT_FOLDER = RESOURCEPACK_FOLDER.resolve("output");
     public static final Pattern PACK_NAME_PATTERN = Pattern.compile("\\d+-");
@@ -113,7 +114,7 @@ public final class GithubResourcepackManager {
             LOGGER.error("Failed to generate pack!", e);
             failed = true;
         }
-        if (!failed) LOGGER.info("Pack location is '{}'!", packHandler.getOutputPackPath());
+        if (!failed) LOGGER.info("Pack location is '%s'!", packHandler.getOutputPackPath());
 
 
         // Update server.properties file.
@@ -129,7 +130,7 @@ public final class GithubResourcepackManager {
         placeholders.put("{downloadUrl}", config.getPackUrl(packHandler.getOutputPackName()));
         placeholders.put("{updateType}", updateType.name());
         placeholders.put("{wasUpdated}", String.valueOf(wasUpdated));
-        LOGGER.info("Placeholders: {}", placeholders);
+        LOGGER.info("Placeholders: %s", placeholders);
 
         // Send chat message
         try {

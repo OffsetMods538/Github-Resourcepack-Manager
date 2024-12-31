@@ -15,35 +15,26 @@ import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackMa
 
 public class FabricPlatformMain implements PlatformMain, DedicatedServerModInitializer {
     public static final FabricPlatformMain INSTANCE = (FabricPlatformMain) PlatformMain.INSTANCE;
-    private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static MinecraftServer minecraftServer;
 
     @Override
     public void onInitializeServer() {
+        FabricPlatformLogging.setLogger(LoggerFactory.getLogger(MOD_ID));
+
         GithubResourcepackManager.initialize();
 
         ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer1 -> minecraftServer = minecraftServer1);
     }
 
-    public MinecraftServer getServer() {
+    public static MinecraftServer getServer() {
         return minecraftServer;
     }
 
 
     @Override
-    public Logger getLogger() {
-        return LOGGER;
-    }
-
-    @Override
     public Path getConfigDir() {
-        return FabricLoader.getInstance().getConfigDir();
-    }
-
-    @Override
-    public Path getGameDir() {
-        return FabricLoader.getInstance().getGameDir();
+        return FabricLoader.getInstance().getConfigDir().resolve(MOD_ID);
     }
 
     @Override
