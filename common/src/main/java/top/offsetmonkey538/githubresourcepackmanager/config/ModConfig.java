@@ -18,6 +18,7 @@ import java.util.List;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
 import static top.offsetmonkey538.githubresourcepackmanager.config.ConfigManager.CURRENT_CONFIG_FILE_PATH;
+import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
 
 public class ModConfig {
     @Comment("!!!!Please check the wiki for how to set up the mod. It is linked on both the Modrinth and GitHub pages!!!!")

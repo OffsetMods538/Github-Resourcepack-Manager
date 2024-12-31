@@ -6,8 +6,8 @@ import java.io.File;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.PACK_NAME_PATTERN;
+import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
 
 public final class StringUtils {
     private StringUtils() {
@@ -51,7 +51,7 @@ public final class StringUtils {
         final Matcher matcher = PACK_NAME_PATTERN.matcher(filename);
 
         if (!matcher.find()) {
-            LOGGER.error("File '{}' doesn't start with priority!", file);
+            LOGGER.error("File '%s' doesn't start with priority!", file);
             return -1;
         }
 

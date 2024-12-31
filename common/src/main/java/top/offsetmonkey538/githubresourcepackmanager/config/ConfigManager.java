@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
+import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
 
 public final class ConfigManager {
     private ConfigManager() {
@@ -23,9 +24,9 @@ public final class ConfigManager {
 
     public static final String VERSION_KEY = "!!!version";
 
-    public static final Path OLD_CONFIG_FILE_PATH = PlatformMain.INSTANCE.getConfigDir().resolve(MOD_ID + ".json");
-    public static final Path NEW_CONFIG_FILE_PATH = PlatformMain.INSTANCE.getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json");
-    public static final Path CURRENT_CONFIG_FILE_PATH = PlatformMain.INSTANCE.getConfigDir().resolve(MOD_ID).resolve("main.json");
+    public static final Path OLD_CONFIG_FILE_PATH = PlatformMain.INSTANCE.getConfigDir().getParent().resolve(MOD_ID + ".json");
+    public static final Path NEW_CONFIG_FILE_PATH = PlatformMain.INSTANCE.getConfigDir().resolve(MOD_ID + ".json");
+    public static final Path CURRENT_CONFIG_FILE_PATH = PlatformMain.INSTANCE.getConfigDir().resolve("config").resolve("main.json");
 
 
     public static void loadConfig() {

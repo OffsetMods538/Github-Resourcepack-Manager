@@ -17,6 +17,8 @@ public class MainHttpHandler implements HttpHandler {
             return;
         }
 
+        System.out.println("request: " + request);
+
 
         final HttpMethod method = request.method();
 

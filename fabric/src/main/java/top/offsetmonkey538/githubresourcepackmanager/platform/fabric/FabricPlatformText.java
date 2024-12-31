@@ -14,7 +14,7 @@ import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackMa
 public class FabricPlatformText implements PlatformText {
     @Override
     public void sendUpdateMessage(Map<String, String> placeholders) throws GithubResourcepackManagerException {
-        final PlayerManager playerManager = FabricPlatformMain.INSTANCE.getServer().getPlayerManager();
+        final PlayerManager playerManager = FabricPlatformMain.getServer().getPlayerManager();
         if (playerManager == null) return;
 
         String message = config.packUpdateMessage;

@@ -19,6 +19,7 @@ import top.offsetmonkey538.githubresourcepackmanager.git.CommitProperties;
 import java.io.IOException;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
+import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
 
 public class GitHandler {
 

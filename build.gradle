@@ -13,7 +13,7 @@ allprojects {
 subprojects {
 	apply plugin: "java"
 
-	archivesBaseName = "github-resourcepack-manager-{project.nameSuffix}"
+	archivesBaseName = "github-resourcepack-manager-${project.nameSuffix}"
 	version = "${project.mod_version}+${project.minecraft_version}"
 
 	java {
