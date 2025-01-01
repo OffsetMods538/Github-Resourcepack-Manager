@@ -7,6 +7,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.text.*;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.command.GhRpManagerCommand;
@@ -92,10 +93,33 @@ public class GithubResourcepackManager implements DedicatedServerModInitializer 
         LOGGER.info("Writing default webhook bodies");
         config.createDefaultWebhooks();
 
-        if (config.serverPublicIp == null || config.repoUrl == null || (config.isRepoPrivate && (config.githubUsername == null || config.githubToken == null))) {
-            LOGGER.error("Please fill in the config file!");
-            throw new RuntimeException("Please fill in the config file!");
+        // Checking if config is valid
+        final List<String> errors = checkConfigErrors();
+
+        // Return when nothing's wrong
+        if (errors.isEmpty()) return;
+
+        // There were errors, time to log em.
+        LOGGER.error("There were problems with the config for GitHub Resourcepack Manager, see below for more details!");
+        errors.stream().map(string -> "\t" + string).forEach(LOGGER::error);
+        LOGGER.error("There were problems with the config for Github Resourcepack Manager, see above for more details!");
+
+        throw new RuntimeException("There were problems with the config for Github Resourcepack Manager, see above for more details!");
+    }
+
+    private static @NotNull List<String> checkConfigErrors() {
+        final List<String> errors = new ArrayList<>();
+
+        if (config.serverPublicIp == null) errors.add("Field 'serverPublicIp' not set!");
+        if (config.repoUrl == null) errors.add("Field 'repoUrl' not set!");
+        if (config.isRepoPrivate) {
+            if (config.githubUsername == null) errors.add("Field 'githubUsername' not set, but 'isRepoPrivate' is true!");
+            if (config.githubToken == null) errors.add("Field 'githubToken' not set, but 'isRepoPrivate' is true!");
+        } else {
+            if (config.githubUsername != null) errors.add("Field 'githubUsername' set, but 'isRepoPrivate' is false! Can be unset");
+            if (config.githubToken != null) errors.add("Field 'githubToken' set, but 'isRepoPrivate' is false! Can be unset");
         }
+        return errors;
     }
 
     public static void updatePack(boolean isWebhook) {
