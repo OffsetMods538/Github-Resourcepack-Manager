@@ -1,6 +1,7 @@
 Once you have the mod and its dependencies installed, you can launch the server once. It should crash telling you to `Fill in the config file`.  
 Let's do that!
 
+// todo: update config location once 5.0.0 is out  
 It should have generated the config file at `serverLocation/config/github-resourcepack-manager/github-resourcepack-manager.json` and it should look something like this:
 ```json
 {
@@ -60,10 +61,11 @@ In most cases using `null` for a string will result in an unexpected error, but 
 ### packUpdateMessage
 !!! info ""
     Type: `String`  
-    Default Value: `"Server resourcepack has been updated!\nPlease rejoin the server to get the most up to date pack."`  
+    Default Value: `"Server resourcepack has been updated!\nPlease click {packUpdateCommand} to get the most up to date pack."`  
     May be null: `no`
 This message will be displayed after an update to the resource pack.  
-It can contain color codes (including hex), new lines and information about the commit, which you can read more about [here](../../reference/update-message.md).
+It can contain color codes (including hex), new lines and information about the commit, which you can read more about [here](../../reference/update-message.md).  
+It may also contain the special placeholder `{packUpdateCommand}`, which will be replaced by a clickable button saying `[HERE]` (eg `Click [HERE] to update!`) which will download the latest pack to the client.
 
 ### packUpdateMessageHoverMessage
 !!! info ""
@@ -79,7 +81,7 @@ It may *not* contain color codes, but can contain new lines and information abou
     Default Value: `null`  
     May be null: `no`
 This is your servers public ip. This is sent to the clients, so they know where to download the pack from.  
-For example: `"1283.45.67.89""` or `"play.offsetmonkey538.top"`
+For example: `"1283.45.67.89"` or `"play.server.com"`
 
 ### branch
 !!! info ""
@@ -87,7 +89,9 @@ For example: `"1283.45.67.89""` or `"play.offsetmonkey538.top"`
     Default Value: `"master"`  
     May be null: `no`
 This is the git branch that the mod will download the resource pack from.  
-Here's an image showing (in red) where the name of your branch is located:  
+Usually your branch name is either `master` or `main`, this should be changed accordingly.
+
+Here's an image highlighting in red where the name of your branch is located:  
 ![Image showing where to find the name of your branch](../../images/repository-branch-location.png)
 
 ### repoUrl
@@ -112,7 +116,7 @@ Only change if the resource pack isn't stored in the root of the repository.
     Default Value: `false`  
     May be null: `no`
 This tells the mod that your GitHub repository is private and that it needs to provide credentials to download it.
-If your GitHub repository is private, you need to set this to `true`.
+If your GitHub repository is private, you need to set this to `true`. Disable this otherwise.
 
 ### githubUsername
 !!! info ""

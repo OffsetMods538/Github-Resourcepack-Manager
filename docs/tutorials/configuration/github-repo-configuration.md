@@ -1,5 +1,5 @@
 The mod listens for a webhook (POST request) sent by GitHub to know when the repository is updated.  
-The last thing you need to do now, is adding the webhook.
+For that to work, GitHub actually needs to send the webhook.
 
 You need to go to your repository page on GitHub and open the `Settings` tab.  
 On the sidebar you need to find and click on `Webhooks`.  
