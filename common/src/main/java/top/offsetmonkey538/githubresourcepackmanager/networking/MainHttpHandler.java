@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import top.offsetmonkey538.meshlib.api.HttpHandler;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
 
 public class MainHttpHandler implements HttpHandler {
 
@@ -17,7 +18,7 @@ public class MainHttpHandler implements HttpHandler {
             return;
         }
 
-        System.out.println("request: " + request);
+        LOGGER.debug("Received Request: " + request);
 
 
         final HttpMethod method = request.method();

@@ -11,6 +11,7 @@ import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.packHandler;
+import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
 
 public final class FileHttpHandler {
     private FileHttpHandler() {}
@@ -32,12 +33,12 @@ public final class FileHttpHandler {
         sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
             @Override
             public void operationProgressed(ChannelProgressiveFuture future, long progress, long total) throws Exception {
-                System.out.printf("%s Prongres: %s/%s\n", future.channel(), progress, total);
+                LOGGER.debug("%s Transfer Progress: %s/%s\n", future.channel(), progress, total);
             }
 
             @Override
             public void operationComplete(ChannelProgressiveFuture future) throws Exception {
-                System.out.printf("%s Transfer complete!\n", future.channel());
+                LOGGER.debug("%s Transfer complete!\n", future.channel());
             }
         });
 
