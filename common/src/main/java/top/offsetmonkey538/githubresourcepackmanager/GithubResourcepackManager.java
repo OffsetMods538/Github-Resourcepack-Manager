@@ -1,6 +1,6 @@
 package top.offsetmonkey538.githubresourcepackmanager;
 
-import org.slf4j.Logger;
+import org.apache.commons.io.FileUtils;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.handler.GitHandler;
@@ -56,7 +56,7 @@ public final class GithubResourcepackManager {
 
         HttpHandlerRegistry.INSTANCE.register(MOD_URI, new MainHttpHandler());
 
-        PlatformMain.INSTANCE.runOnServerStart(() -> updatePack(false));
+        PlatformMain.INSTANCE.runOnServerStart(() -> updatePack(UpdateType.RESTART));
     }
 
     private static void createFolderStructure() throws GithubResourcepackManagerException {
@@ -67,16 +67,24 @@ public final class GithubResourcepackManager {
         }
     }
 
-    public static void updatePack(boolean isWebhook) {
+    public static void updatePack(final UpdateType updateType) {
         LOGGER.info("Updating resourcepack...");
+
+        if (updateType == UpdateType.COMMAND_FORCE) {
+            LOGGER.warn("Forced pack update! Deleting data directory and continuing...");
+            try {
+                FileUtils.deleteDirectory(RESOURCEPACK_FOLDER.toFile());
+            } catch (IOException e) {
+                LOGGER.error("Failed to delete directory!", e);
+                return;
+            }
+        }
 
         try {
             createFolderStructure();
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to create folder structure!", e);
         }
-
-        final WebhookSender.UpdateType updateType = isWebhook ? WebhookSender.UpdateType.RUNTIME : WebhookSender.UpdateType.RESTART;
 
         // Git stuff
         gitHandler = new GitHandler();
@@ -150,7 +158,7 @@ public final class GithubResourcepackManager {
         LOGGER.info("Resourcepack updated!");
     }
 
-    private static void triggerWebhook(boolean wasUpdated, Map<String, String> placeholders, WebhookSender.UpdateType updateType) throws GithubResourcepackManagerException {
+    private static void triggerWebhook(boolean wasUpdated, Map<String, String> placeholders, UpdateType updateType) throws GithubResourcepackManagerException {
         if (config.webhookUrl == null || config.webhookBody == null) return;
         if (config.webhookBody.contains("discord") && !wasUpdated) {
             LOGGER.info("Not sending discord webhook because pack was not updated.");
@@ -185,5 +193,12 @@ public final class GithubResourcepackManager {
         if (nameStartIndex == -1) return null;
 
         return oldPackUrl.substring(nameStartIndex + 1);
+    }
+
+    public enum UpdateType {
+        RESTART,
+        WEBHOOK,
+        COMMAND,
+        COMMAND_FORCE
     }
 }

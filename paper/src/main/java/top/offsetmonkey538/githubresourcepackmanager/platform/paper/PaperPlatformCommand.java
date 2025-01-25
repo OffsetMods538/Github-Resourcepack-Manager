@@ -1,24 +1,23 @@
 package top.offsetmonkey538.githubresourcepackmanager.platform.paper;
 
 import com.mojang.brigadier.Command;
-import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.resource.ResourcePackInfo;
-import net.kyori.adventure.resource.ResourcePackInfoLike;
 import net.kyori.adventure.resource.ResourcePackRequest;
-import net.minecraft.commands.CommandSource;
 import net.minecraft.server.MinecraftServer;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformCommand;
 
 import java.net.URI;
-import java.util.Optional;
 
+import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
+import static io.papermc.paper.command.brigadier.Commands.argument;
 import static io.papermc.paper.command.brigadier.Commands.literal;
 
 public class PaperPlatformCommand implements PlatformCommand {
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public void registerGithubRpManagerCommand() {
         PaperPlatformMain.getPlugin().getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
@@ -51,6 +50,23 @@ public class PaperPlatformCommand implements PlatformCommand {
                                 );
                                 return Command.SINGLE_SUCCESS;
                             })
+                    )
+                    .then(literal("trigger-update")
+                            .requires(source -> source.getSender().isOp())
+                            .executes(
+                                    context -> {
+                                        GithubResourcepackManager.updatePack(GithubResourcepackManager.UpdateType.COMMAND);
+                                        return 1;
+                                    }
+                            )
+                            .then(argument("force", bool())
+                                    .executes(
+                                            context -> {
+                                                GithubResourcepackManager.updatePack(GithubResourcepackManager.UpdateType.COMMAND_FORCE);
+                                                return 1;
+                                            }
+                                    )
+                            )
                     )
                     .build()
             );
