@@ -23,4 +23,6 @@ public interface PlatformMain {
      * @param work the stuff to run
      */
     void runOnServerStart(Runnable work);
+
+    void registerLogToAdminListener();
 }
