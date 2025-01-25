@@ -71,7 +71,7 @@ public class ModConfig {
                 Files.createDirectories(location.getParent());
                 Files.writeString(location, jankson.toJson(webhook).toJson(JsonGrammar.STRICT));
             } catch (IOException e) {
-                LOGGER.error("Failed to write default webhook body '{}'!", webhook.getName(), e);
+                LOGGER.error("Failed to write default webhook body '%s'!", webhook.getName(), e);
             }
         }
     }

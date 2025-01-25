@@ -123,7 +123,7 @@ public class PackHandler {
                 continue;
             }
 
-            LOGGER.error("'{}' is not a valid pack! Ignoring...", sourcePack);
+            LOGGER.error("'%s' is not a valid pack! Ignoring...", sourcePack);
             sourcePacks.remove(sourcePack);
         }
 
@@ -150,11 +150,11 @@ public class PackHandler {
     private boolean getPackType() throws GithubResourcepackManagerException {
         LOGGER.info("Checking for 'pack.mcmeta' in repository root...");
         final boolean hasPackMcmeta = config.getResourcePackRoot().resolve("pack.mcmeta").toFile().exists();
-        LOGGER.info("{}Found!", hasPackMcmeta ? "" : "Not ");
+        LOGGER.info("%sFound!", hasPackMcmeta ? "" : "Not ");
 
         LOGGER.info("Checking for 'packs' directory in repository root...");
         final boolean hasPacksFolder = config.getPacksDir().toFile().exists() && config.getPacksDir().toFile().isDirectory();
-        LOGGER.info("{}Found!", hasPacksFolder ? "" : "Not ");
+        LOGGER.info("%sFound!", hasPacksFolder ? "" : "Not ");
 
         if (hasPackMcmeta && hasPacksFolder) {
             throw new GithubResourcepackManagerException("Found both 'pack.mcmeta' and the 'packs' directory in repository root '%s'!", config.getPacksDir().toAbsolutePath());

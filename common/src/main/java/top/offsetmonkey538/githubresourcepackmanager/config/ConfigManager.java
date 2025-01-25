@@ -69,10 +69,10 @@ public final class ConfigManager {
         try {
             json = jankson.load(configFile);
         } catch (IOException e) {
-            LOGGER.error("Config file '" + CURRENT_CONFIG_FILE_PATH + "' could not be read!", e);
+            LOGGER.error("Config file '%s' could not be read!", CURRENT_CONFIG_FILE_PATH, e);
             return config;
         } catch (SyntaxError e) {
-            LOGGER.error("Config file '" + CURRENT_CONFIG_FILE_PATH + "' is formatted incorrectly!", e);
+            LOGGER.error("Config file '%s' is formatted incorrectly!", CURRENT_CONFIG_FILE_PATH, e);
             return config;
         }
 
@@ -95,11 +95,11 @@ public final class ConfigManager {
             }
             save(config);
         } catch (IOException e) {
-            LOGGER.error("Unable to create backup of config file '" + configFile + "'! Continuing anyway cause I don't care if your config gets messed up and I can't think of a reason for this even happening cause like the initial config file has to be there so I'd imagine that the directory is writeable so like why wouldn't it be possible to write the backup of the file?", e);
+            LOGGER.error("Unable to create backup of config file '%s'! Continuing anyway cause I don't care if your config gets messed up and I can't think of a reason for this even happening cause like the initial config file has to be there so I'd imagine that the directory is writeable so like why wouldn't it be possible to write the backup of the file?", configFile, e);
         }
 
         if (last_version > current_version) {
-            throw new IllegalStateException("Config file '" + CURRENT_CONFIG_FILE_PATH + "' is for a newer version of the mod, please update! Expected config version '" + current_version + "', found '" + last_version + "'!");
+            throw new IllegalStateException(String.format("Config file '%s' is for a newer version of the mod, please update! Expected config version '%s', found '%s'!", CURRENT_CONFIG_FILE_PATH, current_version, last_version));
         }
     }
 
@@ -109,7 +109,7 @@ public final class ConfigManager {
         // Convert config to json
         final JsonElement jsonAsElement = jankson.toJson(config);
         if (!(jsonAsElement instanceof final JsonObject json)) {
-            LOGGER.error("Could not cast '{}' to 'JsonObject'! Config will not be saved!", jsonAsElement.getClass().getName());
+            LOGGER.error("Could not cast '%s' to 'JsonObject'! Config will not be saved!", jsonAsElement.getClass().getName());
             return;
         }
 
@@ -123,7 +123,7 @@ public final class ConfigManager {
             Files.createDirectories(CURRENT_CONFIG_FILE_PATH.getParent());
             Files.writeString(CURRENT_CONFIG_FILE_PATH, result);
         } catch (IOException e) {
-            LOGGER.error("Config file '" + CURRENT_CONFIG_FILE_PATH + "' could not be written to!", e);
+            LOGGER.error("Config file '%s' could not be written to!", CURRENT_CONFIG_FILE_PATH, e);
         }
     }
 
