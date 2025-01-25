@@ -54,7 +54,7 @@ public final class WebhookHttpHandler {
 
         // Check which branch was pushed to
         final String ref = payload.get("ref").getAsString();
-        LOGGER.debug("Ref: {}", ref);
+        LOGGER.debug("Ref: %s", ref);
 
         if (!config.getGithubRef().equals(ref)) return;
 

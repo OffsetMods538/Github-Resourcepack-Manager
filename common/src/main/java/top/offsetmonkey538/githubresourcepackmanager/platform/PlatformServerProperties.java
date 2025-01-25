@@ -21,9 +21,10 @@ public interface PlatformServerProperties {
 
     default void updatePackProperties(PackHandler packHandler) throws GithubResourcepackManagerException {
         final String resourcePackUrl = String.format(
-                "http://%s:%s/"+ MOD_URI + "/%s",
+                "http://%s:%s/%s/%s",
                 config.serverPublicIp,
                 getServerPort(),
+                MOD_URI,
                 packHandler.getOutputPackName()
         );
         final String resourcePackSha1;
@@ -36,8 +37,8 @@ public interface PlatformServerProperties {
         }
 
         LOGGER.info("Saving new resource pack properties to 'server.properties' file...");
-        LOGGER.info("New resource pack url: '{}'", resourcePackUrl);
-        LOGGER.info("New resource pack sha1: '{}'", resourcePackSha1);
+        LOGGER.info("New resource pack url: '%s'", resourcePackUrl);
+        LOGGER.info("New resource pack sha1: '%s'", resourcePackSha1);
         setProperties(Map.of(
                 "resource-pack-id", PACK_UUID.toString(),
                 "resource-pack", resourcePackUrl,

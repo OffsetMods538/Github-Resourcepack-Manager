@@ -157,7 +157,7 @@ public final class ZipUtils {
         String destinationFilePath = destinationFile.getCanonicalPath();
 
         if (!destinationFilePath.startsWith(destinationDirPath + File.separator)) {
-            throw new IOException("Entry is outside of the target dir '" + zipEntry.getName() + "'!");
+            throw new IOException(String.format("Entry is outside of the target dir '%s'!", zipEntry.getName()));
         }
 
         return destinationFile;
