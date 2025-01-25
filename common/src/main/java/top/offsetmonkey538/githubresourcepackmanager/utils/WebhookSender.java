@@ -1,5 +1,6 @@
 package top.offsetmonkey538.githubresourcepackmanager.utils;
 
+import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 
 import java.io.IOException;
@@ -13,7 +14,7 @@ public final class WebhookSender {
 
     }
 
-    public static void send(String body, URI url, UpdateType updateType, boolean isUpdated) throws GithubResourcepackManagerException {
+    public static void send(String body, URI url, GithubResourcepackManager.UpdateType updateType, boolean isUpdated) throws GithubResourcepackManagerException {
         final HttpRequest request = HttpRequest.newBuilder(url)
                 .header("Content-Type", "application/json")
                 .header("X-Resource-Pack-Update-Type", updateType.name())
@@ -46,10 +47,5 @@ public final class WebhookSender {
                 throw new IllegalStateException(e);
             }
         }
-    }
-
-    public enum UpdateType {
-        RESTART,
-        RUNTIME
     }
 }
