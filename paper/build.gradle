@@ -1,0 +1,70 @@
+import io.papermc.paperweight.userdev.ReobfArtifactConfiguration
+
+plugins {
+    id 'com.gradleup.shadow' version '9.0.0-beta4'
+    id 'io.papermc.paperweight.userdev' version '2.0.0-beta.8'
+    id 'xyz.jpenilla.run-paper' version '2.3.1'
+}
+
+paperweight.reobfArtifactConfiguration = ReobfArtifactConfiguration.getMOJANG_PRODUCTION()
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {
+        name = "PaperMC"
+        url = "https://repo.papermc.io/repository/maven-public/"
+        content {
+            includeGroup "io.papermc.paper"
+        }
+    }
+    maven {
+        name = "OffsetMods538"
+        url = "https://maven.offsetmonkey538.top/releases"
+        content {
+            includeGroup "top.offsetmonkey538.meshlib"
+        }
+    }
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    implementation.extendsFrom common
+}
+
+dependencies {
+    compileOnly "io.papermc.paper:paper-api:${project.paper_version}"
+
+    paperweight.paperDevBundle(project.paper_version)
+
+    implementation "xyz.jpenilla:reflection-remapper:${project.reflection_remapper_version}"
+    implementation "top.offsetmonkey538.meshlib:mesh-lib-paper:${rootProject.meshlib_version}"
+
+    common project(path: ":common", configuration: "shadow")
+}
+tasks.build.dependsOn(shadowJar)
+
+processResources {
+    final Map properties = Map<String, String>.of(
+            "modVersion",                 project.mod_version,
+            "lowestMinecraftVersion",     outlet.mcVersions().first() // Hopefully outlet always does stuff in this order
+    )
+
+    inputs.properties(properties)
+
+    filesMatching("plugin.yml") {
+        expand(properties)
+    }
+}
+
+tasks.runServer {
+    minecraftVersion(project.minecraft_version)
+}
+
+modrinth {
+    loaders = ["fabric"]
+    uploadFile = shadowJar
+}

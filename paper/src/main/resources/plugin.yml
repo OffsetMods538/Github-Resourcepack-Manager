@@ -1,0 +1,9 @@
+name: Github-Resourcepack-Manager
+version: '${modVersion}'
+main: top.offsetmonkey538.githubresourcepackmanager.platform.paper.PaperPlugin
+description: Modify server resourcepack from GitHub."
+author: OffsetMonkey538
+website: https://github.com/OffsetMods538/Github-Resourcepack-Manager
+api-version: '${lowestMinecraftVersion}'
+load: STARTUP
+prefix: GitHub Resourcepack Manager

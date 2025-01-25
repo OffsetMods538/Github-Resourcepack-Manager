@@ -1,156 +1,60 @@
 import dex.plugins.outlet.v2.util.ReleaseType
 
 plugins {
-	id 'fabric-loom' version '1.9-SNAPSHOT'
-	id 'io.github.dexman545.outlet' version '1.6.1'
-	id 'com.modrinth.minotaur' version '2.+'
+	id 'fabric-loom' version '1.9-SNAPSHOT' apply false
+	id 'io.github.dexman545.outlet' version '1.6.1' apply false
+	id 'com.modrinth.minotaur' version '2.+' apply false
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
-archivesBaseName = "github-resourcepack-manager"
-version = "${project.mod_version}+${project.minecraft_version}"
-
-outlet {
-	maintainPropertiesFile = System.getenv("DISABLE_PROPERTIES_UPDATE") == null
-	mcVersionRange = project.supported_minecraft_versions
-	allowedReleaseTypes = Set.of(ReleaseType.RELEASE)
-	propertiesData = [
-			'yarn_version': outlet.yarnVersion(project.minecraft_version),
-			'loader_version': outlet.loaderVersion(),
-			'fapi_version': outlet.fapiVersion(project.minecraft_version)
-	]
+allprojects {
+	group = "top.offsetmonkey538.githubresourcepackmanager"
 }
 
+subprojects {
+	apply plugin: "java"
 
-loom {
-	mods {
-		modid {
-			sourceSet sourceSets.main
-		}
+	archivesBaseName = "github-resourcepack-manager-${project.nameSuffix}"
+	version = "${project.mod_version}+${project.minecraft_version}"
+
+	java {
+		withSourcesJar()
 	}
 
-	accessWidenerPath = file("src/main/resources/github-resourcepack-manager.accesswidener")
-
-	runs {
-		server {
-			runDir "run/server"
-		}
-
-		client {
-			runDir "run/client"
+	jar {
+		from("${rootProject.projectDir}/LICENSE") {
+			rename { "${it}" }
 		}
 	}
 }
 
-// https://gist.github.com/maityyy/3dbcd558d58a6412c3a2a38c72706e8e
-afterEvaluate {
-	loom.runs.configureEach {
-		vmArg "-javaagent:${configurations.compileClasspath.find{ it.name.contains("sponge-mixin") }}"
-		if (System.getenv("DISABLE_PROPERTIES_UPDATE") == null) vmArg "-Ddevauth.enabled=true"
+configure(subprojects.findAll { it.name != "common" }) {
+	apply plugin: 'com.modrinth.minotaur'
+	apply plugin: 'io.github.dexman545.outlet'
+
+	outlet {
+		mcVersionRange = rootProject.supported_minecraft_versions
+		allowedReleaseTypes = Set.of(ReleaseType.RELEASE)
 	}
-}
 
-configurations {
-	includeModImplementation
+	modrinth {
+		token = System.getenv("MODRINTH_TOKEN")
+		projectId = "github-resourcepack-manager"
+		def customVersionName = System.getenv("VERSION_NAME")
+		if (customVersionName != null) versionName = customVersionName
+		versionNumber = "${project.version}"
+		versionType = "alpha"
+		def isPreRelease = System.getenv("VERSION_IS_PRERELEASE")
+		versionType = !"false".equals(isPreRelease) ? "beta" : "release"
+		additionalFiles = [sourcesJar.archiveFile]
+		gameVersions = outlet.mcVersions()
+		syncBodyFrom = rootProject.file("README.md").text
+		def changelogEnv = System.getenv("VERSION_CHANGELOG")
+		if (changelogEnv != null) changelog = changelogEnv
 
-	include.extendsFrom           includeModImplementation
-	modImplementation.extendsFrom includeModImplementation
-
-
-	includeImplementation
-
-	include.extendsFrom        includeImplementation
-	implementation.extendsFrom includeImplementation
-}
-
-repositories {
-	mavenCentral()
-	mavenLocal()
-	maven {
-		name = "DevAuth"
-		url = "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1"
-		content {
-			includeGroup "me.djtheredstoner"
+		dependencies {
+			embedded.version "mesh-lib", "${project.meshlib_version}"
 		}
 	}
-	maven {
-		name = "OffsetMods538"
-		url = "https://maven.offsetmonkey538.top/releases"
-		content {
-			includeGroup "top.offsetmonkey538.monkeylib538"
-			includeGroup "top.offsetmonkey538.meshlib"
-		}
-	}
+	tasks.modrinth.dependsOn(tasks.modrinthSyncBody)
+
 }
-
-dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_version}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-	modRuntimeOnly "me.djtheredstoner:DevAuth-fabric:${devauth_version}"
-
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fapi_version}"
-
-	modImplementation "top.offsetmonkey538.monkeylib538:monkeylib538:${project.monkeylib538_version}"
-
-	includeModImplementation "top.offsetmonkey538.meshlib:mesh-lib:${project.mesh_lib_version}"
-
-	includeImplementation "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"
-}
-
-processResources {
-	final Map properties = Map<String, String>.of(
-			"modVersion",                 project.mod_version,
-			"supportedMinecraftVersions", project.supported_minecraft_versions,
-			"monkeylib538Version",        project.monkeylib538_version
-	)
-
-	inputs.properties(properties)
-
-	filesMatching("fabric.mod.json") {
-		expand(properties)
-	}
-
-	exclude ".cache/**"
-}
-
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
-}
-
-java {
-	withSourcesJar()
-}
-
-jar {
-	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}" }
-	}
-}
-
-modrinth {
-	token = System.getenv("MODRINTH_TOKEN")
-	projectId = "github-resourcepack-manager"
-	def customVersionName = System.getenv("VERSION_NAME")
-	if (customVersionName != null) versionName = customVersionName
-	versionNumber = "${project.version}"
-	versionType = "beta"
-	uploadFile = remapJar.archiveFile
-	//additionalFiles = [sourcesJar.archiveFile, javadocJar.archiveFile]
-	additionalFiles = [sourcesJar.archiveFile]
-	gameVersions = outlet.mcVersions()
-	syncBodyFrom = rootProject.file("README.md").text
-	def changelogEnv = System.getenv("VERSION_CHANGELOG")
-	if (changelogEnv != null) changelog = changelogEnv
-
-	dependencies {
-		required.project "monkeylib538"
-		required.project "fabric-api"
-		embedded.version "mesh-lib", "${mesh_lib_version}"
-	}
-}
-
-tasks.modrinth.dependsOn(tasks.modrinthSyncBody)

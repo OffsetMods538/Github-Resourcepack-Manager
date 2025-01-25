@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "github-resourcepack-manager",
+	"version": "${modVersion}",
+	"name": "Github Resourcepack Manager",
+	"description": "Modify server resourcepack from GitHub.",
+	"authors": [
+		"OffsetMonkey538"
+	],
+	"contact": {
+		"sources": "https://github.com/OffsetMods538/Github-Resourcepack-manager",
+		"issues": "https://github.com/OffsetMods538/Github-Resourcepack-manager/issues",
+		"homepage": "https://modrinth.com/mod/github-resourcepack-manager"
+	},
+	"license": "MIT",
+	"icon": "assets/github-resourcepack-manager/icon.png",
+	"environment": "server",
+	"entrypoints": {
+		"server": [
+			"top.offsetmonkey538.githubresourcepackmanager.platform.fabric.FabricPlatformMain"
+		]
+	},
+	"mixins": [
+		"github-resourcepack-manager.mixins.json"
+	],
+	"accessWidener": "github-resourcepack-manager.accesswidener",
+	"depends": {
+		"minecraft": "${supportedMinecraftVersions}",
+		"monkeylib538": ">=${monkeylib538Version}",
+		"fabric-api": "*"
+	}
+}
