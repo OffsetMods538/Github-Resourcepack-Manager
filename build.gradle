@@ -1,13 +1,17 @@
 import dex.plugins.outlet.v2.util.ReleaseType
 
 plugins {
-	id 'fabric-loom' version '1.9-SNAPSHOT' apply false
+	id 'fabric-loom' version '1.10-SNAPSHOT' apply false
 	id 'io.github.dexman545.outlet' version '1.6.1' apply false
 	id 'com.modrinth.minotaur' version '2.+' apply false
 }
 
 allprojects {
 	group = "top.offsetmonkey538.githubresourcepackmanager"
+
+	repositories {
+		mavenLocal()
+	}
 }
 
 subprojects {
