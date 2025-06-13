@@ -1,6 +1,7 @@
 package top.offsetmonkey538.githubresourcepackmanager.platform.fabric;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.ControlFlowAware;
@@ -9,15 +10,24 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.Colors;
+import net.minecraft.util.Formatting;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformCommand;
+import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging;
 
 import java.util.Optional;
 
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
+import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
 
 public class FabricPlatformCommand implements PlatformCommand {
     @Override
@@ -57,19 +67,46 @@ public class FabricPlatformCommand implements PlatformCommand {
                         .requires(source -> source.hasPermissionLevel(2))
                         .executes(
                                 context -> {
-                                    GithubResourcepackManager.updatePack(GithubResourcepackManager.UpdateType.COMMAND);
+                                    runTriggerUpdate(context, false);
                                     return 1;
                                 }
                         )
                         .then(argument("force", bool())
                                 .executes(
                                         context -> {
-                                            GithubResourcepackManager.updatePack(GithubResourcepackManager.UpdateType.COMMAND_FORCE);
+                                            runTriggerUpdate(context, getBool(context, "force"));
                                             return 1;
                                         }
                                 )
                         )
                 )
         );
+    }
+
+    private static void runTriggerUpdate(CommandContext<ServerCommandSource> context, boolean force) {
+        final PlatformLogging.LogListener infoListener = (message, error) -> {
+            context.getSource().sendMessage(Text.literal(String.format("[%s] %s", MOD_ID, message)));
+        };
+        final PlatformLogging.LogListener warnListener = (message, error) -> {
+            MutableText text = Text
+                    .literal(String.format("[%s] %s", MOD_ID, message))
+                    .setStyle(Style.EMPTY.withColor(Formatting.YELLOW));
+
+            if (error != null) text.setStyle(Style.EMPTY.withColor(Formatting.YELLOW).withHoverEvent(
+                    new HoverEvent(
+                            HoverEvent.Action.SHOW_TEXT,
+                            Text.literal(ExceptionUtils.getRootCauseMessage(error))
+                    )
+            ));
+
+            context.getSource().sendMessage(text);
+        };
+        PlatformLogging.LOGGER.addListener(PlatformLogging.LogLevel.INFO, infoListener);
+        PlatformLogging.LOGGER.addListener(PlatformLogging.LogLevel.WARN, warnListener);
+
+        GithubResourcepackManager.updatePack(force ? GithubResourcepackManager.UpdateType.COMMAND_FORCE : GithubResourcepackManager.UpdateType.COMMAND);
+
+        PlatformLogging.LOGGER.removeListener(PlatformLogging.LogLevel.INFO, infoListener);
+        PlatformLogging.LOGGER.removeListener(PlatformLogging.LogLevel.WARN, warnListener);
     }
 }

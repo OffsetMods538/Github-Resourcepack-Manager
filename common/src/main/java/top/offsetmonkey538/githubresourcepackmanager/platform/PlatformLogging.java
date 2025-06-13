@@ -1,5 +1,9 @@
 package top.offsetmonkey538.githubresourcepackmanager.platform;
 
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.BiConsumer;
+
 import static top.offsetmonkey538.githubresourcepackmanager.platform.ServiceLoader.load;
 
 public interface PlatformLogging {
@@ -30,4 +34,19 @@ public interface PlatformLogging {
     void warn(String message, Throwable error);
     void error(String message);
     void error(String message, Throwable error);
+
+    void addListener(LogLevel level, LogListener listener);
+    void removeListener(LogLevel level, LogListener listener);
+
+    enum LogLevel {
+        DEBUG,
+        INFO,
+        WARN,
+        ERROR
+    }
+
+    @FunctionalInterface
+    interface LogListener {
+        void accept(String message, @Nullable Throwable error);
+    }
 }
