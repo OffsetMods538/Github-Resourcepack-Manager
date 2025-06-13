@@ -24,9 +24,11 @@ public class ModConfig {
     @Comment("!!!!Please check the wiki for how to set up the mod. It is linked on both the Modrinth and GitHub pages!!!!")
     public String packUpdateMessage = "Server resourcepack has been updated!\nPlease click {packUpdateCommand} to get the most up to date pack.";
     public String packUpdateMessageHoverMessage = "{longDescription}";
-    @Comment("The public ip of your server (123.45.67.89 or play.coolserver.net)")
+    @Comment("The public ip of your server (\"123.45.67.89\" or \"play.coolserver.net\")")
     public String serverPublicIp = null;
-    @Comment("Should be \"[YOUR BRANCH NAME HERE]\"")
+    @Comment("If set, this port will be used in the server.properties file instead of the Minecraft server port. HTTP server will still be hosted on the Minecraft port. Only useful when running the server behind a proxy like nginx, traefik, cloudflare tunnel, etc.")
+    public String proxyPort = null;
+    @Comment("Should be \"[YOUR BRANCH NAME HERE]\". Common names include \"master\" and \"main\"")
     public String branch = "master";
     public String repoUrl = null;
     @Comment("Where the mod will search for resource packs in the cloned repository")
@@ -44,7 +46,7 @@ public class ModConfig {
     }
 
     protected int getConfigVersion() {
-        return 1;
+        return 2;
     }
 
     protected List<ConfigManager.Datafixer> getDatafixers() {
@@ -54,6 +56,10 @@ public class ModConfig {
                     original.put("branch", jankson.toJson(jankson.getMarshaller().marshall(String.class, original.get("githubRef")).replace("refs/heads/", "")));
                     original.put("repoUrl", original.get("githubUrl"));
                     original.put("isRepoPrivate", original.get("isPrivate"));
+                },
+                (original, jankson) -> {
+                    // 1 -> 2
+                    // noop
                 }
         );
     }
@@ -78,9 +84,10 @@ public class ModConfig {
 
     public String getPackUrl(String outputFileName) {
         return String.format(
-                "http://%s:%s/%s",
+                "http://%s:%s/%s/%s",
                 serverPublicIp,
-                PlatformServerProperties.INSTANCE.getServerPort(),
+                proxyPort == null ? PlatformServerProperties.INSTANCE.getServerPort() : proxyPort,
+                MOD_URI,
                 outputFileName
         );
     }

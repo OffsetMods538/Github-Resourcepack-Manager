@@ -20,13 +20,7 @@ public interface PlatformServerProperties {
     void reload() throws GithubResourcepackManagerException;
 
     default void updatePackProperties(PackHandler packHandler) throws GithubResourcepackManagerException {
-        final String resourcePackUrl = String.format(
-                "http://%s:%s/%s/%s",
-                config.serverPublicIp,
-                getServerPort(),
-                MOD_URI,
-                packHandler.getOutputPackName()
-        );
+        final String resourcePackUrl = config.getPackUrl(packHandler.getOutputPackName());
         final String resourcePackSha1;
         try {
             // Ignore the fact that sha1 hashing is deprecated as Minecraft uses it for validating server resource packs.
