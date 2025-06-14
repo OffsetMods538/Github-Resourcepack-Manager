@@ -4,17 +4,24 @@ import blue.endless.jankson.Comment;
 import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonGrammar;
 import blue.endless.jankson.api.Marshaller;
+import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.BasicWebhook;
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.DefaultWebhookBody;
-import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.BasicMessage;
-import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.EmbedMessage;
+import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.basic.BasicFailMessage;
+import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.basic.BasicSuccessMessage;
+import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.embed.EmbedFailMessage;
+import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.embed.EmbedSuccessMessage;
+import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformServerProperties;
+import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
+import top.offsetmonkey538.githubresourcepackmanager.utils.WebhookSender;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
@@ -68,6 +75,10 @@ public class ModConfig {
         public WebhookInfo successWebhook = new WebhookInfo();
         @Comment("Webhook to be sent when pack updating failed")
         public WebhookInfo failWebhook = new WebhookInfo();
+
+        public String getRootLocation() {
+            return rootLocation.startsWith("/") ? rootLocation.substring(1) : rootLocation;
+        }
     }
 
     public static class DataPackProvider {
@@ -85,10 +96,13 @@ public class ModConfig {
         public WebhookInfo successWebhook = new WebhookInfo();
         @Comment("Webhook to be sent when pack updating failed")
         public WebhookInfo failWebhook = new WebhookInfo();
+
+        public String getRootLocation() {
+            return rootLocation.startsWith("/") ? rootLocation.substring(1) : rootLocation;
+        }
     }
 
     public static class WebhookInfo {
-
         public WebhookInfo() {
 
         }
@@ -105,6 +119,24 @@ public class ModConfig {
         public String url = null;
         @Comment("The relative path from the config directory to a webhook body file. For example \"discord/basic_message.json\" or \"discord/embed_message.json\"")
         public String body = null;
+
+        public void trigger(final boolean updateSucceeded, final Map<String, String> placeholders, final UpdateType updateType) throws GithubResourcepackManagerException {
+            if (!enabled) return;
+
+            try {
+                //noinspection DataFlowIssue: Only returns null when `body` is null, which we have already checked
+                String webhookBody = Files.readString(getBodyPath());
+                webhookBody = StringUtils.replacePlaceholders(webhookBody, placeholders, true);
+
+                WebhookSender.send(webhookBody, config.getWebhookUrl(), updateType, updateSucceeded);
+            } catch (IOException e) {
+                throw new GithubResourcepackManagerException("Failed to read content of webhook body file '%s'!", e, config.resourcePackProvider.successWebhook.body);
+            }
+        }
+
+        public @Nullable Path getBodyPath() {
+            return body == null ? null : CURRENT_CONFIG_FILE_PATH.getParent().resolve(body);
+        }
     }
 
     //@Comment("!!!!Please check the wiki for how to set up the mod. It is linked on both the Modrinth and GitHub pages!!!!")
@@ -203,7 +235,14 @@ public class ModConfig {
 
     public void createDefaultWebhooks() {
         final Jankson jankson = new Jankson.Builder().build();
-        final List<DefaultWebhookBody> webhookBodies = List.of(new BasicWebhook(), new BasicMessage(), new EmbedMessage());
+        final List<DefaultWebhookBody> webhookBodies = List.of(
+                new BasicWebhook(),
+
+                new BasicSuccessMessage(),
+                new BasicFailMessage(),
+                new EmbedSuccessMessage(),
+                new EmbedFailMessage()
+        );
 
         for (DefaultWebhookBody webhook : webhookBodies) {
             final Path location = CURRENT_CONFIG_FILE_PATH.getParent().resolve(webhook.getName());
@@ -234,13 +273,8 @@ public class ModConfig {
         return URI.create(resourcePackProvider.successWebhook.url);
     }
 
-    public Path getWebhookBody() {
-        if (resourcePackProvider.successWebhook.body == null) return null;
-        return CURRENT_CONFIG_FILE_PATH.getParent().resolve(resourcePackProvider.successWebhook.body);
-    }
-
     public Path getResourcePackRoot() {
-        return GIT_FOLDER.resolve(config.resourcePackProvider.rootLocation.startsWith("/") ? config.resourcePackProvider.rootLocation.substring(1) : config.resourcePackProvider.rootLocation);
+        return GIT_FOLDER.resolve(config.resourcePackProvider.getRootLocation());
     }
     public Path getPacksDir() {
         return getResourcePackRoot().resolve("packs");

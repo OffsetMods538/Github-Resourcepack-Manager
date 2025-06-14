@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
 import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
 
-public class PackHandler {
+public class ResourcePackHandler {
     private Path outputPackPath;
 
     public void generatePack(boolean wasUpdated, Path oldPackPath, String oldPackName) throws GithubResourcepackManagerException {

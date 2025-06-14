@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
 import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
@@ -83,7 +84,23 @@ public final class ConfigManager {
             if (config.repositoryInfo.username != null) errors.add("Field 'repositoryInfo.username' set, but 'repositoryInfo.isPrivate' is false! Can be unset");
             if (config.repositoryInfo.token != null) errors.add("Field 'repositoryInfo.token' set, but 'repositoryInfo.isPrivate' is false! Can be unset");
         }
+
+        checkWebhookErrors(errors, config.resourcePackProvider.successWebhook, "resourcePackProvider.successWebhook");
+        checkWebhookErrors(errors, config.resourcePackProvider.failWebhook, "resourcePackProvider.failWebhook");
+        checkWebhookErrors(errors, config.dataPackProvider.successWebhook, "dataPackProvider.successWebhook");
+        checkWebhookErrors(errors, config.dataPackProvider.failWebhook, "dataPackProvider.failWebhook");
+
         return errors;
+    }
+
+    private static void checkWebhookErrors(final List<String> errors, final ModConfig.WebhookInfo webhook, final String webhookPath) {
+        if (!webhook.enabled) return;
+
+        if (webhook.url == null) errors.add("Field '%s.url' not set, but '%s.enabled' is true!".formatted(webhookPath, webhookPath));
+        if (webhook.body == null) errors.add("Field '%s.body' not set, but '%s.enabled' is true!".formatted(webhookPath, webhookPath));
+
+        final Path bodyPath = webhook.getBodyPath();
+        if (bodyPath != null && !Files.exists(bodyPath)) errors.add("Field '%s.body' points to file '%s', which doesn't exist!".formatted(webhookPath, bodyPath.toAbsolutePath()));
     }
 
     private static ModConfig load() {

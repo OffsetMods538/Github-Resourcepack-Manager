@@ -1,8 +1,8 @@
-package top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord;
+package top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.basic;
 
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.DefaultWebhookBody;
 
-public final class BasicMessage implements DefaultWebhookBody {
+public final class BasicSuccessMessage implements DefaultWebhookBody {
 
     public final String username = "GitHub Resource Pack Manager";
     public final String avatar_url = "https://github.com/OffsetMods538/Github-Resourcepack-Manager/blob/master/src/main/resources/assets/github-resourcepack-manager/icon.png?raw=true";
@@ -10,6 +10,6 @@ public final class BasicMessage implements DefaultWebhookBody {
 
     @Override
     public String getName() {
-        return "discord/basic_message.json";
+        return "discord/basic/success.json";
     }
 }

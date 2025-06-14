@@ -1,6 +1,6 @@
 package top.offsetmonkey538.githubresourcepackmanager.handler;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.file.PathUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -28,7 +28,7 @@ import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLog
 public class GitHandler {
 
     private CommitProperties commitProperties;
-    private boolean wasUpdated;
+    private List<String> changedFiles;
 
     public void updateRepositoryAndGenerateCommitProperties() throws GithubResourcepackManagerException {
         String originalCommitHash;
@@ -45,7 +45,7 @@ public class GitHandler {
         final String newCommitHash = getLatestCommitHash();
 
         commitProperties = getLatestCommitProperties(originalCommitHash, newCommitHash);
-        wasUpdated = !newCommitHash.equals(originalCommitHash);
+        changedFiles = getDiff(originalCommitHash);
     }
 
 
@@ -110,7 +110,7 @@ public class GitHandler {
                 LOGGER.info("Deleting git folder and trying again...");
 
                 try {
-                    FileUtils.deleteDirectory(GIT_FOLDER.toFile());
+                    PathUtils.deleteDirectory(GIT_FOLDER);
                 } catch (IOException e) {
                     LOGGER.error("Failed to delete directory!", e);
                 }
@@ -189,7 +189,7 @@ public class GitHandler {
         return commitProperties;
     }
 
-    public boolean getWasUpdated() {
-        return wasUpdated;
+    public List<String> getChangedFiles() {
+        return changedFiles;
     }
 }

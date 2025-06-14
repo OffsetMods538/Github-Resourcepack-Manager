@@ -14,11 +14,11 @@ public final class WebhookSender {
 
     }
 
-    public static void send(String body, URI url, GithubResourcepackManager.UpdateType updateType, boolean isUpdated) throws GithubResourcepackManagerException {
+    public static void send(String body, URI url, GithubResourcepackManager.UpdateType updateType, boolean updateSucceeded) throws GithubResourcepackManagerException {
         final HttpRequest request = HttpRequest.newBuilder(url)
                 .header("Content-Type", "application/json")
                 .header("X-Resource-Pack-Update-Type", updateType.name())
-                .header("X-Resource-Pack-Is-Updated", String.valueOf(isUpdated))
+                .header("X-Resource-Pack-Update-Succeeded", String.valueOf(updateSucceeded))
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
@@ -31,11 +31,6 @@ public final class WebhookSender {
             throw new GithubResourcepackManagerException("Failed to send http request!", e);
         }
 
-        final int statusCode = response.statusCode();
-        if (!(statusCode >= 200 && statusCode < 300)) {
-            throw new GithubResourcepackManagerException("Http status code '%s'! Response was: '%s'.", statusCode, response.body());
-        }
-
         // From JDK 21 the HttpClient class extends AutoCloseable, but as we want to support Minecraft versions
         //  that use JDK 17, where HttpClient doesn't extend AutoCloseable, we need to check if it's
         //  an instance of AutoCloseable before trying to close it.
@@ -46,6 +41,11 @@ public final class WebhookSender {
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
+        }
+
+        final int statusCode = response.statusCode();
+        if (statusCode < 200 || statusCode >= 300) {
+            throw new GithubResourcepackManagerException("Http status code '%s'! Response was: '%s'.", statusCode, response.body());
         }
     }
 }
