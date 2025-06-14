@@ -34,7 +34,7 @@ public interface PlatformServerProperties {
         LOGGER.info("New resource pack url: '%s'", resourcePackUrl);
         LOGGER.info("New resource pack sha1: '%s'", resourcePackSha1);
         setProperties(Map.of(
-                "resource-pack-id", PACK_UUID.toString(),
+                "resource-pack-id", RESOURCEPACK_UUID.toString(),
                 "resource-pack", resourcePackUrl,
                 "resource-pack-sha1", resourcePackSha1
         ));

@@ -72,11 +72,11 @@ public class GitHandler {
             credentialsProvider = new UsernamePasswordCredentialsProvider(config.repositoryInfo.username, config.repositoryInfo.token);
 
         // If the repo folder doesn't exist, clone the repository.
-        if (!REPO_ROOT_FOLDER.toFile().exists()) cloneRepository(credentialsProvider);
+        if (!GIT_FOLDER.toFile().exists()) cloneRepository(credentialsProvider);
 
         // Pull from the remote
         boolean updateFailed = false;
-        try (Git git = Git.open(REPO_ROOT_FOLDER.toFile())) {
+        try (Git git = Git.open(GIT_FOLDER.toFile())) {
             final PullResult result = git.pull()
                     .setCredentialsProvider(credentialsProvider)
                     .setContentMergeStrategy(ContentMergeStrategy.THEIRS)
@@ -106,7 +106,7 @@ public class GitHandler {
                 LOGGER.info("Deleting git folder and trying again...");
 
                 try {
-                    FileUtils.deleteDirectory(REPO_ROOT_FOLDER.toFile());
+                    FileUtils.deleteDirectory(GIT_FOLDER.toFile());
                 } catch (IOException e) {
                     LOGGER.error("Failed to delete directory!", e);
                 }
@@ -120,7 +120,7 @@ public class GitHandler {
         try {
             Git git = Git.cloneRepository()
                     .setURI(config.repositoryInfo.url)
-                    .setDirectory(REPO_ROOT_FOLDER.toFile())
+                    .setDirectory(GIT_FOLDER.toFile())
                     .setBranch(config.getGithubRef())
                     .setCredentialsProvider(credentialsProvider)
                     .call();
@@ -143,7 +143,7 @@ public class GitHandler {
     }
 
     private static Repository getRepository() throws GithubResourcepackManagerException {
-        try (Git git = Git.open(REPO_ROOT_FOLDER.toFile())) {
+        try (Git git = Git.open(GIT_FOLDER.toFile())) {
             return git.getRepository();
         } catch (IOException e) {
             throw new GithubResourcepackManagerException("Failed to open repository!", e);

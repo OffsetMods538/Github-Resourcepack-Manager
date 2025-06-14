@@ -240,7 +240,7 @@ public class ModConfig {
     }
 
     public Path getResourcePackRoot() {
-        return REPO_ROOT_FOLDER.resolve(config.resourcePackProvider.rootLocation.startsWith("/") ? config.resourcePackProvider.rootLocation.substring(1) : config.resourcePackProvider.rootLocation);
+        return GIT_FOLDER.resolve(config.resourcePackProvider.rootLocation.startsWith("/") ? config.resourcePackProvider.rootLocation.substring(1) : config.resourcePackProvider.rootLocation);
     }
     public Path getPacksDir() {
         return getResourcePackRoot().resolve("packs");

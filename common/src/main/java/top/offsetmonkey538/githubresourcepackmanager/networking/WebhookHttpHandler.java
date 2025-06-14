@@ -60,6 +60,5 @@ public final class WebhookHttpHandler {
 
         LOGGER.debug("Tracked branch has been updated, updating local pack...");
         GithubResourcepackManager.updatePack(GithubResourcepackManager.UpdateType.WEBHOOK);
-        LOGGER.debug("Local pack has been updated.");
     }
 }

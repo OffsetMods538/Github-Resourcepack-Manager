@@ -184,7 +184,7 @@ public class PackHandler {
         } catch (IOException e) {
             LOGGER.error("Failed to delete old pack!", new GithubResourcepackManagerException("Failed to delete old pack '%s'!", e, oldPackPath));
         }
-        return OUTPUT_FOLDER.resolve(newPackName);
+        return RESOURCEPACK_OUTPUT_FOLDER.resolve(newPackName);
     }
 
     private String generateRandomPackName(@Nullable String oldPackNameString) {
