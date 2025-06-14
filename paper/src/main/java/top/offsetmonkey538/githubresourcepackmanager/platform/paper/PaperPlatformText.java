@@ -15,15 +15,15 @@ import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackMa
 public class PaperPlatformText implements PlatformText {
     @Override
     public void sendUpdateMessage(Map<String, String> placeholders) throws GithubResourcepackManagerException {
-        String message = config.packUpdateMessage;
+        String message = config.resourcePackProvider.updateMessage;
         final String[] splitMessage = message.split("\n");
 
         final HoverEvent hoverEvent;
         try {
-            hoverEvent = config.packUpdateMessageHoverMessage == null ? null : new HoverEvent(
+            hoverEvent = config.resourcePackProvider.updateMessageHoverMessage == null ? null : new HoverEvent(
                     HoverEvent.Action.SHOW_TEXT,
                     getStyledText(
-                            StringUtils.replacePlaceholders(config.packUpdateMessageHoverMessage, placeholders).replace("\\n", "\n")
+                            StringUtils.replacePlaceholders(config.resourcePackProvider.updateMessageHoverMessage, placeholders).replace("\\n", "\n")
                     )
             );
         } catch (Exception e) {

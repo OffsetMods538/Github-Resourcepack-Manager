@@ -17,15 +17,15 @@ public class FabricPlatformText implements PlatformText {
         final PlayerManager playerManager = FabricPlatformMain.getServer().getPlayerManager();
         if (playerManager == null) return;
 
-        String message = config.packUpdateMessage;
+        String message = config.resourcePackProvider.updateMessage;
         final String[] splitMessage = message.split("\n");
 
         final HoverEvent hoverEvent;
         try {
-            hoverEvent = config.packUpdateMessageHoverMessage == null ? null : new HoverEvent(
+            hoverEvent = config.resourcePackProvider.updateMessageHoverMessage == null ? null : new HoverEvent(
                     HoverEvent.Action.SHOW_TEXT,
                     TextUtils.INSTANCE.getStyledText(
-                            StringUtils.replacePlaceholders(config.packUpdateMessageHoverMessage, placeholders).replace("\\n", "\n")
+                            StringUtils.replacePlaceholders(config.resourcePackProvider.updateMessageHoverMessage, placeholders).replace("\\n", "\n")
                     )
             );
         } catch (Exception e) {
