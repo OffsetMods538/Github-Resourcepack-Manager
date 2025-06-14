@@ -159,8 +159,9 @@ public final class GithubResourcepackManager {
     }
 
     private static void triggerWebhook(boolean wasUpdated, Map<String, String> placeholders, UpdateType updateType) throws GithubResourcepackManagerException {
-        if (config.webhookUrl == null || config.webhookBody == null) return;
-        if (config.webhookBody.contains("discord") && !wasUpdated) {
+        // todo: change logic to match enable/disable and fail/success webhooks
+        if (config.resourcePackProvider.successWebhook.url == null || config.resourcePackProvider.successWebhook.body == null) return;
+        if (config.resourcePackProvider.successWebhook.body.contains("discord") && !wasUpdated) {
             LOGGER.info("Not sending discord webhook because pack was not updated.");
             return;
         }
@@ -172,7 +173,7 @@ public final class GithubResourcepackManager {
 
             WebhookSender.send(webhookBody, config.getWebhookUrl(), updateType, gitHandler.getWasUpdated());
         } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to read content of webhook body file '%s'!", e, config.webhookBody);
+            throw new GithubResourcepackManagerException("Failed to read content of webhook body file '%s'!", e, config.resourcePackProvider.successWebhook.body);
         }
     }
 
