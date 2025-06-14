@@ -5,6 +5,8 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.merge.ContentMergeStrategy;
@@ -13,10 +15,12 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.git.CommitProperties;
 
 import java.io.IOException;
+import java.util.List;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
 import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
@@ -139,6 +143,37 @@ public class GitHandler {
             return getRepository().findRef("HEAD");
         } catch (IOException e) {
             throw new GithubResourcepackManagerException("Failed to get latest commit in repository!", e);
+        }
+    }
+
+    private static List<String> getDiff(String startingHash) throws GithubResourcepackManagerException {
+        try (Git git = Git.open(GIT_FOLDER.toFile())) {
+            final Repository repository = git.getRepository();
+
+            final ObjectId headCommit = repository.resolve("HEAD^{tree}");
+            final ObjectId startingCommit = repository.resolve("%s^{tree}".formatted(startingHash));
+
+            try (final ObjectReader repoReader = repository.newObjectReader()) {
+                final CanonicalTreeParser headTreeParser = new CanonicalTreeParser();
+                headTreeParser.reset(repoReader, headCommit);
+
+                final CanonicalTreeParser startingTreeParser = new CanonicalTreeParser();
+                startingTreeParser.reset(repoReader, startingCommit);
+
+                return git
+                        .diff()
+                        .setNewTree(headTreeParser)
+                        .setOldTree(startingTreeParser)
+                        .call()
+
+                        .stream()
+                        .map(entry -> "/dev/null".equals(entry.getNewPath()) ? entry.getOldPath() : entry.getNewPath())
+                        .toList();
+            } catch (GitAPIException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (IOException e) {
+            throw new GithubResourcepackManagerException("Failed to open repository!", e);
         }
     }
 
