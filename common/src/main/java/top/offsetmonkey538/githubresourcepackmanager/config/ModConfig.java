@@ -276,7 +276,7 @@ public class ModConfig {
     public Path getResourcePackRoot() {
         return GIT_FOLDER.resolve(config.resourcePackProvider.getRootLocation());
     }
-    public Path getPacksDir() {
+    public Path getResourcePackPacksDir() {
         return getResourcePackRoot().resolve("packs");
     }
 
