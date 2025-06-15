@@ -13,7 +13,7 @@ public interface PlatformMain {
      * Example: .minecraft/config/github-resourcepack-manager/
      * Example: .minecraft/plugins/Github-Resourcepack-Manager/
      *
-     * @return
+     * @return config directory for the mod
      */
     Path getConfigDir();
 

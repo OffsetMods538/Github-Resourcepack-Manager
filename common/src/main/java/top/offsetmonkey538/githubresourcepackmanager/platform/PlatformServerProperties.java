@@ -2,7 +2,7 @@ package top.offsetmonkey538.githubresourcepackmanager.platform;
 
 import com.google.common.hash.Hashing;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
-import top.offsetmonkey538.githubresourcepackmanager.handler.PackHandler;
+import top.offsetmonkey538.githubresourcepackmanager.handler.ResourcePackHandler;
 
 import java.io.IOException;
 import java.util.Map;
@@ -19,7 +19,7 @@ public interface PlatformServerProperties {
     void setProperties(Map<String, String> properties);
     void reload() throws GithubResourcepackManagerException;
 
-    default void updatePackProperties(PackHandler packHandler) throws GithubResourcepackManagerException {
+    default void updatePackProperties(ResourcePackHandler packHandler) throws GithubResourcepackManagerException {
         final String resourcePackUrl = config.getPackUrl(packHandler.getOutputPackName());
         final String resourcePackSha1;
         try {
@@ -34,7 +34,7 @@ public interface PlatformServerProperties {
         LOGGER.info("New resource pack url: '%s'", resourcePackUrl);
         LOGGER.info("New resource pack sha1: '%s'", resourcePackSha1);
         setProperties(Map.of(
-                "resource-pack-id", PACK_UUID.toString(),
+                "resource-pack-id", RESOURCEPACK_UUID.toString(),
                 "resource-pack", resourcePackUrl,
                 "resource-pack-sha1", resourcePackSha1
         ));

@@ -1,10 +1,12 @@
 package top.offsetmonkey538.githubresourcepackmanager.handler;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.file.PathUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.merge.ContentMergeStrategy;
@@ -13,10 +15,14 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.git.CommitProperties;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
 import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
@@ -24,7 +30,7 @@ import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLog
 public class GitHandler {
 
     private CommitProperties commitProperties;
-    private boolean wasUpdated;
+    private @Nullable List<String> changedFiles;
 
     public void updateRepositoryAndGenerateCommitProperties() throws GithubResourcepackManagerException {
         String originalCommitHash;
@@ -41,7 +47,14 @@ public class GitHandler {
         final String newCommitHash = getLatestCommitHash();
 
         commitProperties = getLatestCommitProperties(originalCommitHash, newCommitHash);
-        wasUpdated = !newCommitHash.equals(originalCommitHash);
+
+        try {
+            changedFiles = getDiff(originalCommitHash);
+        } catch (Exception e) {
+            // Most likely to happen with a fresh install or a forced update so should be fine to just assume this
+            LOGGER.error("Failed to get diff between commit '%s' and '%s'! Assuming pack directories were updated anyway...", e, originalCommitHash, newCommitHash);
+            changedFiles = null;
+        }
     }
 
 
@@ -68,15 +81,15 @@ public class GitHandler {
     private static void updateRepository(boolean retry) throws GithubResourcepackManagerException {
         // Create credentials provider if repository is private
         CredentialsProvider credentialsProvider = null;
-        if (config.isRepoPrivate)
-            credentialsProvider = new UsernamePasswordCredentialsProvider(config.githubUsername, config.githubToken);
+        if (config.repositoryInfo.isPrivate)
+            credentialsProvider = new UsernamePasswordCredentialsProvider(config.repositoryInfo.username, config.repositoryInfo.token);
 
         // If the repo folder doesn't exist, clone the repository.
-        if (!REPO_ROOT_FOLDER.toFile().exists()) cloneRepository(credentialsProvider);
+        if (!GIT_FOLDER.toFile().exists()) cloneRepository(credentialsProvider);
 
         // Pull from the remote
         boolean updateFailed = false;
-        try (Git git = Git.open(REPO_ROOT_FOLDER.toFile())) {
+        try (Git git = Git.open(GIT_FOLDER.toFile())) {
             final PullResult result = git.pull()
                     .setCredentialsProvider(credentialsProvider)
                     .setContentMergeStrategy(ContentMergeStrategy.THEIRS)
@@ -106,7 +119,7 @@ public class GitHandler {
                 LOGGER.info("Deleting git folder and trying again...");
 
                 try {
-                    FileUtils.deleteDirectory(REPO_ROOT_FOLDER.toFile());
+                    PathUtils.deleteDirectory(GIT_FOLDER);
                 } catch (IOException e) {
                     LOGGER.error("Failed to delete directory!", e);
                 }
@@ -119,8 +132,8 @@ public class GitHandler {
     private static void cloneRepository(CredentialsProvider credentialsProvider) throws GithubResourcepackManagerException {
         try {
             Git git = Git.cloneRepository()
-                    .setURI(config.repoUrl)
-                    .setDirectory(REPO_ROOT_FOLDER.toFile())
+                    .setURI(config.repositoryInfo.url)
+                    .setDirectory(GIT_FOLDER.toFile())
                     .setBranch(config.getGithubRef())
                     .setCredentialsProvider(credentialsProvider)
                     .call();
@@ -142,8 +155,38 @@ public class GitHandler {
         }
     }
 
+    private static List<String> getDiff(String startingHash) throws IOException, GitAPIException {
+        try (Git git = Git.open(GIT_FOLDER.toFile())) {
+            final Repository repository = git.getRepository();
+
+            final ObjectId headCommit = repository.resolve("HEAD^{tree}");
+            final ObjectId startingCommit = repository.resolve("%s^{tree}".formatted(startingHash));
+            if (startingCommit == null) throw new IllegalArgumentException("Previous commit (hash '%s') doesn't exist!".formatted(startingHash));
+
+            try (final ObjectReader repoReader = repository.newObjectReader()) {
+                final CanonicalTreeParser headTreeParser = new CanonicalTreeParser();
+                headTreeParser.reset(repoReader, headCommit);
+
+                final CanonicalTreeParser startingTreeParser = new CanonicalTreeParser();
+                startingTreeParser.reset(repoReader, startingCommit);
+
+                return git
+                        .diff()
+                        .setNewTree(headTreeParser)
+                        .setOldTree(startingTreeParser)
+                        .call()
+
+                        .stream()
+                        .map(entry -> "/dev/null".equals(entry.getNewPath()) ? entry.getOldPath() : entry.getNewPath())
+                        .toList();
+            }
+        } catch (IOException e) {
+            throw new IOException("Failed to open repository!", e);
+        }
+    }
+
     private static Repository getRepository() throws GithubResourcepackManagerException {
-        try (Git git = Git.open(REPO_ROOT_FOLDER.toFile())) {
+        try (Git git = Git.open(GIT_FOLDER.toFile())) {
             return git.getRepository();
         } catch (IOException e) {
             throw new GithubResourcepackManagerException("Failed to open repository!", e);
@@ -154,7 +197,7 @@ public class GitHandler {
         return commitProperties;
     }
 
-    public boolean getWasUpdated() {
-        return wasUpdated;
+    public Optional<List<String>> getChangedFiles() {
+        return Optional.ofNullable(changedFiles);
     }
 }
