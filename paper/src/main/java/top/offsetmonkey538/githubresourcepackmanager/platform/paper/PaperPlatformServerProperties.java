@@ -1,25 +1,17 @@
 package top.offsetmonkey538.githubresourcepackmanager.platform.paper;
 
-import joptsimple.OptionSet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.server.dedicated.DedicatedServerSettings;
-import org.bukkit.packs.ResourcePack;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
-import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformServerProperties;
 import xyz.jpenilla.reflectionremapper.ReflectionRemapper;
-import xyz.jpenilla.reflectionremapper.proxy.ReflectionProxyFactory;
-import xyz.jpenilla.reflectionremapper.proxy.annotation.FieldGetter;
-import xyz.jpenilla.reflectionremapper.proxy.annotation.FieldSetter;
-import xyz.jpenilla.reflectionremapper.proxy.annotation.Proxies;
 
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 
 public class PaperPlatformServerProperties implements PlatformServerProperties {
     @Override
@@ -67,13 +59,4 @@ public class PaperPlatformServerProperties implements PlatformServerProperties {
             throw new GithubResourcepackManagerException("Failed to reload 'server.properties' file!", e);
         }
     }
-
-
-    //@Override
-    //public void reload() {
-    //    final ServerPropertiesLoader propertiesLoader = ((MinecraftDedicatedServerAccessor) FabricPlatformMain.INSTANCE.getServer()).getPropertiesLoader();
-    //    final ServerPropertiesLoaderAccessor propertiesLoaderAccess = (ServerPropertiesLoaderAccessor) propertiesLoader;
-
-    //    propertiesLoaderAccess.setPropertiesHandler(ServerPropertiesHandler.load(propertiesLoaderAccess.getPath()));
-    //}
 }

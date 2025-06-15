@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
 import static top.offsetmonkey538.githubresourcepackmanager.config.ConfigManager.CURRENT_CONFIG_FILE_PATH;
 import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
 
@@ -138,26 +137,6 @@ public class ModConfig {
             return body == null ? null : CURRENT_CONFIG_FILE_PATH.getParent().resolve(body);
         }
     }
-
-    //@Comment("!!!!Please check the wiki for how to set up the mod. It is linked on both the Modrinth and GitHub pages!!!!")
-    //public String packUpdateMessage = "Server resourcepack has been updated!\nPlease click {packUpdateCommand} to get the most up to date pack.";
-    //public String packUpdateMessageHoverMessage = "{longDescription}";
-    //@Comment("The public ip of your server (\"123.45.67.89\" or \"play.coolserver.net\")")
-    //public String serverPublicIp = null;
-    //@Comment("If set, this port will be used in the server.properties file instead of the Minecraft server port. HTTP server will still be hosted on the Minecraft port. Only useful when running the server behind a proxy like nginx, traefik, cloudflare tunnel, etc.")
-    //public String proxyPort = null;
-    //@Comment("Should be \"[YOUR BRANCH NAME HERE]\". Common names include \"master\" and \"main\"")
-    //public String branch = "master";
-    //public String repoUrl = null;
-    //@Comment("Where the mod will search for resource packs in the cloned repository")
-    //public String resourcePackRoot = "";
-    //public boolean isRepoPrivate = false;
-    //public String githubUsername = null;
-    //@Comment("PLEASE DON'T SHARE THIS WITH ANYONE EVER")
-    //public String githubToken = null;
-    //public String webhookUrl = null;
-    //public String webhookBody = null;
-
 
     protected String getName() {
         return MOD_ID + "/" + MOD_ID;

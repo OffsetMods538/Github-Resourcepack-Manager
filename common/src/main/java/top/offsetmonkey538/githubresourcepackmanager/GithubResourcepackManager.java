@@ -42,7 +42,7 @@ public final class GithubResourcepackManager {
 
     public static ModConfig config;
 
-     public static ResourcePackHandler resourcePackHandler;
+    public static ResourcePackHandler resourcePackHandler;
 
     public static void initialize() {
         PlatformCommand.INSTANCE.registerGithubRpManagerCommand();
