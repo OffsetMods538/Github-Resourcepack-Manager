@@ -129,6 +129,12 @@ public class ResourcePackHandler {
 
         // Return source packs sorted in correct order.
         return Stream.of(sourcePacksArray)
+                .filter(file -> {
+                    final boolean hidden = file.getName().startsWith(".");
+                    if (!hidden) return true;
+                    LOGGER.warn("Excluding hidden file '%s'", file.getAbsolutePath());
+                    return false;
+                })
                 .sorted(Comparator.comparingInt(StringUtils::extractPriorityFromFile).reversed())
                 .toList();
     }
