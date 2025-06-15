@@ -16,11 +16,13 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.git.CommitProperties;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
 import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
@@ -28,7 +30,7 @@ import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLog
 public class GitHandler {
 
     private CommitProperties commitProperties;
-    private List<String> changedFiles;
+    private @Nullable List<String> changedFiles;
 
     public void updateRepositoryAndGenerateCommitProperties() throws GithubResourcepackManagerException {
         String originalCommitHash;
@@ -45,7 +47,14 @@ public class GitHandler {
         final String newCommitHash = getLatestCommitHash();
 
         commitProperties = getLatestCommitProperties(originalCommitHash, newCommitHash);
-        changedFiles = getDiff(originalCommitHash);
+
+        try {
+            changedFiles = getDiff(originalCommitHash);
+        } catch (Exception e) {
+            // Most likely to happen with a fresh install or a forced update so should be fine to just assume this
+            LOGGER.error("Failed to get diff between commit '%s' and '%s'! Assuming pack directories were updated anyway...", e, originalCommitHash, newCommitHash);
+            changedFiles = null;
+        }
     }
 
 
@@ -146,12 +155,13 @@ public class GitHandler {
         }
     }
 
-    private static List<String> getDiff(String startingHash) throws GithubResourcepackManagerException {
+    private static List<String> getDiff(String startingHash) throws IOException, GitAPIException {
         try (Git git = Git.open(GIT_FOLDER.toFile())) {
             final Repository repository = git.getRepository();
 
             final ObjectId headCommit = repository.resolve("HEAD^{tree}");
             final ObjectId startingCommit = repository.resolve("%s^{tree}".formatted(startingHash));
+            if (startingCommit == null) throw new IllegalArgumentException("Previous commit (hash '%s') doesn't exist!".formatted(startingHash));
 
             try (final ObjectReader repoReader = repository.newObjectReader()) {
                 final CanonicalTreeParser headTreeParser = new CanonicalTreeParser();
@@ -169,11 +179,9 @@ public class GitHandler {
                         .stream()
                         .map(entry -> "/dev/null".equals(entry.getNewPath()) ? entry.getOldPath() : entry.getNewPath())
                         .toList();
-            } catch (GitAPIException e) {
-                throw new RuntimeException(e);
             }
         } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to open repository!", e);
+            throw new IOException("Failed to open repository!", e);
         }
     }
 
@@ -189,7 +197,7 @@ public class GitHandler {
         return commitProperties;
     }
 
-    public List<String> getChangedFiles() {
-        return changedFiles;
+    public Optional<List<String>> getChangedFiles() {
+        return Optional.ofNullable(changedFiles);
     }
 }

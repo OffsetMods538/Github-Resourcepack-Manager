@@ -122,7 +122,10 @@ public final class GithubResourcepackManager {
         final Path oldResourcePackPath = oldResourcePackName == null ? null : RESOURCEPACK_OUTPUT_FOLDER.resolve(oldResourcePackName);
 
         // Check if pack was updated
-        final boolean wasUpdated = gitHandler.getChangedFiles().stream().anyMatch(it -> it.startsWith(config.resourcePackProvider.getRootLocation())) || oldResourcePackPath == null || !oldResourcePackPath.toFile().exists();
+        final boolean wasUpdated =
+                gitHandler.getChangedFiles().map(changes -> changes.stream().anyMatch(it -> it.startsWith(config.resourcePackProvider.getRootLocation()))).orElse(true)
+                        || oldResourcePackPath == null
+                        || !oldResourcePackPath.toFile().exists();
         if (!wasUpdated) {
             LOGGER.info("Pack hasn't changed since last update. Skipping new pack generation.");
         }
@@ -138,7 +141,7 @@ public final class GithubResourcepackManager {
             LOGGER.error("Failed to generate pack!", e);
             failed = updateFailed = true;
         }
-        if (!failed) LOGGER.info("Pack location is '%s'!", resourcePackHandler.getOutputPackPath());
+        if (!failed) LOGGER.info("Pack location is '%s'!", resourcePackHandler.getOutputPackPath().toAbsolutePath());
 
 
         // Update server.properties file.
