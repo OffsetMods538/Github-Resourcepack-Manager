@@ -1,6 +1,5 @@
 package top.offsetmonkey538.githubresourcepackmanager.platform.fabric;
 
-import com.mojang.authlib.GameProfile;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
@@ -10,7 +9,6 @@ import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformText;
 import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
 import top.offsetmonkey538.monkeylib538.utils.TextUtils;
 
-import java.io.IOException;
 import java.util.Map;
 
 public class FabricPlatformText implements PlatformText {

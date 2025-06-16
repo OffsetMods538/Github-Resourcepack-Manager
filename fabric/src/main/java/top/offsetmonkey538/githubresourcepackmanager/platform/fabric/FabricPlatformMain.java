@@ -3,12 +3,9 @@ package top.offsetmonkey538.githubresourcepackmanager.platform.fabric;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.resource.ResourcePackManager;
-import net.minecraft.resource.ResourcePackProfile;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
-import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
 
 import java.nio.file.Path;

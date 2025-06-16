@@ -6,8 +6,6 @@ import org.apache.commons.io.file.PathUtils;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformServerProperties;
-import top.offsetmonkey538.githubresourcepackmanager.utils.MyFileUtils;
-import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
 
 import java.io.File;
 import java.io.IOException;

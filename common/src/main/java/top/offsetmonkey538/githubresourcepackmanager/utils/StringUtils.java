@@ -52,13 +52,6 @@ public final class StringUtils {
         return -1;
     }
 
-    public static int extractPriorityFromFileLenient(File file) {
-        final int result = extractPriorityFromFileInternal(file);
-        if (result != -1) return result;
-        LOGGER.warn("File '%s' doesn't start with priority!", file);
-        return 0;
-    }
-
     private static int extractPriorityFromFileInternal(File file) {
         final String filename = file.getName();
 
