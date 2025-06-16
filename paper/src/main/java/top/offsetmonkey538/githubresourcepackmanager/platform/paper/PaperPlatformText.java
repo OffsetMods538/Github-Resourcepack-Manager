@@ -3,6 +3,9 @@ package top.offsetmonkey538.githubresourcepackmanager.platform.paper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
+import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformText;
 import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
@@ -10,20 +13,17 @@ import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
 import java.util.List;
 import java.util.Map;
 
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
-
 public class PaperPlatformText implements PlatformText {
     @Override
-    public void sendUpdateMessage(Map<String, String> placeholders) throws GithubResourcepackManagerException {
-        String message = config.resourcePackProvider.updateMessage;
+    public void sendUpdateMessage(final String message, @Nullable final String hoverMessage, Map<String, String> placeholders, boolean adminsOnly) throws GithubResourcepackManagerException {
         final String[] splitMessage = message.split("\n");
 
         final HoverEvent hoverEvent;
         try {
-            hoverEvent = config.resourcePackProvider.updateMessageHoverMessage == null ? null : new HoverEvent(
+            hoverEvent = hoverMessage == null ? null : new HoverEvent(
                     HoverEvent.Action.SHOW_TEXT,
                     getStyledText(
-                            StringUtils.replacePlaceholders(config.resourcePackProvider.updateMessageHoverMessage, placeholders).replace("\\n", "\n")
+                            StringUtils.replacePlaceholders(hoverMessage, placeholders).replace("\\n", "\n")
                     )
             );
         } catch (Exception e) {
@@ -63,7 +63,17 @@ public class PaperPlatformText implements PlatformText {
                 throw new GithubResourcepackManagerException("Failed to style update message at line number '%s'!", e, lineNumber);
             }
 
-            MinecraftServer.getServer().getPlayerList().broadcastSystemMessage(currentLine, false);
+
+            final PlayerList players = MinecraftServer.getServer().getPlayerList();
+            if (!adminsOnly) {
+                players.broadcastSystemMessage(currentLine, false);
+                continue;
+            }
+
+            for (final ServerPlayer player : players.players) {
+                if (!players.isOp(player.getGameProfile())) continue;
+                player.sendSystemMessage(currentLine);
+            }
         }
     }
 

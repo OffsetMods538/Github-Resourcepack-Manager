@@ -4,6 +4,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.server.dedicated.DedicatedServerSettings;
+import net.minecraft.world.level.storage.LevelResource;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformServerProperties;
 import xyz.jpenilla.reflectionremapper.ReflectionRemapper;
@@ -24,6 +25,11 @@ public class PaperPlatformServerProperties implements PlatformServerProperties {
     @Override
     public String getServerPort() {
         return String.valueOf(MinecraftServer.getServer().getPort());
+    }
+
+    @Override
+    public Path getDatapacksDir() {
+        return MinecraftServer.getServer().getWorldPath(LevelResource.DATAPACK_DIR);
     }
 
     @Override

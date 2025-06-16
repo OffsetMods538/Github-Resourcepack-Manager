@@ -78,6 +78,12 @@ public class ModConfig {
         public String getRootLocation() {
             return rootLocation.startsWith("/") ? rootLocation.substring(1) : rootLocation;
         }
+        public Path getPackRoot() {
+            return GIT_FOLDER.resolve(getRootLocation());
+        }
+        public Path getPackPacksDir() {
+            return getPackRoot().resolve("packs");
+        }
     }
 
     public static class DataPackProvider {
@@ -87,7 +93,7 @@ public class ModConfig {
         public String rootLocation = "/datapacks";
 
         @Comment("Message sent TO ADMINS in chat when pack has been updated. May be 'null' to disable.")
-        public String updateMessage = "Server datapacks has been updated!\nNew packs (if any) have been enabled automatically.\nPlease run '/reload' or restart the server to reload datapacks.";
+        public String updateMessage = "Server datapacks has been updated!\nNew packs (if any) have to be enabled with the '/datapack enable` command.\nPlease run '/reload' or restart the server to reload datapacks.";
         @Comment("Message shown when hovering over the 'updateMessage' text. May be 'null' to disable.")
         public String updateMessageHoverMessage = "{longDescription}";
 
@@ -98,6 +104,12 @@ public class ModConfig {
 
         public String getRootLocation() {
             return rootLocation.startsWith("/") ? rootLocation.substring(1) : rootLocation;
+        }
+        public Path getPackRoot() {
+            return GIT_FOLDER.resolve(getRootLocation());
+        }
+        public Path getPackPacksDir() {
+            return getPackRoot().resolve("packs");
         }
     }
 
@@ -250,13 +262,6 @@ public class ModConfig {
     public URI getWebhookUrl() {
         if (resourcePackProvider.successWebhook.url == null) return null;
         return URI.create(resourcePackProvider.successWebhook.url);
-    }
-
-    public Path getResourcePackRoot() {
-        return GIT_FOLDER.resolve(config.resourcePackProvider.getRootLocation());
-    }
-    public Path getResourcePackPacksDir() {
-        return getResourcePackRoot().resolve("packs");
     }
 
     public String getGithubRef() {

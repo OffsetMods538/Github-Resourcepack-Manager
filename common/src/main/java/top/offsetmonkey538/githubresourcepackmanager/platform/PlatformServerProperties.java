@@ -5,6 +5,7 @@ import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepac
 import top.offsetmonkey538.githubresourcepackmanager.handler.ResourcePackHandler;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
@@ -16,6 +17,7 @@ public interface PlatformServerProperties {
 
     String getResourcePackUrl();
     String getServerPort();
+    Path getDatapacksDir();
     void setProperties(Map<String, String> properties);
     void reload() throws GithubResourcepackManagerException;
 

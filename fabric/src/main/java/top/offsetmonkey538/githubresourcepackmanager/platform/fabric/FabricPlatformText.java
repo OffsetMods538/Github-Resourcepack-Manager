@@ -1,31 +1,32 @@
 package top.offsetmonkey538.githubresourcepackmanager.platform.fabric;
 
+import com.mojang.authlib.GameProfile;
 import net.minecraft.server.PlayerManager;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
+import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformText;
 import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
 import top.offsetmonkey538.monkeylib538.utils.TextUtils;
 
+import java.io.IOException;
 import java.util.Map;
-
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
 
 public class FabricPlatformText implements PlatformText {
     @Override
-    public void sendUpdateMessage(Map<String, String> placeholders) throws GithubResourcepackManagerException {
+    public void sendUpdateMessage(final String message, @Nullable final String hoverMessage, Map<String, String> placeholders, boolean adminsOnly) throws GithubResourcepackManagerException {
         final PlayerManager playerManager = FabricPlatformMain.getServer().getPlayerManager();
         if (playerManager == null) return;
 
-        String message = config.resourcePackProvider.updateMessage;
         final String[] splitMessage = message.split("\n");
 
         final HoverEvent hoverEvent;
         try {
-            hoverEvent = config.resourcePackProvider.updateMessageHoverMessage == null ? null : new HoverEvent(
+            hoverEvent = hoverMessage == null ? null : new HoverEvent(
                     HoverEvent.Action.SHOW_TEXT,
                     TextUtils.INSTANCE.getStyledText(
-                            StringUtils.replacePlaceholders(config.resourcePackProvider.updateMessageHoverMessage, placeholders).replace("\\n", "\n")
+                            StringUtils.replacePlaceholders(hoverMessage, placeholders).replace("\\n", "\n")
                     )
             );
         } catch (Exception e) {
@@ -65,7 +66,16 @@ public class FabricPlatformText implements PlatformText {
                 throw new GithubResourcepackManagerException("Failed to style update message at line number '%s'!", e, lineNumber);
             }
 
-            playerManager.broadcast(currentLine, false);
+
+            if (!adminsOnly) {
+                playerManager.broadcast(currentLine, false);
+                continue;
+            }
+
+            for (final ServerPlayerEntity player : playerManager.getPlayerList()) {
+                if (!playerManager.isOperator(player.getGameProfile())) continue;
+                player.sendMessage(currentLine);
+            }
         }
     }
 }
