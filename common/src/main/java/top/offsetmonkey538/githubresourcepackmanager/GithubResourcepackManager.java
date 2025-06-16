@@ -203,6 +203,9 @@ public final class GithubResourcepackManager {
             updateFailed = true;
         }
 
+        // Refresh datapack list
+        PlatformMain.INSTANCE.refreshDatapacks();
+
 
         // Generate placeholder map
         final Map<String, String> placeholders = new HashMap<>();

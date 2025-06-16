@@ -13,8 +13,6 @@ import java.nio.file.Path;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
 
 public class FabricPlatformMain implements PlatformMain, DedicatedServerModInitializer {
-    public static final FabricPlatformMain INSTANCE = (FabricPlatformMain) PlatformMain.INSTANCE;
-
     private static MinecraftServer minecraftServer;
 
     @Override
@@ -39,5 +37,10 @@ public class FabricPlatformMain implements PlatformMain, DedicatedServerModIniti
     @Override
     public void runOnServerStart(Runnable work) {
         ServerLifecycleEvents.SERVER_STARTED.register(minecraftServer1 -> work.run());
+    }
+
+    @Override
+    public void refreshDatapacks() {
+        getServer().getDataPackManager().scanPacks();
     }
 }
