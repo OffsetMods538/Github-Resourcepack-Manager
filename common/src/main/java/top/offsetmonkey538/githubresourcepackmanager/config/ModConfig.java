@@ -139,10 +139,15 @@ public class ModConfig {
                 String webhookBody = Files.readString(getBodyPath());
                 webhookBody = StringUtils.replacePlaceholders(webhookBody, placeholders, true);
 
-                WebhookSender.send(webhookBody, config.getWebhookUrl(), updateType, updateSucceeded);
+                WebhookSender.send(webhookBody, getWebhookUrl(), updateType, updateSucceeded);
             } catch (IOException e) {
                 throw new GithubResourcepackManagerException("Failed to read content of webhook body file '%s'!", e, config.resourcePackProvider.successWebhook.body);
             }
+        }
+
+        public @Nullable URI getWebhookUrl() {
+            if (url == null) return null;
+            return URI.create(url);
         }
 
         public @Nullable Path getBodyPath() {
@@ -257,11 +262,6 @@ public class ModConfig {
                 MOD_URI,
                 outputFileName
         );
-    }
-
-    public URI getWebhookUrl() {
-        if (resourcePackProvider.successWebhook.url == null) return null;
-        return URI.create(resourcePackProvider.successWebhook.url);
     }
 
     public String getGithubRef() {
