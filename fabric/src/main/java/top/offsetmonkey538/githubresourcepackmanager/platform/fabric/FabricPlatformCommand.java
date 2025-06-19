@@ -27,8 +27,8 @@ public class FabricPlatformCommand implements PlatformCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
         dispatcher.register(literal("gh-rp-manager")
-                .requires(ServerCommandSource::isExecutedByPlayer)
                 .then(literal("request-pack")
+                        .requires(ServerCommandSource::isExecutedByPlayer)
                         .executes(
                                 context -> {
                                     final ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
