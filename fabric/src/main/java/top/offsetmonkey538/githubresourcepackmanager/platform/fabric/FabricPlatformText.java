@@ -72,7 +72,7 @@ public class FabricPlatformText implements PlatformText {
 
             for (final ServerPlayerEntity player : playerManager.getPlayerList()) {
                 if (!playerManager.isOperator(player.getGameProfile())) continue;
-                player.sendMessage(currentLine);
+                player.sendMessageToClient(currentLine, false);
             }
         }
     }
