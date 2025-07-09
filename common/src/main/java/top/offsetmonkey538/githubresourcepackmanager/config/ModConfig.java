@@ -37,10 +37,11 @@ public class ModConfig {
 
 
     public static class ServerInfo {
-        @Comment("The public ip of your server (\"123.45.67.89\" or \"play.coolserver.net\")")
+        @SuppressWarnings("HttpUrlsUsage")
+        @Comment("The public ip of your server, may also specify the protocol (\"123.45.67.89\" or \"http://play.coolserver.net\")")
         public String publicIp = null;
 
-        @Comment("If set, this port will be used in the server.properties file instead of the Minecraft server port. HTTP server will still be hosted on the Minecraft port. Only useful when running the server behind a proxy like nginx, traefik, cloudflare tunnel, etc.")
+        @Comment("If set, this port will be used in the server.properties file instead of the Minecraft server port. The HTTP server will still be hosted on the Minecraft port. Only useful when running the server behind a proxy like nginx, traefik, cloudflare tunnel, etc.")
         public String proxyPort = null;
     }
 
@@ -254,9 +255,11 @@ public class ModConfig {
         }
     }
 
+    @SuppressWarnings("HttpUrlsUsage")
     public String getPackUrl(String outputFileName) {
         return String.format(
-                "http://%s:%s/%s/%s",
+                "%s%s:%s/%s/%s",
+                (serverInfo.publicIp.startsWith("http://") || serverInfo.publicIp.startsWith("https://") ? "" : "http://"),
                 serverInfo.publicIp,
                 serverInfo.proxyPort == null ? PlatformServerProperties.INSTANCE.getServerPort() : serverInfo.proxyPort,
                 MOD_URI,
