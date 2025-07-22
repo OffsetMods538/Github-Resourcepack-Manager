@@ -1,16 +1,14 @@
 package top.offsetmonkey538.githubresourcepackmanager;
 
 import org.apache.commons.io.FileUtils;
+import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.handler.GitHandler;
 import top.offsetmonkey538.githubresourcepackmanager.handler.PackHandler;
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
-import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformCommand;
+import top.offsetmonkey538.githubresourcepackmanager.platform.*;
 import top.offsetmonkey538.githubresourcepackmanager.config.ConfigManager;
-import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
-import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformServerProperties;
-import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformText;
 import top.offsetmonkey538.githubresourcepackmanager.utils.*;
 import top.offsetmonkey538.meshlib.api.HttpHandlerRegistry;
 
@@ -18,6 +16,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Pattern;
 
 import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
@@ -44,6 +44,8 @@ public final class GithubResourcepackManager {
 
 
     public static void initialize() {
+        PlatformMain.INSTANCE.registerLogToAdminListener();
+
         PlatformCommand.INSTANCE.registerGithubRpManagerCommand();
 
         ConfigManager.loadConfig();
@@ -142,7 +144,7 @@ public final class GithubResourcepackManager {
 
         // Send chat message
         try {
-            sendUpdateMessage(wasUpdated, placeholders);
+            if (!failed) sendUpdateMessage(wasUpdated, placeholders);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to send update message in chat!", e);
         }

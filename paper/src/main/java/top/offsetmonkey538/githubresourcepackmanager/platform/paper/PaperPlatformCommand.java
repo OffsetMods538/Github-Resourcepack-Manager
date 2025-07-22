@@ -1,20 +1,29 @@
 package top.offsetmonkey538.githubresourcepackmanager.platform.paper;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.server.MinecraftServer;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.entity.Player;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformCommand;
+import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging;
 
 import java.net.URI;
 
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
+import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static io.papermc.paper.command.brigadier.Commands.argument;
 import static io.papermc.paper.command.brigadier.Commands.literal;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
 
 public class PaperPlatformCommand implements PlatformCommand {
     @SuppressWarnings("UnstableApiUsage")
@@ -55,14 +64,14 @@ public class PaperPlatformCommand implements PlatformCommand {
                             .requires(source -> source.getSender().isOp())
                             .executes(
                                     context -> {
-                                        GithubResourcepackManager.updatePack(GithubResourcepackManager.UpdateType.COMMAND);
+                                        runTriggerUpdate(context, false);
                                         return 1;
                                     }
                             )
                             .then(argument("force", bool())
                                     .executes(
                                             context -> {
-                                                GithubResourcepackManager.updatePack(GithubResourcepackManager.UpdateType.COMMAND_FORCE);
+                                                runTriggerUpdate(context, getBool(context, "force"));
                                                 return 1;
                                             }
                                     )
@@ -71,6 +80,33 @@ public class PaperPlatformCommand implements PlatformCommand {
                     .build()
             );
         });
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    private void runTriggerUpdate(CommandContext<CommandSourceStack> context, boolean force) {
+        final PlatformLogging.LogListener infoListener = (message, error) -> {
+            context.getSource().getSender().sendMessage(Component.text(String.format("[%s] %s", MOD_ID, message)));
+        };
+        final PlatformLogging.LogListener warnListener = (message, error) -> {
+            Component text = Component
+                    .text(String.format("[%s] %s", MOD_ID, message))
+                    .color(NamedTextColor.YELLOW);
+
+            if (error != null) text = text.hoverEvent(
+                    HoverEvent.showText(
+                            Component.text(ExceptionUtils.getRootCauseMessage(error))
+                    )
+            );
+
+            context.getSource().getSender().sendMessage(text);
+        };
+        PlatformLogging.LOGGER.addListener(PlatformLogging.LogLevel.INFO, infoListener);
+        PlatformLogging.LOGGER.addListener(PlatformLogging.LogLevel.WARN, warnListener);
+
+        GithubResourcepackManager.updatePack(force ? GithubResourcepackManager.UpdateType.COMMAND_FORCE : GithubResourcepackManager.UpdateType.COMMAND);
+
+        PlatformLogging.LOGGER.removeListener(PlatformLogging.LogLevel.INFO, infoListener);
+        PlatformLogging.LOGGER.removeListener(PlatformLogging.LogLevel.WARN, warnListener);
     }
 
     //@Override
