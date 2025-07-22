@@ -30,4 +30,9 @@ public interface PlatformMain {
      * This way the user won't have to run {@code /datapack list} before being able to enable them
      */
     void refreshDatapacks();
+
+    /**
+     * Registers log listeners for reporting errors to admins
+     */
+    void registerLogToAdminListener();
 }

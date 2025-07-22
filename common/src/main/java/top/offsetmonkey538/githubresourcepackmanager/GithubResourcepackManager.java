@@ -8,7 +8,7 @@ import top.offsetmonkey538.githubresourcepackmanager.handler.DataPackHandler;
 import top.offsetmonkey538.githubresourcepackmanager.handler.GitHandler;
 import top.offsetmonkey538.githubresourcepackmanager.handler.ResourcePackHandler;
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
-import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformCommand;
+import top.offsetmonkey538.githubresourcepackmanager.platform.*;
 import top.offsetmonkey538.githubresourcepackmanager.config.ConfigManager;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformServerProperties;
@@ -47,6 +47,8 @@ public final class GithubResourcepackManager {
     public static ResourcePackHandler resourcePackHandler;
 
     public static void initialize() {
+        PlatformMain.INSTANCE.registerLogToAdminListener();
+
         PlatformCommand.INSTANCE.registerGithubRpManagerCommand();
 
         ConfigManager.loadConfig();
@@ -68,7 +70,7 @@ public final class GithubResourcepackManager {
             Files.createDirectories(DATAPACK_FOLDER);
             Files.createDirectories(GIT_FOLDER);
         } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to create directory '%s'!", RESOURCEPACK_OUTPUT_FOLDER);
+            throw new GithubResourcepackManagerException("Failed to create directory!", e);
         }
     }
 
@@ -162,7 +164,7 @@ public final class GithubResourcepackManager {
 
         // Send chat message
         try {
-            sendUpdateMessage(config.resourcePackProvider.updateMessage, config.resourcePackProvider.updateMessageHoverMessage, wasUpdated, placeholders);
+            if (!failed) sendUpdateMessage(config.resourcePackProvider.updateMessage, config.resourcePackProvider.updateMessageHoverMessage, wasUpdated, placeholders);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to send update message in chat!", e);
         }
