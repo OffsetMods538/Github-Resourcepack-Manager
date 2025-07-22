@@ -44,8 +44,6 @@ public final class GithubResourcepackManager {
     public static ResourcePackHandler resourcePackHandler;
 
     public static void initialize() {
-        PlatformMain.INSTANCE.registerLogToAdminListener();
-
         PlatformCommand.INSTANCE.registerGithubRpManagerCommand();
 
         ConfigManager.loadConfig();
@@ -58,7 +56,10 @@ public final class GithubResourcepackManager {
 
         HttpHandlerRegistry.INSTANCE.register(MOD_URI, new MainHttpHandler());
 
-        PlatformMain.INSTANCE.runOnServerStart(() -> updatePack(UpdateType.RESTART));
+        PlatformMain.INSTANCE.runOnServerStart(() -> {
+            PlatformMain.INSTANCE.registerLogToAdminListener();
+            updatePack(UpdateType.RESTART);
+        });
     }
 
     private static void createFolderStructure() throws GithubResourcepackManagerException {
