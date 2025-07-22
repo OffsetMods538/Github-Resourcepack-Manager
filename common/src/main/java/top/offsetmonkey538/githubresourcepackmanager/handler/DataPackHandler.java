@@ -3,11 +3,9 @@ package top.offsetmonkey538.githubresourcepackmanager.handler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.io.file.PathUtils;
-import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformServerProperties;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -136,21 +134,6 @@ public class DataPackHandler {
         }
     }
 
-    /**
-     * Gather list of {@link File}s to construct the final pack from.
-     * <p>
-     *     If there's a {@code pack.mcmeta} file in the {@link ModConfig#getResourcePackRoot() resource pack root directory}, the root directory will be the only file.
-     * </p>
-     * <p>
-     *     If there's a {@link ModConfig#getResourcePackPacksDir() packs directory} in the pack root, all files directly in the packs directory will be returned.
-     * </p>
-     * <p>
-     *     If there's neither a {@code pack.mcmeta} file or {@link ModConfig#getResourcePackPacksDir() packs directory} in the pack root, all files directly in the pack root will be returned.
-     * </p>
-     *
-     * @return A list of {@link File}s to construct the final pack from. May include directories and .zip files.
-     * @throws GithubResourcepackManagerException when the source packs could not be determined.
-     */
     private List<Path> gatherSourcePacks() throws GithubResourcepackManagerException {
         LOGGER.info("Checking for 'pack.mcmeta' in data pack root...");
         final boolean hasPackMcmeta = Files.exists(config.dataPackProvider.getPackRoot().resolve("pack.mcmeta"));

@@ -10,9 +10,6 @@ import top.offsetmonkey538.githubresourcepackmanager.handler.ResourcePackHandler
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.platform.*;
 import top.offsetmonkey538.githubresourcepackmanager.config.ConfigManager;
-import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
-import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformServerProperties;
-import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformText;
 import top.offsetmonkey538.meshlib.api.HttpHandlerRegistry;
 
 import java.io.IOException;
@@ -214,12 +211,12 @@ public final class GithubResourcepackManager {
         if (gitHandler.getCommitProperties() != null) placeholders.putAll(gitHandler.getCommitProperties().toPlaceholdersMap());
         placeholders.put("{packType}", "data");
         placeholders.put("{updateType}", updateType.name());
-        placeholders.put("{wasUpdated}", String.valueOf(wasUpdated));
+        placeholders.put("{wasUpdated}", String.valueOf(true));
         LOGGER.info("Placeholders: %s", placeholders);
 
         // Send chat message
         try {
-            sendUpdateMessage(config.dataPackProvider.updateMessage, config.dataPackProvider.updateMessageHoverMessage, wasUpdated, placeholders, true);
+            sendUpdateMessage(config.dataPackProvider.updateMessage, config.dataPackProvider.updateMessageHoverMessage, true, placeholders, true);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to send update message in chat!", e);
         }

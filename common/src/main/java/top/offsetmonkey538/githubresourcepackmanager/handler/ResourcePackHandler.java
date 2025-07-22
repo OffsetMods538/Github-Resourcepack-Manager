@@ -3,7 +3,6 @@ package top.offsetmonkey538.githubresourcepackmanager.handler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.jetbrains.annotations.Nullable;
-import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.utils.MyFileUtils;
 import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
@@ -139,21 +138,6 @@ public class ResourcePackHandler {
                 .toList();
     }
 
-    /**
-     * Gather list of {@link File}s to construct the final pack from.
-     * <p>
-     *     If there's a {@code pack.mcmeta} file in the {@link ModConfig#getResourcePackRoot() resource pack root directory}, the root directory will be the only file.
-     * </p>
-     * <p>
-     *     If there's a {@link ModConfig#getResourcePackPacksDir() packs directory} in the pack root, all files directly in the packs directory will be returned.
-     * </p>
-     * <p>
-     *     If there's neither a {@code pack.mcmeta} file or {@link ModConfig#getResourcePackPacksDir() packs directory} in the pack root, all files directly in the pack root will be returned.
-     * </p>
-     *
-     * @return A list of {@link File}s to construct the final pack from. May include directories and .zip files.
-     * @throws GithubResourcepackManagerException when the source packs could not be determined.
-     */
     private List<File> gatherSourcePacks() throws GithubResourcepackManagerException {
         LOGGER.info("Checking for 'pack.mcmeta' in resource pack root...");
         final boolean hasPackMcmeta = config.resourcePackProvider.getPackRoot().resolve("pack.mcmeta").toFile().exists();
