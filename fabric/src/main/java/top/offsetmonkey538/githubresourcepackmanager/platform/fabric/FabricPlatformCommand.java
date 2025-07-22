@@ -14,7 +14,6 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 import net.minecraft.util.Formatting;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
@@ -37,8 +36,8 @@ public class FabricPlatformCommand implements PlatformCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
         dispatcher.register(literal("gh-rp-manager")
-                .requires(ServerCommandSource::isExecutedByPlayer)
                 .then(literal("request-pack")
+                        .requires(ServerCommandSource::isExecutedByPlayer)
                         .executes(
                                 context -> {
                                     final ServerPlayerEntity player = context.getSource().getPlayerOrThrow();

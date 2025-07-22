@@ -1,13 +1,11 @@
 package top.offsetmonkey538.githubresourcepackmanager.platform.paper;
 
-import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

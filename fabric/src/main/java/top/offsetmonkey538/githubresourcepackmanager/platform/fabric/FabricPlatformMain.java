@@ -1,6 +1,5 @@
 package top.offsetmonkey538.githubresourcepackmanager.platform.fabric;
 
-import com.mojang.authlib.GameProfile;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -11,10 +10,8 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 import net.minecraft.util.Formatting;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging;
@@ -27,8 +24,6 @@ import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackMa
 import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
 
 public class FabricPlatformMain implements PlatformMain, DedicatedServerModInitializer {
-    public static final FabricPlatformMain INSTANCE = (FabricPlatformMain) PlatformMain.INSTANCE;
-
     private static MinecraftServer minecraftServer;
     private static final LinkedList<Text> messageQueue = new LinkedList<>();
 
@@ -88,29 +83,8 @@ public class FabricPlatformMain implements PlatformMain, DedicatedServerModIniti
         });
     }
 
-    //public void registerLogToAdminListener() {
-    //    LOGGER.addListener(PlatformLogging.LogLevel.ERROR, (message, error) -> {
-    //        Component text = Component
-    //                .text(String.format("[%s] %s", MOD_ID, message))
-    //                .color(NamedTextColor.RED);
-    //
-    //        if (error != null) text = text.hoverEvent(
-    //                HoverEvent.showText(
-    //                        Component.text(ExceptionUtils.getRootCauseMessage(error))
-    //                )
-    //        );
-    //
-    //
-    //        boolean sent = false;
-    //        for (final OfflinePlayer operator : plugin.getServer().getOperators()) {
-    //            if (operator.getPlayer() == null) continue;
-    //            operator.getPlayer().sendMessage(text);
-    //            sent = true;
-    //        }
-    //
-    //        if (sent) return;
-    //
-    //        plugin.messageQueue.addLast(text);
-    //    });
-    //}
+    @Override
+    public void refreshDatapacks() {
+        getServer().getDataPackManager().scanPacks();
+    }
 }

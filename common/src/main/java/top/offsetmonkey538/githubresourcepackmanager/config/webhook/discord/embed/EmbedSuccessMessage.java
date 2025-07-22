@@ -1,8 +1,8 @@
-package top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord;
+package top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.embed;
 
 import top.offsetmonkey538.githubresourcepackmanager.config.webhook.DefaultWebhookBody;
 
-public final class EmbedMessage implements DefaultWebhookBody {
+public final class EmbedSuccessMessage implements DefaultWebhookBody {
 
     public final String username = "GitHub Resource Pack Manager";
     public final String avatar_url = "https://github.com/OffsetMods538/Github-Resourcepack-Manager/blob/master/src/main/resources/assets/github-resourcepack-manager/icon.png?raw=true";
@@ -10,7 +10,7 @@ public final class EmbedMessage implements DefaultWebhookBody {
             new Embed(
                     "New update for pack released!",
                     "Download [here]({downloadUrl})!",
-                    16722304,
+                    0xFF2980,
                     new Field[] {
                             new Field(
                                     "Description",
@@ -25,6 +25,6 @@ public final class EmbedMessage implements DefaultWebhookBody {
 
     @Override
     public String getName() {
-        return "discord/embed_message.json";
+        return "discord/embed/success.json";
     }
 }

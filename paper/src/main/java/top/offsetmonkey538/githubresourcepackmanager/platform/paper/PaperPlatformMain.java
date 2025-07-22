@@ -1,26 +1,15 @@
 package top.offsetmonkey538.githubresourcepackmanager.platform.paper;
 
+import net.minecraft.server.MinecraftServer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.util.RGBLike;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Stream;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
 import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
@@ -36,6 +25,11 @@ public class PaperPlatformMain implements PlatformMain {
     @Override
     public void runOnServerStart(Runnable work) {
         work.run();
+    }
+
+    @Override
+    public void refreshDatapacks() {
+        MinecraftServer.getServer().getPackRepository().reload();
     }
 
     @Override
@@ -69,40 +63,7 @@ public class PaperPlatformMain implements PlatformMain {
         PaperPlatformMain.plugin = plugin;
     }
 
-    public static JavaPlugin getPlugin() {
+    public static PaperPlugin getPlugin() {
         return plugin;
     }
-
-
-    //@Override
-    //public void onInitializeServer() {
-    //    GithubResourcepackManager.initialize();
-
-    //    ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer1 -> minecraftServer = minecraftServer1);
-    //}
-
-    //public MinecraftServer getServer() {
-    //    return minecraftServer;
-    //}
-
-
-    //@Override
-    //public Logger getLogger() {
-    //    return LOGGER;
-    //}
-
-    //@Override
-    //public Path getConfigDir() {
-    //    return FabricLoader.getInstance().getConfigDir();
-    //}
-
-    //@Override
-    //public Path getGameDir() {
-    //    return FabricLoader.getInstance().getGameDir();
-    //}
-
-    //@Override
-    //public void runOnServerStart(Runnable work) {
-    //    ServerLifecycleEvents.SERVER_STARTED.register(minecraftServer1 -> work.run());
-    //}
 }

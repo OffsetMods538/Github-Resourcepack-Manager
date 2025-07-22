@@ -74,16 +74,32 @@ public final class ConfigManager {
     private static @NotNull List<String> checkConfigErrors() {
         final List<String> errors = new ArrayList<>();
 
-        if (config.serverPublicIp == null) errors.add("Field 'serverPublicIp' not set!");
-        if (config.repoUrl == null) errors.add("Field 'repoUrl' not set!");
-        if (config.isRepoPrivate) {
-            if (config.githubUsername == null) errors.add("Field 'githubUsername' not set, but 'isRepoPrivate' is true!");
-            if (config.githubToken == null) errors.add("Field 'githubToken' not set, but 'isRepoPrivate' is true!");
+        if (config.serverInfo.publicIp == null) errors.add("Field 'serverInfo.publicIp' not set!");
+        if (config.repositoryInfo.url == null) errors.add("Field 'repositoryInfo.url' not set!");
+        if (config.repositoryInfo.isPrivate) {
+            if (config.repositoryInfo.username == null) errors.add("Field 'repositoryInfo.username' not set, but 'repositoryInfo.isPrivate' is true!");
+            if (config.repositoryInfo.token == null) errors.add("Field 'repositoryInfo.token' not set, but 'repositoryInfo.isPrivate' is true!");
         } else {
-            if (config.githubUsername != null) errors.add("Field 'githubUsername' set, but 'isRepoPrivate' is false! Can be unset");
-            if (config.githubToken != null) errors.add("Field 'githubToken' set, but 'isRepoPrivate' is false! Can be unset");
+            if (config.repositoryInfo.username != null) errors.add("Field 'repositoryInfo.username' set, but 'repositoryInfo.isPrivate' is false! Can be unset");
+            if (config.repositoryInfo.token != null) errors.add("Field 'repositoryInfo.token' set, but 'repositoryInfo.isPrivate' is false! Can be unset");
         }
+
+        checkWebhookErrors(errors, config.resourcePackProvider.successWebhook, "resourcePackProvider.successWebhook");
+        checkWebhookErrors(errors, config.resourcePackProvider.failWebhook, "resourcePackProvider.failWebhook");
+        checkWebhookErrors(errors, config.dataPackProvider.successWebhook, "dataPackProvider.successWebhook");
+        checkWebhookErrors(errors, config.dataPackProvider.failWebhook, "dataPackProvider.failWebhook");
+
         return errors;
+    }
+
+    private static void checkWebhookErrors(final List<String> errors, final ModConfig.WebhookInfo webhook, final String webhookPath) {
+        if (!webhook.enabled) return;
+
+        if (webhook.url == null) errors.add("Field '%s.url' not set, but '%s.enabled' is true!".formatted(webhookPath, webhookPath));
+        if (webhook.body == null) errors.add("Field '%s.body' not set, but '%s.enabled' is true!".formatted(webhookPath, webhookPath));
+
+        final Path bodyPath = webhook.getBodyPath();
+        if (bodyPath != null && !Files.exists(bodyPath)) errors.add("Field '%s.body' points to file '%s', which doesn't exist!".formatted(webhookPath, bodyPath.toAbsolutePath()));
     }
 
     private static ModConfig load() {

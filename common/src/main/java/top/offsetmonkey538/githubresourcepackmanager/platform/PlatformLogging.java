@@ -2,8 +2,6 @@ package top.offsetmonkey538.githubresourcepackmanager.platform;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.BiConsumer;
-
 import static top.offsetmonkey538.githubresourcepackmanager.platform.ServiceLoader.load;
 
 public interface PlatformLogging {

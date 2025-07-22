@@ -6,7 +6,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.PACK_NAME_PATTERN;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.RESOURCEPACK_NAME_PATTERN;
 import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
 
 public final class StringUtils {
@@ -46,12 +46,18 @@ public final class StringUtils {
     }
 
     public static int extractPriorityFromFile(File file) {
+        final int result = extractPriorityFromFileInternal(file);
+        if (result != -1) return result;
+        LOGGER.error("File '%s' doesn't start with priority!", file);
+        return -1;
+    }
+
+    private static int extractPriorityFromFileInternal(File file) {
         final String filename = file.getName();
 
-        final Matcher matcher = PACK_NAME_PATTERN.matcher(filename);
+        final Matcher matcher = RESOURCEPACK_NAME_PATTERN.matcher(filename);
 
         if (!matcher.find()) {
-            LOGGER.error("File '%s' doesn't start with priority!", file);
             return -1;
         }
 
@@ -61,7 +67,7 @@ public final class StringUtils {
     public static String nameWithoutPriorityString(File file) throws GithubResourcepackManagerException {
         final String filename = file.getName();
 
-        final Matcher matcher = PACK_NAME_PATTERN.matcher(filename);
+        final Matcher matcher = RESOURCEPACK_NAME_PATTERN.matcher(filename);
 
         if (!matcher.find()) throw new GithubResourcepackManagerException("File '%s' doesn't start with priority!", file);
 

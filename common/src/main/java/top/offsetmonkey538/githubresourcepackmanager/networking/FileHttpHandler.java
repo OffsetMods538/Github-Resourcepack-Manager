@@ -10,14 +10,14 @@ import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.packHandler;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.resourcePackHandler;
 import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
 
 public final class FileHttpHandler {
     private FileHttpHandler() {}
 
     public static void handleRequest(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
-        final File fileToServe = packHandler.getOutputPackFile();
+        final File fileToServe = resourcePackHandler.getOutputPackFile();
 
         final long fileLength = fileToServe.length();
 
