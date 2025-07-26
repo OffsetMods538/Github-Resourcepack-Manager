@@ -59,8 +59,9 @@ repositories {
         name = "OffsetMods538"
         url = "https://maven.offsetmonkey538.top/releases"
         content {
-            includeGroup "top.offsetmonkey538.monkeylib538"
             includeGroup "top.offsetmonkey538.meshlib"
+            includeGroup "top.offsetmonkey538.monkeylib538"
+            includeGroup "top.offsetmonkey538.offsetconfig538"
         }
     }
 }
@@ -91,9 +92,13 @@ dependencies {
 
     modRuntimeOnly "me.djtheredstoner:DevAuth-fabric:${devauth_version}"
 
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fapi_version}"
+    compileOnly "top.offsetmonkey538.monkeylib538:monkeylib538-common:${project.monkeylib538_version}"
+    modRuntimeOnly("top.offsetmonkey538.monkeylib538:monkeylib538-fabric:${project.monkeylib538_version}+1.21.5") {
+        exclude(group: "net.fabricmc.fabric-api")
+        exclude(group: "top.offsetmonkey538.monkeylib538:monkeylib538-fabric")
+    }
 
-    modImplementation "top.offsetmonkey538.monkeylib538:monkeylib538:${project.monkeylib538_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fapi_version}"
 
     include runtimeOnly("top.offsetmonkey538.meshlib:mesh-lib-fabric:${rootProject.meshlib_version}")
 

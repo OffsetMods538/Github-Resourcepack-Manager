@@ -18,7 +18,7 @@ import java.util.Random;
 import java.util.stream.Stream;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
-import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public class ResourcePackHandler {
     private Path outputPackPath;
@@ -140,27 +140,27 @@ public class ResourcePackHandler {
 
     private List<File> gatherSourcePacks() throws GithubResourcepackManagerException {
         LOGGER.info("Checking for 'pack.mcmeta' in resource pack root...");
-        final boolean hasPackMcmeta = config.resourcePackProvider.getPackRoot().resolve("pack.mcmeta").toFile().exists();
+        final boolean hasPackMcmeta = config.get().resourcePackProvider.getPackRoot().resolve("pack.mcmeta").toFile().exists();
         LOGGER.info("%sFound!", hasPackMcmeta ? "" : "Not ");
 
         LOGGER.info("Checking for 'packs' directory in resource pack root...");
-        Path packsDir = config.resourcePackProvider.getPackPacksDir();
+        Path packsDir = config.get().resourcePackProvider.getPackPacksDir();
         final boolean hasPacksFolder = Files.exists(packsDir) && Files.isDirectory(packsDir);
         LOGGER.info("%sFound!", hasPacksFolder ? "" : "Not ");
 
         if (hasPackMcmeta && hasPacksFolder) {
-            throw new GithubResourcepackManagerException("Found both 'pack.mcmeta' and the 'packs' directory in resource pack root '%s'!", config.resourcePackProvider.getPackPacksDir().toAbsolutePath());
+            throw new GithubResourcepackManagerException("Found both 'pack.mcmeta' and the 'packs' directory in resource pack root '%s'!", config.get().resourcePackProvider.getPackPacksDir().toAbsolutePath());
         }
         if (!hasPackMcmeta && !hasPacksFolder) {
-            LOGGER.info("Found neither 'pack.mcmeta' nor the 'packs' directory in resource pack root '%s'!", config.resourcePackProvider.getPackPacksDir().toAbsolutePath());
-            LOGGER.info("Assuming resource pack root '%s' as 'packs' directory.", config.resourcePackProvider.getPackPacksDir().toAbsolutePath());
-            packsDir = config.resourcePackProvider.getPackRoot();
+            LOGGER.info("Found neither 'pack.mcmeta' nor the 'packs' directory in resource pack root '%s'!", config.get().resourcePackProvider.getPackPacksDir().toAbsolutePath());
+            LOGGER.info("Assuming resource pack root '%s' as 'packs' directory.", config.get().resourcePackProvider.getPackPacksDir().toAbsolutePath());
+            packsDir = config.get().resourcePackProvider.getPackRoot();
         }
 
 
         if (hasPackMcmeta) {
             LOGGER.info("Using resource pack root as resource pack.");
-            return List.of(config.resourcePackProvider.getPackRoot().toFile());
+            return List.of(config.get().resourcePackProvider.getPackRoot().toFile());
         }
 
         LOGGER.info("Using 'packs' directory for resource packs.");

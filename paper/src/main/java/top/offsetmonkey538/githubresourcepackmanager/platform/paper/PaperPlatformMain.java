@@ -6,13 +6,13 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.OfflinePlayer;
-import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
+import top.offsetmonkey538.monkeylib538.api.log.PlatformLogger;
 
 import java.nio.file.Path;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
-import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public class PaperPlatformMain implements PlatformMain {
     private static PaperPlugin plugin;
@@ -34,7 +34,7 @@ public class PaperPlatformMain implements PlatformMain {
 
     @Override
     public void registerLogToAdminListener() {
-        LOGGER.addListener(PlatformLogging.LogLevel.ERROR, (message, error) -> {
+        LOGGER.addListener(PlatformLogger.LogLevel.ERROR, (message, error) -> {
             Component text = Component
                     .text(String.format("[%s] %s", MOD_ID, message))
                     .color(NamedTextColor.RED);

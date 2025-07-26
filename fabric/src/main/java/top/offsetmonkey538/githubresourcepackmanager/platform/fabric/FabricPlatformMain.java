@@ -12,16 +12,15 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.LoggerFactory;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
-import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
+import top.offsetmonkey538.monkeylib538.api.log.PlatformLogger;
 
 import java.nio.file.Path;
 import java.util.LinkedList;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
-import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public class FabricPlatformMain implements PlatformMain, DedicatedServerModInitializer {
     private static MinecraftServer minecraftServer;
@@ -29,8 +28,6 @@ public class FabricPlatformMain implements PlatformMain, DedicatedServerModIniti
 
     @Override
     public void onInitializeServer() {
-        FabricPlatformLogging.setLogger(LoggerFactory.getLogger(MOD_ID));
-
         GithubResourcepackManager.initialize();
 
         ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer1 -> minecraftServer = minecraftServer1);
@@ -60,7 +57,7 @@ public class FabricPlatformMain implements PlatformMain, DedicatedServerModIniti
 
     @Override
     public void registerLogToAdminListener() {
-        LOGGER.addListener(PlatformLogging.LogLevel.ERROR, (message, error) -> {
+        LOGGER.addListener(PlatformLogger.LogLevel.ERROR, (message, error) -> {
             MutableText text = Text
                     .literal(String.format("[%s] %s", MOD_ID, message))
                     .setStyle(Style.EMPTY.withColor(Formatting.RED));

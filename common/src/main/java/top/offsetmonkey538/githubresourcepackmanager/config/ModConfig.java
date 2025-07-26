@@ -1,33 +1,26 @@
 package top.offsetmonkey538.githubresourcepackmanager.config;
 
 import blue.endless.jankson.Comment;
-import blue.endless.jankson.Jankson;
-import blue.endless.jankson.JsonGrammar;
 import blue.endless.jankson.api.Marshaller;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import top.offsetmonkey538.githubresourcepackmanager.config.webhook.BasicWebhook;
-import top.offsetmonkey538.githubresourcepackmanager.config.webhook.DefaultWebhookBody;
-import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.basic.BasicFailMessage;
-import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.basic.BasicSuccessMessage;
-import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.embed.EmbedFailMessage;
-import top.offsetmonkey538.githubresourcepackmanager.config.webhook.discord.embed.EmbedSuccessMessage;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
+import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformServerProperties;
 import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
 import top.offsetmonkey538.githubresourcepackmanager.utils.WebhookSender;
+import top.offsetmonkey538.offsetconfig538.api.config.Config;
+import top.offsetmonkey538.offsetconfig538.api.config.Datafixer;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
-import static top.offsetmonkey538.githubresourcepackmanager.config.ConfigManager.CURRENT_CONFIG_FILE_PATH;
-import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
 
-public class ModConfig {
+public class ModConfig implements Config {
 
     @Comment("!!!!Please check the wiki for how to set up the mod. It is linked on both the Modrinth and GitHub pages!!!!")
     public ServerInfo serverInfo = new ServerInfo();
@@ -142,7 +135,7 @@ public class ModConfig {
 
                 WebhookSender.send(webhookBody, getWebhookUrl(), updateType, updateSucceeded);
             } catch (IOException e) {
-                throw new GithubResourcepackManagerException("Failed to read content of webhook body file '%s'!", e, config.resourcePackProvider.successWebhook.body);
+                throw new GithubResourcepackManagerException("Failed to read content of webhook body file '%s'!", e, config.get().resourcePackProvider.successWebhook.body);
             }
         }
 
@@ -152,20 +145,13 @@ public class ModConfig {
         }
 
         public @Nullable Path getBodyPath() {
-            return body == null ? null : CURRENT_CONFIG_FILE_PATH.getParent().resolve(body);
+            return body == null ? null : config.get().getFilePath().getParent().resolve(body);
         }
     }
 
-    protected String getName() {
-        return MOD_ID + "/" + MOD_ID;
-    }
-
-    protected int getConfigVersion() {
-        return 3;
-    }
-
-    protected List<ConfigManager.Datafixer> getDatafixers() {
-        return List.of(
+    @Override
+    public @NotNull Datafixer[] getDatafixers() {
+        return new Datafixer[]{
                 (original, jankson) -> {
                     // 0 -> 1
                     original.put("branch", jankson.toJson(jankson.getMarshaller().marshall(String.class, original.get("githubRef")).replace("refs/heads/", "")));
@@ -227,30 +213,35 @@ public class ModConfig {
 
                     original.put("resourcePackProvider", jankson.toJson(resourcePackProvider));
                 }
-        );
+        };
     }
 
-    public void createDefaultWebhooks() {
-        final Jankson jankson = new Jankson.Builder().build();
-        final List<DefaultWebhookBody> webhookBodies = List.of(
-                new BasicWebhook(),
+    @Override
+    public int getConfigVersion() {
+        return 3;
+    }
 
-                new BasicSuccessMessage(),
-                new BasicFailMessage(),
-                new EmbedSuccessMessage(),
-                new EmbedFailMessage()
-        );
+    @Override
+    public @NotNull Path getFilePath() {
+        return PlatformMain.INSTANCE.getConfigDir().resolve("config").resolve("main.json");
+    }
 
-        for (DefaultWebhookBody webhook : webhookBodies) {
-            final Path location = CURRENT_CONFIG_FILE_PATH.getParent().resolve(webhook.getName());
-
-            if (Files.exists(location)) continue;
-
+    @Override
+    public void beforeLoadStart() {
+        if (Files.exists(PlatformMain.INSTANCE.getConfigDir().getParent().resolve(MOD_ID + ".json"))) {
             try {
-                Files.createDirectories(location.getParent());
-                Files.writeString(location, jankson.toJson(webhook).toJson(JsonGrammar.STRICT));
+                Files.createDirectories(PlatformMain.INSTANCE.getConfigDir().resolve(MOD_ID + ".json").getParent());
+                Files.move(PlatformMain.INSTANCE.getConfigDir().getParent().resolve(MOD_ID + ".json"), PlatformMain.INSTANCE.getConfigDir().resolve(MOD_ID + ".json"));
             } catch (IOException e) {
-                LOGGER.error("Failed to write default webhook body '%s'!", webhook.getName(), e);
+                throw new RuntimeException("Failed to move config file to new location!", e);
+            }
+        }
+        if (Files.exists(PlatformMain.INSTANCE.getConfigDir().resolve(MOD_ID + ".json"))) {
+            try {
+                Files.createDirectories(getFilePath().getParent());
+                Files.move(PlatformMain.INSTANCE.getConfigDir().resolve(MOD_ID + ".json"), getFilePath());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to move config file to new location!", e);
             }
         }
     }

@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
-import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public class DataPackHandler {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -110,53 +110,29 @@ public class DataPackHandler {
         return GSON.fromJson(Files.readString(STATE_FILE), State.class);
     }
 
-    private void copyPacksToDirectory(List<Path> sourcePacks, Path datapacksDir) throws GithubResourcepackManagerException {
-        for (Path sourcePack : sourcePacks) {
-            if (Files.isDirectory(sourcePack)) {
-                try {
-                    PathUtils.copyDirectory(sourcePack, datapacksDir);
-                } catch (IOException e) {
-                    throw new GithubResourcepackManagerException("Failed to copy pack '%s' into directory '%s'!", e, sourcePack, datapacksDir);
-                }
-                continue;
-            }
-            if (sourcePack.getFileName().endsWith(".zip")) {
-                try {
-                    Files.copy(sourcePack, datapacksDir);
-                } catch (IOException e) {
-                    throw new GithubResourcepackManagerException("Failed to copy pack '%s' into directory '%s'!", e, sourcePack, datapacksDir);
-                }
-                continue;
-            }
-
-            LOGGER.error("'%s' is not a valid pack! Ignoring...", sourcePack);
-            sourcePacks.remove(sourcePack);
-        }
-    }
-
     private List<Path> gatherSourcePacks() throws GithubResourcepackManagerException {
         LOGGER.info("Checking for 'pack.mcmeta' in data pack root...");
-        final boolean hasPackMcmeta = Files.exists(config.dataPackProvider.getPackRoot().resolve("pack.mcmeta"));
+        final boolean hasPackMcmeta = Files.exists(config.get().dataPackProvider.getPackRoot().resolve("pack.mcmeta"));
         LOGGER.info("%sFound!", hasPackMcmeta ? "" : "Not ");
 
         LOGGER.info("Checking for 'packs' directory in data pack root...");
-        Path packsDir = config.dataPackProvider.getPackPacksDir();
+        Path packsDir = config.get().dataPackProvider.getPackPacksDir();
         final boolean hasPacksFolder = Files.exists(packsDir) && Files.isDirectory(packsDir);
         LOGGER.info("%sFound!", hasPacksFolder ? "" : "Not ");
 
         if (hasPackMcmeta && hasPacksFolder) {
-            throw new GithubResourcepackManagerException("Found both 'pack.mcmeta' and the 'packs' directory in data pack root '%s'!", config.dataPackProvider.getPackRoot().toAbsolutePath());
+            throw new GithubResourcepackManagerException("Found both 'pack.mcmeta' and the 'packs' directory in data pack root '%s'!", config.get().dataPackProvider.getPackRoot().toAbsolutePath());
         }
         if (!hasPackMcmeta && !hasPacksFolder) {
-            LOGGER.info("Found neither 'pack.mcmeta' nor the 'packs' directory in data pack root '%s'!", config.dataPackProvider.getPackPacksDir().toAbsolutePath());
-            LOGGER.info("Assuming data pack root '%s' as 'packs' directory.", config.dataPackProvider.getPackPacksDir().toAbsolutePath());
-            packsDir = config.dataPackProvider.getPackRoot();
+            LOGGER.info("Found neither 'pack.mcmeta' nor the 'packs' directory in data pack root '%s'!", config.get().dataPackProvider.getPackPacksDir().toAbsolutePath());
+            LOGGER.info("Assuming data pack root '%s' as 'packs' directory.", config.get().dataPackProvider.getPackPacksDir().toAbsolutePath());
+            packsDir = config.get().dataPackProvider.getPackRoot();
         }
 
 
         if (hasPackMcmeta) {
             LOGGER.info("Using data pack root as data pack.");
-            return List.of(config.dataPackProvider.getPackRoot());
+            return List.of(config.get().dataPackProvider.getPackRoot());
         }
 
         LOGGER.info("Using 'packs' directory for data packs.");

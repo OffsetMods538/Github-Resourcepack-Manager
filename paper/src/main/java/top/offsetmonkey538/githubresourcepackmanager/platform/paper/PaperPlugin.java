@@ -21,7 +21,6 @@ public class PaperPlugin extends JavaPlugin implements Listener {
         MeshLib.initialize();
 
         PaperPlatformMain.setPlugin(this);
-        PaperPlatformLogging.setLogger(getLogger());
 
         GithubResourcepackManager.initialize();
     }

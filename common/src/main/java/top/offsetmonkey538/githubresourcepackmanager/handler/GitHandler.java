@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
-import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public class GitHandler {
 
@@ -81,8 +81,8 @@ public class GitHandler {
     private static void updateRepository(boolean retry) throws GithubResourcepackManagerException {
         // Create credentials provider if repository is private
         CredentialsProvider credentialsProvider = null;
-        if (config.repositoryInfo.isPrivate)
-            credentialsProvider = new UsernamePasswordCredentialsProvider(config.repositoryInfo.username, config.repositoryInfo.token);
+        if (config.get().repositoryInfo.isPrivate)
+            credentialsProvider = new UsernamePasswordCredentialsProvider(config.get().repositoryInfo.username, config.get().repositoryInfo.token);
 
         // If the repo folder doesn't exist, clone the repository.
         if (!GIT_FOLDER.toFile().exists()) cloneRepository(credentialsProvider);
@@ -94,7 +94,7 @@ public class GitHandler {
                     .setCredentialsProvider(credentialsProvider)
                     .setContentMergeStrategy(ContentMergeStrategy.THEIRS)
                     .setStrategy(MergeStrategy.THEIRS)
-                    .setRemoteBranchName(config.getGithubRef())
+                    .setRemoteBranchName(config.get().getGithubRef())
                     .call();
 
             // Handle errors
@@ -132,9 +132,9 @@ public class GitHandler {
     private static void cloneRepository(CredentialsProvider credentialsProvider) throws GithubResourcepackManagerException {
         try {
             Git git = Git.cloneRepository()
-                    .setURI(config.repositoryInfo.url)
+                    .setURI(config.get().repositoryInfo.url)
                     .setDirectory(GIT_FOLDER.toFile())
-                    .setBranch(config.getGithubRef())
+                    .setBranch(config.get().getGithubRef())
                     .setCredentialsProvider(credentialsProvider)
                     .call();
             git.close();

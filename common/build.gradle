@@ -5,17 +5,27 @@ plugins {
 repositories {
     mavenCentral()
     maven {
+        name = "Mojang Libraries"
+        url = "https://libraries.minecraft.net"
+        content {
+            includeGroup "com.mojang"
+        }
+    }
+    maven {
         name = "OffsetMods538"
         url = "https://maven.offsetmonkey538.top/releases"
         content {
             includeGroup "top.offsetmonkey538.meshlib"
+            includeGroup "top.offsetmonkey538.offsetconfig538"
+            includeGroup "top.offsetmonkey538.monkeylib538"
         }
     }
 }
 
 dependencies {
     implementation "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"
-    implementation "blue.endless:jankson:${project.jankson_version}"
+    implementation "top.offsetmonkey538.offsetconfig538:offsetconfig538:${project.offsetconfig538_version}"
+    shadow implementation("top.offsetmonkey538.monkeylib538:monkeylib538-common:${project.monkeylib538_version}")
 
     shadow compileOnly("top.offsetmonkey538.meshlib:mesh-lib-api:${project.meshlib_version}")
 

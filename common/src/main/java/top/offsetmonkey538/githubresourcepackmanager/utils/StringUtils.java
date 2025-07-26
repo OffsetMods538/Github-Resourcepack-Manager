@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.RESOURCEPACK_NAME_PATTERN;
-import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public final class StringUtils {
     private StringUtils() {

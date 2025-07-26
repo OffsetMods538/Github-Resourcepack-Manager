@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
-import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 import static top.offsetmonkey538.githubresourcepackmanager.platform.ServiceLoader.load;
 
 public interface PlatformServerProperties {
@@ -22,7 +22,7 @@ public interface PlatformServerProperties {
     void reload() throws GithubResourcepackManagerException;
 
     default void updatePackProperties(ResourcePackHandler packHandler) throws GithubResourcepackManagerException {
-        final String resourcePackUrl = config.getPackUrl(packHandler.getOutputPackName());
+        final String resourcePackUrl = config.get().getPackUrl(packHandler.getOutputPackName());
         final String resourcePackSha1;
         try {
             // Ignore the fact that sha1 hashing is deprecated as Minecraft uses it for validating server resource packs.

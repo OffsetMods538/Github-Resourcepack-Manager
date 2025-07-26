@@ -3,14 +3,18 @@ package top.offsetmonkey538.githubresourcepackmanager;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
+import top.offsetmonkey538.githubresourcepackmanager.config.ConfigHandler;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.handler.DataPackHandler;
 import top.offsetmonkey538.githubresourcepackmanager.handler.GitHandler;
 import top.offsetmonkey538.githubresourcepackmanager.handler.ResourcePackHandler;
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.platform.*;
-import top.offsetmonkey538.githubresourcepackmanager.config.ConfigManager;
 import top.offsetmonkey538.meshlib.api.HttpHandlerRegistry;
+import top.offsetmonkey538.monkeylib538.api.log.PlatformLogger;
+import top.offsetmonkey538.monkeylib538.api.log.PlatformLoggerProvider;
+import top.offsetmonkey538.offsetconfig538.api.config.ConfigHolder;
+import top.offsetmonkey538.offsetconfig538.api.config.ConfigManager;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,14 +22,13 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static top.offsetmonkey538.githubresourcepackmanager.platform.PlatformLogging.LOGGER;
-
 public final class GithubResourcepackManager {
     private GithubResourcepackManager() {
 
     }
 
     public static final String MOD_ID = "github-resourcepack-manager";
+    public static final PlatformLogger LOGGER = PlatformLoggerProvider.INSTANCE.createLogger(MOD_ID);
     public static final String MOD_URI = "gh-rp-manager";
 
     public static final Path DATA_FOLDER =  PlatformMain.INSTANCE.getConfigDir().resolve(".packs");
@@ -39,14 +42,14 @@ public final class GithubResourcepackManager {
     public static final Pattern RESOURCEPACK_NAME_PATTERN = Pattern.compile("\\d+-");
     public static final UUID RESOURCEPACK_UUID = UUID.fromString("60ab8dc7-08d1-4f5f-a9a8-9a01d048b7b9");
 
-    public static ModConfig config;
+    public static ConfigHolder<ModConfig> config = ConfigManager.INSTANCE.init(ConfigHolder.create(ModConfig::new, LOGGER::error));
 
     public static ResourcePackHandler resourcePackHandler;
 
     public static void initialize() {
         PlatformCommand.INSTANCE.registerGithubRpManagerCommand();
 
-        ConfigManager.loadConfig();
+        ConfigHandler.handleConfig();
 
         try {
             createFolderStructure();
@@ -104,13 +107,13 @@ public final class GithubResourcepackManager {
         }
         if (!failed) LOGGER.info("Successfully updated git repository!");
 
-        if (config.resourcePackProvider.enabled) {
+        if (config.get().resourcePackProvider.enabled) {
             LOGGER.info("");
             LOGGER.info("Updating resource pack...");
             updateResourcePack(gitHandler, updateType, failed);
             LOGGER.info("Resource pack updated!");
         }
-        if (config.dataPackProvider.enabled) {
+        if (config.get().dataPackProvider.enabled) {
             LOGGER.info("");
             LOGGER.info("Updating data pack...");
             updateDataPack(gitHandler, updateType, failed);
@@ -125,7 +128,7 @@ public final class GithubResourcepackManager {
 
         // Check if pack was updated
         final boolean wasUpdated =
-                gitHandler.getChangedFiles().map(changes -> changes.stream().anyMatch(it -> it.startsWith(config.resourcePackProvider.getRootLocation()))).orElse(true)
+                gitHandler.getChangedFiles().map(changes -> changes.stream().anyMatch(it -> it.startsWith(config.get().resourcePackProvider.getRootLocation()))).orElse(true)
                         || oldResourcePackPath == null
                         || !oldResourcePackPath.toFile().exists();
         if (!wasUpdated) LOGGER.info("Pack hasn't changed since last update. Skipping new pack generation.");
@@ -155,14 +158,14 @@ public final class GithubResourcepackManager {
         final Map<String, String> placeholders = new HashMap<>();
         if (gitHandler.getCommitProperties() != null) placeholders.putAll(gitHandler.getCommitProperties().toPlaceholdersMap());
         placeholders.put("{packType}", "resource");
-        placeholders.put("{downloadUrl}", config.getPackUrl(resourcePackHandler.getOutputPackName()));
+        placeholders.put("{downloadUrl}", config.get().getPackUrl(resourcePackHandler.getOutputPackName()));
         placeholders.put("{updateType}", updateType.name());
         placeholders.put("{wasUpdated}", String.valueOf(wasUpdated));
         LOGGER.info("Placeholders: %s", placeholders);
 
         // Send chat message
         try {
-            if (!failed) sendUpdateMessage(config.resourcePackProvider.updateMessage, config.resourcePackProvider.updateMessageHoverMessage, wasUpdated, placeholders);
+            if (!failed) sendUpdateMessage(config.get().resourcePackProvider.updateMessage, config.get().resourcePackProvider.updateMessageHoverMessage, wasUpdated, placeholders);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to send update message in chat!", e);
         }
@@ -173,12 +176,12 @@ public final class GithubResourcepackManager {
             return;
         }
         if (!updateFailed) try {
-            config.resourcePackProvider.successWebhook.trigger(true, placeholders, updateType);
+            config.get().resourcePackProvider.successWebhook.trigger(true, placeholders, updateType);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to trigger success webhook!", e);
         }
         else try {
-            config.resourcePackProvider.failWebhook.trigger(false, placeholders, updateType);
+            config.get().resourcePackProvider.failWebhook.trigger(false, placeholders, updateType);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to trigger fail webhook!", e);
         }
@@ -186,7 +189,7 @@ public final class GithubResourcepackManager {
 
     private static void updateDataPack(final GitHandler gitHandler, final UpdateType updateType, boolean updateFailed) {
         // Check if pack was updated
-        final boolean wasUpdated = gitHandler.getChangedFiles().map(changes -> changes.stream().anyMatch(it -> it.startsWith(config.dataPackProvider.getRootLocation()))).orElse(true);
+        final boolean wasUpdated = gitHandler.getChangedFiles().map(changes -> changes.stream().anyMatch(it -> it.startsWith(config.get().dataPackProvider.getRootLocation()))).orElse(true);
         if (!wasUpdated) {
             LOGGER.info("Pack hasn't changed since last update. Datapack processing will be skipped.");
             return;
@@ -217,19 +220,19 @@ public final class GithubResourcepackManager {
 
         // Send chat message
         try {
-            sendUpdateMessage(config.dataPackProvider.updateMessage, config.dataPackProvider.updateMessageHoverMessage, true, placeholders, true);
+            sendUpdateMessage(config.get().dataPackProvider.updateMessage, config.get().dataPackProvider.updateMessageHoverMessage, true, placeholders, true);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to send update message in chat!", e);
         }
 
         // Trigger webhooks
         if (!updateFailed) try {
-            config.dataPackProvider.successWebhook.trigger(true, placeholders, updateType);
+            config.get().dataPackProvider.successWebhook.trigger(true, placeholders, updateType);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to trigger success webhook!", e);
         }
         else try {
-            config.dataPackProvider.failWebhook.trigger(false, placeholders, updateType);
+            config.get().dataPackProvider.failWebhook.trigger(false, placeholders, updateType);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to trigger fail webhook!", e);
         }
