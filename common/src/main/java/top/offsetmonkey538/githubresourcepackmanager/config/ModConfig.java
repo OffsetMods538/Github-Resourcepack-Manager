@@ -227,6 +227,11 @@ public class ModConfig implements Config {
     }
 
     @Override
+    public @NotNull String getId() {
+        return MOD_ID + "/main";
+    }
+
+    @Override
     public void beforeLoadStart() {
         if (Files.exists(PlatformMain.INSTANCE.getConfigDir().getParent().resolve(MOD_ID + ".json"))) {
             try {

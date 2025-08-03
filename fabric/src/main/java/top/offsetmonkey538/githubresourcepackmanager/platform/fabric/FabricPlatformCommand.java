@@ -4,6 +4,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.ControlFlowAware;
@@ -20,7 +22,7 @@ import net.minecraft.util.Formatting;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformCommand;
-import top.offsetmonkey538.monkeylib538.api.ConfigCommandApi;
+import top.offsetmonkey538.monkeylib538.api.command.ConfigCommandApi;
 import top.offsetmonkey538.monkeylib538.api.log.PlatformLogger;
 
 import java.util.Optional;
@@ -38,11 +40,41 @@ public class FabricPlatformCommand implements PlatformCommand {
         CommandRegistrationCallback.EVENT.register(FabricPlatformCommand::register);
     }
 
+    /*
+    private static class TestArgumentBuilder extends LiteralArgumentBuilder<MonkeyLibServerCommandSource> {
+
+        protected TestArgumentBuilder(String literal) {
+            super(literal);
+        }
+
+        @Override
+        public LiteralCommandNode<ServerCommandSource> build() {
+            final LiteralCommandNode<ServerCommandSource> result = new LiteralCommandNode<>(getLiteral(), getCommand(), getRequirement(), getRedirect(), getRedirectModifier(), isFork());
+
+            for (final CommandNode<ServerCommandSource> argument : getArguments()) {
+                result.addChild(argument);
+            }
+
+            return result;
+        }
+    }
+     */
+
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
         final LiteralArgumentBuilder<ServerCommandSource> command = literal("gh-rp-manager");
 
         //noinspection unchecked
-        command.then((ArgumentBuilder<ServerCommandSource, ?>) ConfigCommandApi.INSTANCE.createConfigCommand("config", config));
+
+
+
+        //final LiteralArgumentBuilder<? extends MonkeyLibServerCommandSourceImpl> configCommandImpl = (LiteralArgumentBuilder<MonkeyLibServerCommandSourceImpl>) ConfigCommandApi.INSTANCE.createConfigCommand("config", config);
+        //noinspection unchecked
+        //command.then((LiteralArgumentBuilder<ServerCommandSource>) (LiteralArgumentBuilder<? extends ServerCommandSource>) configCommandImpl);
+
+        //noinspection unchecked
+        command.then((LiteralArgumentBuilder<ServerCommandSource>) ConfigCommandApi.INSTANCE.createConfigCommand("config", config));
+
+        //command.then((LiteralArgumentBuilder<MonkeyLibServerCommandSourceImpl>) );
 
         dispatcher.register(command
                 .then(literal("request-pack")

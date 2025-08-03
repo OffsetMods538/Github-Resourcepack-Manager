@@ -11,6 +11,8 @@ import top.offsetmonkey538.githubresourcepackmanager.handler.ResourcePackHandler
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.platform.*;
 import top.offsetmonkey538.meshlib.api.HttpHandlerRegistry;
+import top.offsetmonkey538.monkeylib538.api.command.CommandRegistrationApi;
+import top.offsetmonkey538.monkeylib538.api.command.ConfigCommandApi;
 import top.offsetmonkey538.monkeylib538.api.log.PlatformLogger;
 import top.offsetmonkey538.monkeylib538.api.log.PlatformLoggerProvider;
 import top.offsetmonkey538.offsetconfig538.api.config.ConfigHolder;
@@ -63,6 +65,18 @@ public final class GithubResourcepackManager {
             PlatformMain.INSTANCE.registerLogToAdminListener();
             updatePack(UpdateType.RESTART);
         });
+
+
+        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test1");
+        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test2", "sub1");
+        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test3", "sub1", "sub2");
+        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test4", "sub1", "sub2", "sub3");
+        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test5", "sub1", "sub2", "sub3", "sub4");
+        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test6", "sub1", "sub2", "sub3", "sub4", "sub5");
+        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test7", "sub1", "sub2", "sub3", "sub4", "sub5", "sub6");
+        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test8", "sub1", "sub2", "sub3", "sub4", "sub5", "sub6", "sub7");
+        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test9", "sub1", "sub2", "sub3", "sub4", "sub5", "sub6", "sub7", "sub8");
+        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test10", "sub1", "sub2", "sub3", "sub4", "sub5", "sub6", "sub7", "sub8", "sub9");
     }
 
     private static void createFolderStructure() throws GithubResourcepackManagerException {
