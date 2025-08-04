@@ -23,22 +23,20 @@ public final class ConfigHandler {
 
     }
 
-    public static void handleConfig() {
+    public static boolean handleConfig() {
         LOGGER.info("Writing default webhook bodies");
         createDefaultWebhooks();
 
         // Checking if config is valid
         final List<String> errors = checkConfigErrors();
 
-        // Return when nothing's wrong
-        if (errors.isEmpty()) return;
+        // Return false when nothing's wrong (disables the mod)
+        if (errors.isEmpty()) return false;
 
         // There were errors, time to log em.
         LOGGER.error("There were problems with the config for GitHub Resourcepack Manager, see below for more details!");
-        errors.stream().map(string -> "\t" + string).forEach(LOGGER::error);
-        LOGGER.error("There were problems with the config for Github Resourcepack Manager, see above for more details!");
-
-        throw new RuntimeException("There were problems with the config for Github Resourcepack Manager, see above for more details!");
+        errors.stream().map(string -> "    " + string).forEach(LOGGER::error);
+        return true;
     }
 
     private static void createDefaultWebhooks() {

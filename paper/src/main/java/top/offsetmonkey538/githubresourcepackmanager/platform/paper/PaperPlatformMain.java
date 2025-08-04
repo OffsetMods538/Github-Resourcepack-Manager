@@ -7,7 +7,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.OfflinePlayer;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
-import top.offsetmonkey538.monkeylib538.api.log.PlatformLogger;
+import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
 
 import java.nio.file.Path;
 
@@ -34,7 +34,7 @@ public class PaperPlatformMain implements PlatformMain {
 
     @Override
     public void registerLogToAdminListener() {
-        LOGGER.addListener(PlatformLogger.LogLevel.ERROR, (message, error) -> {
+        LOGGER.addListener(MonkeyLibLogger.LogLevel.ERROR, (message, error) -> {
             Component text = Component
                     .text(String.format("[%s] %s", MOD_ID, message))
                     .color(NamedTextColor.RED);

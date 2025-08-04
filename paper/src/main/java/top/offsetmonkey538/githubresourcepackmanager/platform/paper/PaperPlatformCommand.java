@@ -15,7 +15,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.entity.Player;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformCommand;
-import top.offsetmonkey538.monkeylib538.api.log.PlatformLogger;
+import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
 
 import java.net.URI;
 
@@ -84,10 +84,10 @@ public class PaperPlatformCommand implements PlatformCommand {
 
     @SuppressWarnings("UnstableApiUsage")
     private void runTriggerUpdate(CommandContext<CommandSourceStack> context, boolean force) {
-        final PlatformLogger.LogListener infoListener = (message, error) -> {
+        final MonkeyLibLogger.LogListener infoListener = (message, error) -> {
             context.getSource().getSender().sendMessage(Component.text(String.format("[%s] %s", MOD_ID, message)));
         };
-        final PlatformLogger.LogListener warnListener = (message, error) -> {
+        final MonkeyLibLogger.LogListener warnListener = (message, error) -> {
             Component text = Component
                     .text(String.format("[%s] %s", MOD_ID, message))
                     .color(NamedTextColor.YELLOW);
@@ -100,12 +100,12 @@ public class PaperPlatformCommand implements PlatformCommand {
 
             context.getSource().getSender().sendMessage(text);
         };
-        GithubResourcepackManager.LOGGER.addListener(PlatformLogger.LogLevel.INFO, infoListener);
-        GithubResourcepackManager.LOGGER.addListener(PlatformLogger.LogLevel.WARN, warnListener);
+        GithubResourcepackManager.LOGGER.addListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
+        GithubResourcepackManager.LOGGER.addListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
 
         GithubResourcepackManager.updatePack(force ? GithubResourcepackManager.UpdateType.COMMAND_FORCE : GithubResourcepackManager.UpdateType.COMMAND);
 
-        GithubResourcepackManager.LOGGER.removeListener(PlatformLogger.LogLevel.INFO, infoListener);
-        GithubResourcepackManager.LOGGER.removeListener(PlatformLogger.LogLevel.WARN, warnListener);
+        GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
+        GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
     }
 }

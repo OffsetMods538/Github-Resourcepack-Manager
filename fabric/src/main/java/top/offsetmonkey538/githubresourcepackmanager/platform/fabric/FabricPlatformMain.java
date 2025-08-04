@@ -12,9 +12,10 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
-import top.offsetmonkey538.monkeylib538.api.log.PlatformLogger;
+import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
 
 import java.nio.file.Path;
 import java.util.LinkedList;
@@ -23,7 +24,7 @@ import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackMa
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public class FabricPlatformMain implements PlatformMain, DedicatedServerModInitializer {
-    private static MinecraftServer minecraftServer;
+    private static @Nullable MinecraftServer minecraftServer = null;
     private static final LinkedList<Text> messageQueue = new LinkedList<>();
 
     @Override
@@ -40,7 +41,7 @@ public class FabricPlatformMain implements PlatformMain, DedicatedServerModIniti
         });
     }
 
-    public static MinecraftServer getServer() {
+    public static @Nullable MinecraftServer getServer() {
         return minecraftServer;
     }
 
@@ -57,7 +58,7 @@ public class FabricPlatformMain implements PlatformMain, DedicatedServerModIniti
 
     @Override
     public void registerLogToAdminListener() {
-        LOGGER.addListener(PlatformLogger.LogLevel.ERROR, (message, error) -> {
+        LOGGER.addListener(MonkeyLibLogger.LogLevel.ERROR, (message, error) -> {
             MutableText text = Text
                     .literal(String.format("[%s] %s", MOD_ID, message))
                     .setStyle(Style.EMPTY.withColor(Formatting.RED));
@@ -69,7 +70,7 @@ public class FabricPlatformMain implements PlatformMain, DedicatedServerModIniti
             ));
 
             boolean sent = false;
-            for (final PlayerEntity player : getServer().getPlayerManager().getPlayerList()) {
+            if (getServer() != null) for (final PlayerEntity player : getServer().getPlayerManager().getPlayerList()) {
                 if (!getServer().getPlayerManager().isOperator(player.getGameProfile())) continue;
                 player.sendMessage(text, false);
                 sent = true;

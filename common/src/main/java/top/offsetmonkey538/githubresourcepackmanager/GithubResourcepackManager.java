@@ -11,10 +11,8 @@ import top.offsetmonkey538.githubresourcepackmanager.handler.ResourcePackHandler
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.platform.*;
 import top.offsetmonkey538.meshlib.api.HttpHandlerRegistry;
-import top.offsetmonkey538.monkeylib538.api.command.CommandRegistrationApi;
 import top.offsetmonkey538.monkeylib538.api.command.ConfigCommandApi;
-import top.offsetmonkey538.monkeylib538.api.log.PlatformLogger;
-import top.offsetmonkey538.monkeylib538.api.log.PlatformLoggerProvider;
+import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
 import top.offsetmonkey538.offsetconfig538.api.config.ConfigHolder;
 import top.offsetmonkey538.offsetconfig538.api.config.ConfigManager;
 
@@ -30,7 +28,7 @@ public final class GithubResourcepackManager {
     }
 
     public static final String MOD_ID = "github-resourcepack-manager";
-    public static final PlatformLogger LOGGER = PlatformLoggerProvider.INSTANCE.createLogger(MOD_ID);
+    public static final MonkeyLibLogger LOGGER = MonkeyLibLogger.create(MOD_ID);
     public static final String MOD_URI = "gh-rp-manager";
 
     public static final Path DATA_FOLDER =  PlatformMain.INSTANCE.getConfigDir().resolve(".packs");
@@ -48,10 +46,18 @@ public final class GithubResourcepackManager {
 
     public static ResourcePackHandler resourcePackHandler;
 
-    public static void initialize() {
-        PlatformCommand.INSTANCE.registerGithubRpManagerCommand();
+    private static boolean disabled;
 
-        ConfigHandler.handleConfig();
+    public static void initialize() {
+        PlatformMain.INSTANCE.registerLogToAdminListener();
+        PlatformCommand.INSTANCE.registerGithubRpManagerCommand();
+        ConfigCommandApi.registerConfigCommand(
+                config,
+                () -> disabled = ConfigHandler.handleConfig(),
+                "gh-rp-manager", "config"
+        );
+
+        disabled = ConfigHandler.handleConfig();
 
         try {
             createFolderStructure();
@@ -61,22 +67,7 @@ public final class GithubResourcepackManager {
 
         HttpHandlerRegistry.INSTANCE.register(MOD_URI, new MainHttpHandler());
 
-        PlatformMain.INSTANCE.runOnServerStart(() -> {
-            PlatformMain.INSTANCE.registerLogToAdminListener();
-            updatePack(UpdateType.RESTART);
-        });
-
-
-        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test1");
-        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test2", "sub1");
-        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test3", "sub1", "sub2");
-        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test4", "sub1", "sub2", "sub3");
-        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test5", "sub1", "sub2", "sub3", "sub4");
-        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test6", "sub1", "sub2", "sub3", "sub4", "sub5");
-        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test7", "sub1", "sub2", "sub3", "sub4", "sub5", "sub6");
-        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test8", "sub1", "sub2", "sub3", "sub4", "sub5", "sub6", "sub7");
-        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test9", "sub1", "sub2", "sub3", "sub4", "sub5", "sub6", "sub7", "sub8");
-        ConfigCommandApi.INSTANCE.registerConfigCommand(config, "test10", "sub1", "sub2", "sub3", "sub4", "sub5", "sub6", "sub7", "sub8", "sub9");
+        PlatformMain.INSTANCE.runOnServerStart(() -> updatePack(UpdateType.RESTART));
     }
 
     private static void createFolderStructure() throws GithubResourcepackManagerException {
@@ -90,6 +81,11 @@ public final class GithubResourcepackManager {
     }
 
     public static void updatePack(final UpdateType updateType) {
+        if (disabled) {
+            LOGGER.warn("Skipping pack updating because config was invalid!");
+            return;
+        }
+
         LOGGER.info("Updating packs...");
 
         if (updateType == UpdateType.COMMAND_FORCE) {

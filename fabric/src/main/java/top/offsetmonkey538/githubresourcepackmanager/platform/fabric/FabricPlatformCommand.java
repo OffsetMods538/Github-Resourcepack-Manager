@@ -22,8 +22,7 @@ import net.minecraft.util.Formatting;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformCommand;
-import top.offsetmonkey538.monkeylib538.api.command.ConfigCommandApi;
-import top.offsetmonkey538.monkeylib538.api.log.PlatformLogger;
+import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
 
 import java.util.Optional;
 
@@ -32,7 +31,6 @@ import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.config;
 
 public class FabricPlatformCommand implements PlatformCommand {
     @Override
@@ -40,41 +38,8 @@ public class FabricPlatformCommand implements PlatformCommand {
         CommandRegistrationCallback.EVENT.register(FabricPlatformCommand::register);
     }
 
-    /*
-    private static class TestArgumentBuilder extends LiteralArgumentBuilder<MonkeyLibServerCommandSource> {
-
-        protected TestArgumentBuilder(String literal) {
-            super(literal);
-        }
-
-        @Override
-        public LiteralCommandNode<ServerCommandSource> build() {
-            final LiteralCommandNode<ServerCommandSource> result = new LiteralCommandNode<>(getLiteral(), getCommand(), getRequirement(), getRedirect(), getRedirectModifier(), isFork());
-
-            for (final CommandNode<ServerCommandSource> argument : getArguments()) {
-                result.addChild(argument);
-            }
-
-            return result;
-        }
-    }
-     */
-
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
         final LiteralArgumentBuilder<ServerCommandSource> command = literal("gh-rp-manager");
-
-        //noinspection unchecked
-
-
-
-        //final LiteralArgumentBuilder<? extends MonkeyLibServerCommandSourceImpl> configCommandImpl = (LiteralArgumentBuilder<MonkeyLibServerCommandSourceImpl>) ConfigCommandApi.INSTANCE.createConfigCommand("config", config);
-        //noinspection unchecked
-        //command.then((LiteralArgumentBuilder<ServerCommandSource>) (LiteralArgumentBuilder<? extends ServerCommandSource>) configCommandImpl);
-
-        //noinspection unchecked
-        command.then((LiteralArgumentBuilder<ServerCommandSource>) ConfigCommandApi.INSTANCE.createConfigCommand("config", config));
-
-        //command.then((LiteralArgumentBuilder<MonkeyLibServerCommandSourceImpl>) );
 
         dispatcher.register(command
                 .then(literal("request-pack")
@@ -124,10 +89,10 @@ public class FabricPlatformCommand implements PlatformCommand {
     }
 
     private static void runTriggerUpdate(CommandContext<ServerCommandSource> context, boolean force) {
-        final PlatformLogger.LogListener infoListener = (message, error) -> {
+        final MonkeyLibLogger.LogListener infoListener = (message, error) -> {
             context.getSource().sendMessage(Text.literal(String.format("[%s] %s", MOD_ID, message)));
         };
-        final PlatformLogger.LogListener warnListener = (message, error) -> {
+        final MonkeyLibLogger.LogListener warnListener = (message, error) -> {
             MutableText text = Text
                     .literal(String.format("[%s] %s", MOD_ID, message))
                     .setStyle(Style.EMPTY.withColor(Formatting.YELLOW));
@@ -141,12 +106,12 @@ public class FabricPlatformCommand implements PlatformCommand {
 
             context.getSource().sendMessage(text);
         };
-        GithubResourcepackManager.LOGGER.addListener(PlatformLogger.LogLevel.INFO, infoListener);
-        GithubResourcepackManager.LOGGER.addListener(PlatformLogger.LogLevel.WARN, warnListener);
+        GithubResourcepackManager.LOGGER.addListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
+        GithubResourcepackManager.LOGGER.addListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
 
         GithubResourcepackManager.updatePack(force ? GithubResourcepackManager.UpdateType.COMMAND_FORCE : GithubResourcepackManager.UpdateType.COMMAND);
 
-        GithubResourcepackManager.LOGGER.removeListener(PlatformLogger.LogLevel.INFO, infoListener);
-        GithubResourcepackManager.LOGGER.removeListener(PlatformLogger.LogLevel.WARN, warnListener);
+        GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
+        GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
     }
 }
