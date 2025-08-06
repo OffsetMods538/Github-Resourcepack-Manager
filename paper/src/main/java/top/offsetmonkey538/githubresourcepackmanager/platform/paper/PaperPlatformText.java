@@ -1,20 +1,33 @@
 package top.offsetmonkey538.githubresourcepackmanager.platform.paper;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
-import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformText;
-import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
-
-import java.util.List;
-import java.util.Map;
+import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
 
 public class PaperPlatformText implements PlatformText {
     @Override
+    public void sendUpdateMessage(MonkeyLibText[] updateMessage, boolean adminsOnly) {
+        for (final MonkeyLibText currentLine : updateMessage) {
+            final PlayerList players = MinecraftServer.getServer().getPlayerList();
+            if (!adminsOnly) {
+                players.broadcastSystemMessage(Component.empty(), false);
+                // TODO: once I implement paper version of monke: players.broadcastSystemMessage(PaperMonkeyLibText.of(currentLine).getText(), false);
+                continue;
+            }
+
+            for (final ServerPlayer player : players.players) {
+                if (!players.isOp(player.getGameProfile())) continue;
+                player.sendSystemMessage(Component.empty());
+                // TODO: once I implement paper version of monke: player.sendSystemMessage(PaperMonkeyLibText.of(currentLine).getText());
+            }
+        }
+    }
+
+    /*
     public void sendUpdateMessage(final String message, @Nullable final String hoverMessage, Map<String, String> placeholders, boolean adminsOnly) throws GithubResourcepackManagerException {
         final String[] splitMessage = message.split("\n");
 
@@ -155,4 +168,5 @@ public class PaperPlatformText implements PlatformText {
 
         return currentStyle.applyFormat(formatting);
     }
+     */
 }

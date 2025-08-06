@@ -1,4 +1,5 @@
 plugins {
+    id 'java-library'
     id 'com.gradleup.shadow' version '9.0.0-beta4'
 }
 
@@ -11,25 +12,16 @@ repositories {
             includeGroup "com.mojang"
         }
     }
-    maven {
-        name = "OffsetMods538"
-        url = "https://maven.offsetmonkey538.top/releases"
-        content {
-            includeGroup "top.offsetmonkey538.meshlib"
-            includeGroup "top.offsetmonkey538.offsetconfig538"
-            includeGroup "top.offsetmonkey538.monkeylib538"
-        }
-    }
 }
 
 dependencies {
     implementation "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"
-    implementation "top.offsetmonkey538.offsetconfig538:offsetconfig538:${project.offsetconfig538_version}"
-    shadow implementation("top.offsetmonkey538.monkeylib538:monkeylib538-common:${project.monkeylib538_version}")
+
+    shadow compileOnlyApi("top.offsetmonkey538.monkeylib538:monkeylib538-common:${project.monkeylib538_version}")
 
     shadow compileOnly("top.offsetmonkey538.meshlib:mesh-lib-api:${project.meshlib_version}")
 
-    // should be bundeled with minecraft
+    // should be bundled with minecraft
     shadow compileOnly("com.google.guava:guava:${project.guava_version}")
     shadow compileOnly("commons-io:commons-io:${project.commons_version}")
     shadow compileOnly("com.google.code.gson:gson:${project.gson_version}")

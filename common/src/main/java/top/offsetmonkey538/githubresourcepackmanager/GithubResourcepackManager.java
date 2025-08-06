@@ -10,9 +10,11 @@ import top.offsetmonkey538.githubresourcepackmanager.handler.GitHandler;
 import top.offsetmonkey538.githubresourcepackmanager.handler.ResourcePackHandler;
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.platform.*;
+import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
 import top.offsetmonkey538.meshlib.api.HttpHandlerRegistry;
 import top.offsetmonkey538.monkeylib538.api.command.ConfigCommandApi;
 import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
+import top.offsetmonkey538.monkeylib538.api.text.TextFormattingApi;
 import top.offsetmonkey538.offsetconfig538.api.config.ConfigHolder;
 import top.offsetmonkey538.offsetconfig538.api.config.ConfigManager;
 
@@ -258,7 +260,11 @@ public final class GithubResourcepackManager {
             return;
         }
 
-        PlatformText.INSTANCE.sendUpdateMessage(updateMessage, updateHoverMessage, placeholders, adminsOnly);
+        try {
+            PlatformText.INSTANCE.sendUpdateMessage(TextFormattingApi.styleTextMultiline(StringUtils.replacePlaceholders(updateMessage, placeholders)), adminsOnly);
+        } catch (Exception e) {
+            throw new GithubResourcepackManagerException("Failed to style update message!", e);
+        }
     }
 
     private static String getOldResourcePackName() {

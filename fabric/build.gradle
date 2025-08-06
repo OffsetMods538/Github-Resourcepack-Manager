@@ -55,15 +55,6 @@ repositories {
             includeGroup "me.djtheredstoner"
         }
     }
-    maven {
-        name = "OffsetMods538"
-        url = "https://maven.offsetmonkey538.top/releases"
-        content {
-            includeGroup "top.offsetmonkey538.meshlib"
-            includeGroup "top.offsetmonkey538.monkeylib538"
-            includeGroup "top.offsetmonkey538.offsetconfig538"
-        }
-    }
 }
 
 configurations {
@@ -90,13 +81,21 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_version}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    modRuntimeOnly "me.djtheredstoner:DevAuth-fabric:${devauth_version}"
+    modRuntimeOnly "me.djtheredstoner:DevAuth-fabric:${project.devauth_version}"
 
-    compileOnly "top.offsetmonkey538.monkeylib538:monkeylib538-common:${project.monkeylib538_version}"
-    modImplementation("top.offsetmonkey538.monkeylib538:monkeylib538-fabric:${project.monkeylib538_version}+1.21.5") {
+    modRuntimeOnly("top.offsetmonkey538.monkeylib538:monkeylib538-fabric-1.20.5:${project.monkeylib538_version}+1.20.5") {
         exclude(group: "net.fabricmc.fabric-api")
         exclude(group: "top.offsetmonkey538.monkeylib538:monkeylib538-fabric")
     }
+    modCompileOnly("top.offsetmonkey538.monkeylib538:monkeylib538-fabric:${project.monkeylib538_version}") {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+    //modRuntimeOnly("top.offsetmonkey538.monkeylib538:monkeylib538-fabric:${project.monkeylib538_version}") {
+    //    exclude(group: "net.fabricmc.fabric-api")
+    //}
+    //modCompileOnly("top.offsetmonkey538.monkeylib538:monkeylib538-fabric:${project.monkeylib538_version}") {
+    //    exclude(group: "net.fabricmc.fabric-api")
+    //}
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fapi_version}"
 
