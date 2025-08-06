@@ -4,7 +4,6 @@ import net.minecraft.network.chat.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
-import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformText;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
 
