@@ -2,110 +2,45 @@ package top.offsetmonkey538.githubresourcepackmanager.platform.paper;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.server.MinecraftServer;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.entity.Player;
-import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
+import org.jetbrains.annotations.NotNull;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformCommand;
-import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
 
 import java.net.URI;
-
-import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
-import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
-import static io.papermc.paper.command.brigadier.Commands.argument;
-import static io.papermc.paper.command.brigadier.Commands.literal;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
 
 public class PaperPlatformCommand implements PlatformCommand {
     @SuppressWarnings("UnstableApiUsage")
     @Override
-    public void registerGithubRpManagerCommand() {
-        PaperPlatformMain.getPlugin().getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
-            final Commands commands = event. registrar();
+    public int executeRequestPackCommand(@NotNull CommandContext<Object> ctx) throws CommandSyntaxException {
+        // TODO: once monke has papier: final CommandSourceStack source = PaperCommandAbstractionApi.get(ctx);
+        final CommandSourceStack source = null;
+        if (source == null) return 0;
+        final Player player = (Player) source.getExecutor();
+        if (player == null) return 0;
 
-            commands.register(literal("gh-rp-manager")
-                    .requires(commandSourceStack -> commandSourceStack.getExecutor() instanceof Player)
-                    .then(literal("request-pack").executes(
-                            context -> {
-                                final Player player = (Player) context.getSource().getExecutor();
-                                if (player == null) return 0;
-
-                                final MinecraftServer.ServerResourcePackInfo resourcePackProperties = MinecraftServer.getServer().getServerResourcePack().orElse(null);
-                                if (resourcePackProperties == null) {
-                                    context.getSource().getSender().sendMessage("Failed to send pack update packet to client!");
-                                    return 0;
-                                }
-                                player.sendResourcePacks(
-                                        ResourcePackRequest.resourcePackRequest()
-                                                        .packs(
-                                                                ResourcePackInfo.resourcePackInfo(
-                                                                        resourcePackProperties.id(),
-                                                                        URI.create(resourcePackProperties.url()),
-                                                                        resourcePackProperties.hash()
-                                                                )
-                                                        )
-                                                .replace(true)
-                                                .required(resourcePackProperties.isRequired())
-                                                .asResourcePackRequest()
-                                );
-                                return Command.SINGLE_SUCCESS;
-                            })
-                    )
-                    .then(literal("trigger-update")
-                            .requires(source -> source.getSender().isOp())
-                            .executes(
-                                    context -> {
-                                        runTriggerUpdate(context, false);
-                                        return 1;
-                                    }
-                            )
-                            .then(argument("force", bool())
-                                    .executes(
-                                            context -> {
-                                                runTriggerUpdate(context, getBool(context, "force"));
-                                                return 1;
-                                            }
-                                    )
-                            )
-                    )
-                    .build()
-            );
-        });
-    }
-
-    @SuppressWarnings("UnstableApiUsage")
-    private void runTriggerUpdate(CommandContext<CommandSourceStack> context, boolean force) {
-        final MonkeyLibLogger.LogListener infoListener = (message, error) -> {
-            context.getSource().getSender().sendMessage(Component.text(String.format("[%s] %s", MOD_ID, message)).color(NamedTextColor.GRAY));
-        };
-        final MonkeyLibLogger.LogListener warnListener = (message, error) -> {
-            Component text = Component
-                    .text(String.format("[%s] %s", MOD_ID, message))
-                    .color(NamedTextColor.YELLOW);
-
-            if (error != null) text = text.hoverEvent(
-                    HoverEvent.showText(
-                            Component.text(ExceptionUtils.getRootCauseMessage(error))
-                    )
-            );
-
-            context.getSource().getSender().sendMessage(text);
-        };
-        GithubResourcepackManager.LOGGER.addListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
-        GithubResourcepackManager.LOGGER.addListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
-
-        GithubResourcepackManager.updatePack(force ? GithubResourcepackManager.UpdateType.COMMAND_FORCE : GithubResourcepackManager.UpdateType.COMMAND);
-
-        GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
-        GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
+        final MinecraftServer.ServerResourcePackInfo resourcePackProperties = MinecraftServer.getServer().getServerResourcePack().orElse(null);
+        if (resourcePackProperties == null) {
+            source.getSender().sendMessage("Failed to send pack update packet to client!");
+            return 0;
+        }
+        player.sendResourcePacks(
+                ResourcePackRequest.resourcePackRequest()
+                        .packs(
+                                ResourcePackInfo.resourcePackInfo(
+                                        resourcePackProperties.id(),
+                                        URI.create(resourcePackProperties.url()),
+                                        resourcePackProperties.hash()
+                                )
+                        )
+                        .replace(true)
+                        .required(resourcePackProperties.isRequired())
+                        .asResourcePackRequest()
+        );
+        return Command.SINGLE_SUCCESS;
     }
 }

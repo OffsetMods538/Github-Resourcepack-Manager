@@ -1,0 +1,74 @@
+package top.offsetmonkey538.githubresourcepackmanager.command;
+
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
+import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformCommand;
+import top.offsetmonkey538.monkeylib538.api.command.CommandAbstractionApi;
+import top.offsetmonkey538.monkeylib538.api.command.CommandRegistrationApi;
+import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
+import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibStyle;
+import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
+
+import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
+import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
+import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
+import static top.offsetmonkey538.monkeylib538.api.command.CommandAbstractionApi.literal;
+import static top.offsetmonkey538.monkeylib538.api.command.CommandAbstractionApi.sendText;
+
+public final class GitPackManagerCommand {
+
+    public static void register() {
+        CommandRegistrationApi.registerCommand(createCommand());
+    }
+
+    private static LiteralArgumentBuilder<?> createCommand() {
+        return literal("gh-rp-manager")
+                .then(literal("request-pack")
+                        .requires(CommandAbstractionApi::executedByPlayer)
+                        .executes(PlatformCommand.INSTANCE::executeRequestPackCommand)
+                )
+
+                .then(literal("trigger-update")
+                        .requires(CommandAbstractionApi::isOp)
+                        .executes(
+                                context -> {
+                                    runTriggerUpdate(context, false);
+                                    return 1;
+                                }
+                        )
+                        .then(argument("force", bool())
+                                .executes(
+                                        context -> {
+                                            runTriggerUpdate(context, getBool(context, "force"));
+                                            return 1;
+                                        }
+                                )
+                        )
+                );
+    }
+
+    private static void runTriggerUpdate(CommandContext<Object> context, boolean force) {
+        final MonkeyLibLogger.LogListener infoListener = (message, error) -> {
+            sendText(context, MonkeyLibText.of(String.format("[%s] %s", MOD_ID, message)).applyStyle(style -> style.withColor(MonkeyLibStyle.Color.GRAY)));
+        };
+        final MonkeyLibLogger.LogListener warnListener = (message, error) -> {
+            final MonkeyLibText text = MonkeyLibText
+                    .of("[%s] %s".formatted(MOD_ID, message))
+                    .applyStyle(style -> style.withColor(MonkeyLibStyle.Color.YELLOW));
+
+            if (error != null) text.applyStyle(style -> style.withShowText(MonkeyLibText.of(ExceptionUtils.getRootCauseMessage(error))));
+
+            sendText(context, text);
+        };
+        GithubResourcepackManager.LOGGER.addListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
+        GithubResourcepackManager.LOGGER.addListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
+
+        GithubResourcepackManager.updatePack(force ? GithubResourcepackManager.UpdateType.COMMAND_FORCE : GithubResourcepackManager.UpdateType.COMMAND);
+
+        GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
+        GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
+    }
+}

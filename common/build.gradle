@@ -23,7 +23,8 @@ dependencies {
 
     // should be bundled with minecraft
     shadow compileOnly("com.google.guava:guava:${project.guava_version}")
-    shadow compileOnly("commons-io:commons-io:${project.commons_version}")
+    shadow compileOnly("commons-io:commons-io:${project.commonsio_version}")
+    shadow compileOnly("org.apache.commons:commons-lang3:${project.commonslang_version}")
     shadow compileOnly("com.google.code.gson:gson:${project.gson_version}")
 
     // Jetbrains annotations for gud code

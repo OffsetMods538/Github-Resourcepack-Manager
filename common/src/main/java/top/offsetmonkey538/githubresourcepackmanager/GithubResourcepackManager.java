@@ -2,6 +2,7 @@ package top.offsetmonkey538.githubresourcepackmanager;
 
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.Nullable;
+import top.offsetmonkey538.githubresourcepackmanager.command.GitPackManagerCommand;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
 import top.offsetmonkey538.githubresourcepackmanager.config.ConfigHandler;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
@@ -52,7 +53,7 @@ public final class GithubResourcepackManager {
 
     public static void initialize() {
         PlatformMain.INSTANCE.registerLogToAdminListener();
-        PlatformCommand.INSTANCE.registerGithubRpManagerCommand();
+        GitPackManagerCommand.register();
         ConfigCommandApi.registerConfigCommand(
                 config,
                 () -> disabled = ConfigHandler.handleConfig(),

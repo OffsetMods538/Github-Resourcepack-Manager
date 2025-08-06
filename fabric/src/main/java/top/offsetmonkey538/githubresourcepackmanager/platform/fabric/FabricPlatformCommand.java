@@ -1,117 +1,41 @@
 package top.offsetmonkey538.githubresourcepackmanager.platform.fabric;
 
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.builder.ArgumentBuilder;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.tree.CommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.command.CommandRegistryAccess;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.ControlFlowAware;
 import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
+import org.jetbrains.annotations.NotNull;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformCommand;
-import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
+import top.offsetmonkey538.monkeylib538.fabric.api.command.FabricCommandAbstractionApi;
 
 import java.util.Optional;
 
-import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
-import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
-
 public class FabricPlatformCommand implements PlatformCommand {
     @Override
-    public void registerGithubRpManagerCommand() {
-        CommandRegistrationCallback.EVENT.register(FabricPlatformCommand::register);
-    }
+    public int executeRequestPackCommand(@NotNull CommandContext<Object> ctx) throws CommandSyntaxException {
+        final ServerCommandSource source = FabricCommandAbstractionApi.get(ctx);
+        final ServerPlayerEntity player = source.getPlayerOrThrow();
+        final MinecraftServer.ServerResourcePackProperties resourcePackProperties = source.getServer().getResourcePackProperties().orElse(null);
+        if (resourcePackProperties == null) {
+            source.sendFeedback(() -> Text.literal("Failed to send pack update packet to client!"), true);
+            return 0;
+        }
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
-        final LiteralArgumentBuilder<ServerCommandSource> command = literal("gh-rp-manager");
-
-        dispatcher.register(command
-                .then(literal("request-pack")
-                        .requires(ServerCommandSource::isExecutedByPlayer)
-                        .executes(
-                                context -> {
-                                    final ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
-                                    final MinecraftServer.ServerResourcePackProperties resourcePackProperties = context.getSource().getServer().getResourcePackProperties().orElse(null);
-                                    if (resourcePackProperties == null) {
-                                        context.getSource().sendFeedback(() -> Text.literal("Failed to send pack update packet to client!"), true);
-                                        return 0;
-                                    }
-
-                                    player.networkHandler.send(
-                                            new ResourcePackSendS2CPacket(
-                                                    resourcePackProperties.id(),
-                                                    resourcePackProperties.url(),
-                                                    resourcePackProperties.hash(),
-                                                    resourcePackProperties.isRequired(),
-                                                    Optional.ofNullable(resourcePackProperties.prompt())
-                                            ),
-                                            null
-                                    );
-
-                                    return ControlFlowAware.Command.SINGLE_SUCCESS;
-                                })
-                )
-
-                .then(literal("trigger-update")
-                        .requires(source -> source.hasPermissionLevel(2))
-                        .executes(
-                                context -> {
-                                    runTriggerUpdate(context, false);
-                                    return 1;
-                                }
-                        )
-                        .then(argument("force", bool())
-                                .executes(
-                                        context -> {
-                                            runTriggerUpdate(context, getBool(context, "force"));
-                                            return 1;
-                                        }
-                                )
-                        )
-                )
+        player.networkHandler.send(
+                new ResourcePackSendS2CPacket(
+                        resourcePackProperties.id(),
+                        resourcePackProperties.url(),
+                        resourcePackProperties.hash(),
+                        resourcePackProperties.isRequired(),
+                        Optional.ofNullable(resourcePackProperties.prompt())
+                ),
+                null
         );
-    }
 
-    private static void runTriggerUpdate(CommandContext<ServerCommandSource> context, boolean force) {
-        final MonkeyLibLogger.LogListener infoListener = (message, error) -> {
-            context.getSource().sendMessage(Text.literal(String.format("[%s] %s", MOD_ID, message)).formatted(Formatting.GRAY));
-        };
-        final MonkeyLibLogger.LogListener warnListener = (message, error) -> {
-            MutableText text = Text
-                    .literal(String.format("[%s] %s", MOD_ID, message))
-                    .setStyle(Style.EMPTY.withColor(Formatting.YELLOW));
-
-            if (error != null) text.setStyle(Style.EMPTY.withColor(Formatting.YELLOW).withHoverEvent(
-                    new HoverEvent(
-                            HoverEvent.Action.SHOW_TEXT,
-                            Text.literal(ExceptionUtils.getRootCauseMessage(error))
-                    )
-            ));
-
-            context.getSource().sendMessage(text);
-        };
-        GithubResourcepackManager.LOGGER.addListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
-        GithubResourcepackManager.LOGGER.addListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
-
-        GithubResourcepackManager.updatePack(force ? GithubResourcepackManager.UpdateType.COMMAND_FORCE : GithubResourcepackManager.UpdateType.COMMAND);
-
-        GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
-        GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
+        return ControlFlowAware.Command.SINGLE_SUCCESS;
     }
 }
