@@ -85,7 +85,7 @@ public class PaperPlatformCommand implements PlatformCommand {
     @SuppressWarnings("UnstableApiUsage")
     private void runTriggerUpdate(CommandContext<CommandSourceStack> context, boolean force) {
         final MonkeyLibLogger.LogListener infoListener = (message, error) -> {
-            context.getSource().getSender().sendMessage(Component.text(String.format("[%s] %s", MOD_ID, message)));
+            context.getSource().getSender().sendMessage(Component.text(String.format("[%s] %s", MOD_ID, message)).color(NamedTextColor.GRAY));
         };
         final MonkeyLibLogger.LogListener warnListener = (message, error) -> {
             Component text = Component

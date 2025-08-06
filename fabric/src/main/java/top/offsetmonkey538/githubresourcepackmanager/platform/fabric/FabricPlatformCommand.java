@@ -90,7 +90,7 @@ public class FabricPlatformCommand implements PlatformCommand {
 
     private static void runTriggerUpdate(CommandContext<ServerCommandSource> context, boolean force) {
         final MonkeyLibLogger.LogListener infoListener = (message, error) -> {
-            context.getSource().sendMessage(Text.literal(String.format("[%s] %s", MOD_ID, message)));
+            context.getSource().sendMessage(Text.literal(String.format("[%s] %s", MOD_ID, message)).formatted(Formatting.GRAY));
         };
         final MonkeyLibLogger.LogListener warnListener = (message, error) -> {
             MutableText text = Text
