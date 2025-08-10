@@ -4,6 +4,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
+import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
+import top.offsetmonkey538.githubresourcepackmanager.handler.GitHandler;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformCommand;
 import top.offsetmonkey538.monkeylib538.api.command.CommandAbstractionApi;
 import top.offsetmonkey538.monkeylib538.api.command.CommandRegistrationApi;
@@ -11,10 +13,12 @@ import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibStyle;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
 
+import java.util.Map;
+
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
+import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
 import static top.offsetmonkey538.monkeylib538.api.command.CommandAbstractionApi.literal;
 import static top.offsetmonkey538.monkeylib538.api.command.CommandAbstractionApi.sendText;
 
@@ -47,6 +51,12 @@ public final class GitPackManagerCommand {
                                         }
                                 )
                         )
+                )
+
+                .then(literal("test-update-message")
+                        .requires(CommandAbstractionApi::isOp)
+                        .then(literal("resource").executes(context -> runTestUpdateMessage(context, true)))
+                        .then(literal("data").executes(context -> runTestUpdateMessage(context, false)))
                 );
     }
 
@@ -70,5 +80,28 @@ public final class GitPackManagerCommand {
 
         GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
         GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
+    }
+
+    private static int runTestUpdateMessage(CommandContext<Object> context, boolean isResource) {
+        final GitHandler gitHandler = new GitHandler();
+        try {
+            gitHandler.updateRepositoryAndGenerateCommitProperties();
+        } catch (GithubResourcepackManagerException e) {
+            CommandAbstractionApi.sendError(context, "Failed to update repository, git related placeholders will not be replaced!");
+            CommandAbstractionApi.sendError(context, "Cause:\n%s\n", e);
+        }
+        final Map<String, String> placeholders = generatePlaceholders(gitHandler, isResource ? resourcePackHandler : null, UpdateType.COMMAND, isResource ? "resource" : "data", true);
+
+        final MonkeyLibText[] text;
+        try {
+            text = createUpdateMessage(config.get().resourcePackProvider.updateMessage, placeholders);
+        } catch (GithubResourcepackManagerException e) {
+            CommandAbstractionApi.sendError(context, "Failed to create update message!");
+            CommandAbstractionApi.sendError(context, "Cause:\n%s\n", e);
+            return 0;
+        }
+
+        for (final MonkeyLibText line : text) CommandAbstractionApi.sendText(context, line);
+        return 1;
     }
 }

@@ -15,6 +15,7 @@ import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
 import top.offsetmonkey538.meshlib.api.HttpHandlerRegistry;
 import top.offsetmonkey538.monkeylib538.api.command.ConfigCommandApi;
 import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
+import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
 import top.offsetmonkey538.monkeylib538.api.text.TextFormattingApi;
 import top.offsetmonkey538.offsetconfig538.api.config.ConfigHolder;
 import top.offsetmonkey538.offsetconfig538.api.config.ConfigManager;
@@ -44,6 +45,8 @@ public final class GithubResourcepackManager {
 
     public static final Pattern RESOURCEPACK_NAME_PATTERN = Pattern.compile("\\d+-");
     public static final UUID RESOURCEPACK_UUID = UUID.fromString("60ab8dc7-08d1-4f5f-a9a8-9a01d048b7b9");
+
+    public static final Map<String, String> STATIC_PLACEHOLDERS = Map.of("{packUpdateCommand}", "/gh-rp-manager request-pack");
 
     public static ConfigHolder<ModConfig> config = ConfigManager.INSTANCE.init(ConfigHolder.create(ModConfig::new, LOGGER::error));
 
@@ -168,17 +171,11 @@ public final class GithubResourcepackManager {
         }
 
         // Generate placeholder map
-        final Map<String, String> placeholders = new HashMap<>();
-        if (gitHandler.getCommitProperties() != null) placeholders.putAll(gitHandler.getCommitProperties().toPlaceholdersMap());
-        placeholders.put("{packType}", "resource");
-        placeholders.put("{downloadUrl}", config.get().getPackUrl(resourcePackHandler.getOutputPackName()));
-        placeholders.put("{updateType}", updateType.name());
-        placeholders.put("{wasUpdated}", String.valueOf(wasUpdated));
-        LOGGER.info("Placeholders: %s", placeholders);
+        final Map<String, String> placeholders = generatePlaceholders(gitHandler, resourcePackHandler, updateType, "resource", wasUpdated);
 
         // Send chat message
         try {
-            if (!failed) sendUpdateMessage(config.get().resourcePackProvider.updateMessage, config.get().resourcePackProvider.updateMessageHoverMessage, wasUpdated, placeholders);
+            if (!failed) sendUpdateMessage(config.get().resourcePackProvider.updateMessage, wasUpdated, placeholders);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to send update message in chat!", e);
         }
@@ -224,16 +221,11 @@ public final class GithubResourcepackManager {
 
 
         // Generate placeholder map
-        final Map<String, String> placeholders = new HashMap<>();
-        if (gitHandler.getCommitProperties() != null) placeholders.putAll(gitHandler.getCommitProperties().toPlaceholdersMap());
-        placeholders.put("{packType}", "data");
-        placeholders.put("{updateType}", updateType.name());
-        placeholders.put("{wasUpdated}", String.valueOf(true));
-        LOGGER.info("Placeholders: %s", placeholders);
+        final Map<String, String> placeholders = generatePlaceholders(gitHandler, null, updateType, "data", true);
 
         // Send chat message
         try {
-            sendUpdateMessage(config.get().dataPackProvider.updateMessage, config.get().dataPackProvider.updateMessageHoverMessage, true, placeholders, true);
+            sendUpdateMessage(config.get().dataPackProvider.updateMessage, true, placeholders, true);
         } catch (GithubResourcepackManagerException e) {
             LOGGER.error("Failed to send update message in chat!", e);
         }
@@ -251,21 +243,48 @@ public final class GithubResourcepackManager {
         }
     }
 
-    private static void sendUpdateMessage(final String updateMessage, @Nullable final String updateHoverMessage, boolean wasUpdated, final Map<String, String> placeholders) throws GithubResourcepackManagerException {
-        sendUpdateMessage(updateMessage, updateHoverMessage, wasUpdated, placeholders, false);
+    private static void sendUpdateMessage(final String[] updateMessage, boolean wasUpdated, final Map<String, String> placeholders) throws GithubResourcepackManagerException {
+        sendUpdateMessage(updateMessage, wasUpdated, placeholders, false);
     }
 
-    private static void sendUpdateMessage(final String updateMessage, @Nullable final String updateHoverMessage, boolean wasUpdated, final Map<String, String> placeholders, boolean adminsOnly) throws GithubResourcepackManagerException {
+    private static void sendUpdateMessage(final String[] updateMessage, boolean wasUpdated, final Map<String, String> placeholders, boolean adminsOnly) throws GithubResourcepackManagerException {
         if (!wasUpdated) {
             LOGGER.info("Not sending chat message because pack was not updated.");
             return;
         }
 
-        try {
-            PlatformText.INSTANCE.sendUpdateMessage(TextFormattingApi.styleTextMultiline(StringUtils.replacePlaceholders(updateMessage, placeholders)), adminsOnly);
-        } catch (Exception e) {
-            throw new GithubResourcepackManagerException("Failed to style update message!", e);
+        for (final MonkeyLibText line : createUpdateMessage(updateMessage, placeholders))
+            PlatformText.INSTANCE.sendUpdateMessage(line, adminsOnly);
+    }
+
+    public static MonkeyLibText[] createUpdateMessage(final String[] updateMessage, final Map<String, String> placeholders) throws GithubResourcepackManagerException {
+        final MonkeyLibText[] result = new MonkeyLibText[updateMessage.length];
+
+        for (int lineIndex = 0; lineIndex < updateMessage.length; lineIndex++) {
+            final String line = StringUtils.replacePlaceholders(updateMessage[lineIndex], placeholders, true, false);
+
+            try {
+                result[lineIndex] = TextFormattingApi.styleText(line);
+            } catch (Exception e) {
+                throw new GithubResourcepackManagerException("Failed to style update message at line %s!", e, lineIndex);
+            }
         }
+
+        return result;
+    }
+
+    public static Map<String, String> generatePlaceholders(final GitHandler gitHandler, final @Nullable ResourcePackHandler resourcePackHandler, final UpdateType updateType, final String packType, final boolean wasUpdated) {
+        final Map<String, String> placeholders = new HashMap<>();
+
+        if (gitHandler.getCommitProperties() != null) placeholders.putAll(gitHandler.getCommitProperties().toPlaceholdersMap());
+        if (resourcePackHandler != null) placeholders.put("{downloadUrl}", config.get().getPackUrl(resourcePackHandler.getOutputPackName()));
+        placeholders.putAll(STATIC_PLACEHOLDERS);
+        placeholders.put("{packType}", packType);
+        placeholders.put("{updateType}", updateType.name());
+        placeholders.put("{wasUpdated}", String.valueOf(wasUpdated));
+        LOGGER.info("Placeholders: %s", placeholders);
+
+        return placeholders;
     }
 
     private static String getOldResourcePackName() {

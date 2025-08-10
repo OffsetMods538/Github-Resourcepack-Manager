@@ -7,5 +7,5 @@ import static top.offsetmonkey538.githubresourcepackmanager.platform.ServiceLoad
 public interface PlatformText {
     PlatformText INSTANCE = load(PlatformText.class);
 
-    void sendUpdateMessage(final MonkeyLibText[] updateMessage, boolean adminsOnly);
+    void sendUpdateMessage(final MonkeyLibText updateMessage, boolean adminsOnly);
 }

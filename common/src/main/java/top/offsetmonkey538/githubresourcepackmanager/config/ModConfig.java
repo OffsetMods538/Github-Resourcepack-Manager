@@ -1,6 +1,6 @@
 package top.offsetmonkey538.githubresourcepackmanager.config;
 
-import blue.endless.jankson.Comment;
+import blue.endless.jankson.*;
 import blue.endless.jankson.api.Marshaller;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,10 +59,11 @@ public class ModConfig implements Config {
         @Comment("Where the mod will search for resource packs in the cloned repository. MUST NOT be same as or child of the 'rootLocation' of the datapack provider")
         public String rootLocation = "/resourcepacks";
 
-        @Comment("Message sent in chat when pack has been updated. May be 'null' to disable.")
-        public String updateMessage = "Server resourcepack has been updated!\nPlease click {packUpdateCommand} to get the most up to date pack.";
-        @Comment("Message shown when hovering over the 'updateMessage' text. May be 'null' to disable.")
-        public String updateMessageHoverMessage = "{longDescription}";
+        @Comment("Messages sent in chat when pack has been updated. Each entry will be on a new line. May be 'null' or empty to disable.")
+        public String[] updateMessage = new String[] {
+                "&{hoverText,'{longDescription}','Server resourcepack has been updated!'}",
+                "&{hoverText,'{longDescription}','Please click &{hoverText,'Click to update pack','&{runCommand,'{packUpdateCommand}','[HERE]'}'} to get the most up to date pack.'}"
+        };
 
         @Comment("Webhook to be sent when pack updating succeeded")
         public WebhookInfo successWebhook = new WebhookInfo();
@@ -85,11 +86,12 @@ public class ModConfig implements Config {
         public boolean enabled = false;
         @Comment("Where the mod will search for data packs in the cloned repository. MUST NOT be same as or child of the 'rootLocation' of the resourcepack provider")
         public String rootLocation = "/datapacks";
-
-        @Comment("Message sent TO ADMINS in chat when pack has been updated. May be 'null' to disable.")
-        public String updateMessage = "Server datapacks has been updated!\nNew packs (if any) have to be enabled with the '/datapack enable` command.\nPlease run '/reload' or restart the server to reload datapacks.";
-        @Comment("Message shown when hovering over the 'updateMessage' text. May be 'null' to disable.")
-        public String updateMessageHoverMessage = "{longDescription}";
+        @Comment("Messages sent TO ADMINS in chat when pack has been updated. Each entry will be on a new line. May be 'null' or empty to disable.")
+        public String[] updateMessage = new String[] {
+                "&{hoverText,'{longDescription}','Server datapacks have been updated!'}",
+                "&{hoverText,'{longDescription}','New packs (if any) will need to be enabled with the &{hoverText,'Click to suggest','&{suggestCommand,'/datapack enable','&n/datapack enable'}'} command.'}",
+                "&{hoverText,'{longDescription}','Please run &{hoverText,'Click to suggest','&{suggestCommand,'/reload','&n/reload'}'} or restart the server to reload datapacks.'}"
+        };
 
         @Comment("Webhook to be sent when pack updating succeeded")
         public WebhookInfo successWebhook = new WebhookInfo();
@@ -111,11 +113,6 @@ public class ModConfig implements Config {
         public WebhookInfo() {
 
         }
-        public WebhookInfo(boolean enabled, String url, String body) {
-            this.enabled = enabled;
-            this.url = url;
-            this.body = body;
-        }
 
         @Comment("Whether or not this webhook is enabled")
         public boolean enabled = false;
@@ -131,7 +128,7 @@ public class ModConfig implements Config {
             try {
                 //noinspection DataFlowIssue: Only returns null when `body` is null, which we have already checked
                 String webhookBody = Files.readString(getBodyPath());
-                webhookBody = StringUtils.replacePlaceholders(webhookBody, placeholders, true);
+                webhookBody = StringUtils.replacePlaceholders(webhookBody, placeholders, false, true);
 
                 WebhookSender.send(webhookBody, getWebhookUrl(), updateType, updateSucceeded);
             } catch (IOException e) {
@@ -155,8 +152,8 @@ public class ModConfig implements Config {
                 (original, jankson) -> {
                     // 0 -> 1
                     original.put("branch", jankson.toJson(jankson.getMarshaller().marshall(String.class, original.get("githubRef")).replace("refs/heads/", "")));
-                    original.put("repoUrl", original.get("githubUrl"));
-                    original.put("isRepoPrivate", original.get("isPrivate"));
+                    datafixField(original, "githubUrl", "repoUrl");
+                    datafixField(original, "isPrivate", "isRepoPrivate");
                 },
                 (original, jankson) -> {
                     // 1 -> 2
@@ -168,57 +165,102 @@ public class ModConfig implements Config {
                     final Marshaller marsh = jankson.getMarshaller();
 
                     // Server Info
-                    final ServerInfo serverInfo = new ServerInfo();
+                    final JsonObject serverInfo = new JsonObject();
 
-                    serverInfo.publicIp = marsh.marshall(String.class, original.get("serverPublicIp"));
-                    serverInfo.proxyPort = marsh.marshall(String.class, original.get("proxyPort"));
+                    datafixField(original, "serverPublicIp", serverInfo, "publicIp");
+                    datafixField(original, "proxyPort", serverInfo, "proxyPort");
 
-                    original.put("serverInfo", jankson.toJson(serverInfo));
+                    original.put("serverInfo", serverInfo);
 
                     // Repository Info
-                    final RepositoryInfo repositoryInfo = new RepositoryInfo();
+                    final JsonObject repositoryInfo = new JsonObject();
 
-                    repositoryInfo.branch = marsh.marshall(String.class, original.get("branch"));
-                    repositoryInfo.url = marsh.marshall(String.class, original.get("repoUrl"));
-                    repositoryInfo.isPrivate = marsh.marshall(Boolean.class, original.get("isRepoPrivate"));
-                    repositoryInfo.username = marsh.marshall(String.class, original.get("githubUsername"));
-                    repositoryInfo.token = marsh.marshall(String.class, original.get("githubToken"));
+                    datafixField(original, "branch", repositoryInfo, "branch");
+                    datafixField(original, "repoUrl", repositoryInfo, "url");
 
-                    original.put("repositoryInfo", jankson.toJson(repositoryInfo));
+                    datafixField(original, "isRepoPrivate", repositoryInfo, "isPrivate");
+
+                    datafixField(original, "githubUsername", repositoryInfo, "username");
+                    datafixField(original, "githubToken", repositoryInfo, "token");
+
+                    original.put("repositoryInfo", repositoryInfo);
 
                     // Resource Pack Provider
-                    final ResourcePackProvider resourcePackProvider = new ResourcePackProvider();
+                    final JsonObject resourcePackProvider = new JsonObject();
 
-                    resourcePackProvider.enabled = true;
-                    resourcePackProvider.rootLocation = marsh.marshall(String.class, original.get("resourcePackRoot"));
-                    resourcePackProvider.updateMessage = marsh.marshall(String.class, original.get("packUpdateMessage"));
-                    resourcePackProvider.updateMessageHoverMessage = marsh.marshall(String.class, original.get("packUpdateMessageHoverMessage"));
+                    datafixField(original, "resourcePackRoot", serverInfo, "rootLocation");
 
-                    final String webhookUrl = marsh.marshall(String.class, original.get("webhookUrl"));
-                    final String webhookBody = marsh.marshall(String.class, original.get("webhookBody"));
+                    datafixField(original, "packUpdateMessage", serverInfo, "updateMessage");
+                    datafixField(original, "packUpdateMessageHoverMessage", serverInfo, "updateMessageHoverMessage");
 
+                    final String webhookUrl = datafixGetAndRemove(marsh, String.class, original, "webhookUrl");
+                    final String webhookBody = datafixGetAndRemove(marsh, String.class, original, "webhookBody");
                     if (webhookUrl != null && webhookBody != null) {
-                        final WebhookInfo webhookInfo = new WebhookInfo(
-                                true,
-                                webhookUrl,
-                                webhookBody
-                        );
+                        final JsonObject webhookInfo = new JsonObject();
+                        webhookInfo.put("enabled", jankson.toJson(true));
+                        webhookInfo.put("url", jankson.toJson(webhookUrl));
+                        webhookInfo.put("body", jankson.toJson(webhookBody));
 
-                        resourcePackProvider.successWebhook = webhookInfo;
-
-                        if (!webhookBody.contains("discord")) {
-                            resourcePackProvider.failWebhook = webhookInfo;
-                        }
+                        resourcePackProvider.put("successWebhook", webhookInfo);
+                        if (!webhookBody.contains("discord")) resourcePackProvider.put("failWebhook", webhookInfo);
                     }
 
-                    original.put("resourcePackProvider", jankson.toJson(resourcePackProvider));
+                    original.put("resourcePackProvider", resourcePackProvider);
+                },
+                (original, jankson) -> {
+                    // 3 -> 4
+                    final Marshaller marsh = jankson.getMarshaller();
+
+                    final JsonObject resourcePackProvider = (JsonObject) original.get("resourcePackProvider");
+                    assert resourcePackProvider != null;
+
+                    final String updateMessage = datafixGetAndRemove(marsh, String.class, resourcePackProvider, "updateMessage");
+                    if (updateMessage == null) {
+                        original.put("updateMessage", JsonNull.INSTANCE);
+                        return;
+                    }
+
+                    final String updateMessageHoverMessage = datafixGetAndRemove(marsh, String.class, resourcePackProvider, "updateMessageHoverMessage");
+                    resourcePackProvider.remove("updateMessageHoverMessage");
+
+                    final String[] newUpdateMessage = updateMessage.split("\\\\n");
+                    for (int i = 0; i < newUpdateMessage.length; i++) {
+                        newUpdateMessage[i] =  newUpdateMessage[i].replaceAll("\\{packUpdateCommand}", "&{hoverText,'Click to update pack','&{runCommand,'{packUpdateCommand}','[HERE]'}'}");
+                        if (updateMessageHoverMessage != null) newUpdateMessage[i] = "&{hoverText,'%s','%s'}".formatted(updateMessageHoverMessage, newUpdateMessage[i]);
+                    }
+                    resourcePackProvider.put("updateMessage", new JsonArray(newUpdateMessage, marsh));
                 }
         };
     }
 
+    private static void datafixField(final @NotNull JsonObject originalObject, final @NotNull String originalKey, final @NotNull String newKey) {
+        datafixField(originalObject, originalKey, originalObject, newKey);
+    }
+    private static void datafixField(final @NotNull JsonObject originalObject, final @NotNull String originalKey, final @NotNull JsonObject newObject, final @NotNull String newKey) {
+        final JsonElement originalValue = originalObject.get(originalKey);
+        if (originalValue == null) {
+            LOGGER.warn("JSON of current config doesn't contain value with key '%s', new value with key '%s' will be reset to default!", originalKey, newKey);
+            return;
+        }
+
+        newObject.put(newKey, originalValue);
+        originalObject.remove(originalKey);
+    }
+
+    @Nullable
+    private static <T> T datafixGetAndRemove(final @NotNull Marshaller marsh, final @NotNull Class<T> type, final @NotNull JsonObject object, final @NotNull String key) {
+        final JsonElement jsonValue = object.get(key);
+        if (jsonValue == null) {
+            LOGGER.warn("JSON of current config doesn't contain value with key '%s'!", key);
+            return null;
+        }
+        object.remove(key);
+        return marsh.marshall(type, jsonValue);
+    }
+
     @Override
     public int getConfigVersion() {
-        return 3;
+        return 4;
     }
 
     @Override

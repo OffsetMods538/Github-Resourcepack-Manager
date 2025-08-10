@@ -17,30 +17,23 @@ public final class StringUtils {
     /**
      * Replaces all instances of the keys in the placeholders map with their values.
      * <p>
-     * Same as calling {@link StringUtils#replacePlaceholders(String, Map, boolean)} with {@code escapeQuotes} false.
+     * Replaces {@code '} with {@code \'} in the placeholders if {@code escapeSingleQuotes} is true.
+     * <br />
+     * Replaces {@code "} with {@code \"} in the placeholders if {@code escapeDoubleQuotes} is true.
      *
      * @param string The string to replace placeholders in.
      * @param placeholders The placeholders to replace.
+     * @param escapeSingleQuotes Whether single quotes (') should be escaped.
+     * @param escapeDoubleQuotes Whether double quotes (") should be escaped.
      * @return The original string with all instances of the keys in the placeholders map replaced with their values.
      */
-    public static String replacePlaceholders(String string, Map<String, String> placeholders) {
-        return replacePlaceholders(string, placeholders, false);
-    }
-
-    /**
-     * Replaces all instances of the keys in the placeholders map with their values.
-     * <p>
-     * Replaces {@code "} with {@code \"} in the placeholders if {@code escapeQuotes} is true.
-     *
-     * @param string The string to replace placeholders in.
-     * @param placeholders The placeholders to replace.
-     * @param escapeQuotes Whether quotes should be escaped.
-     * @return The original string with all instances of the keys in the placeholders map replaced with their values.
-     */
-    public static String replacePlaceholders(String string, Map<String, String> placeholders, boolean escapeQuotes) {
+    public static String replacePlaceholders(String string, Map<String, String> placeholders, boolean escapeSingleQuotes, boolean escapeDoubleQuotes) {
         for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-            // I love strings. "\"" matches " and "\\\"" matches \"
-            string = string.replace(entry.getKey(), escapeQuotes ? entry.getValue().replace("\"", "\\\"") : entry.getValue());
+            String placeholderValue = entry.getValue();
+            if (escapeSingleQuotes) placeholderValue = placeholderValue.replace("'", "\\'");
+            if (escapeDoubleQuotes) placeholderValue = placeholderValue.replace("\"", "\\\"");
+
+            string = string.replace(entry.getKey(), placeholderValue);
         }
         return string;
     }
