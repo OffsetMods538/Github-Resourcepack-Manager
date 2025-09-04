@@ -13,7 +13,6 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public class DataPackHandler {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

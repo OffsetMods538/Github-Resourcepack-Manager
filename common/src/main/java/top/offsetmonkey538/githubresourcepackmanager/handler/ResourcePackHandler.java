@@ -18,7 +18,6 @@ import java.util.Random;
 import java.util.stream.Stream;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public class ResourcePackHandler {
     private Path outputPackPath;

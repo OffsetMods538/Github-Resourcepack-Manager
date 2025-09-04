@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public final class ConfigHandler {
     private ConfigHandler() {

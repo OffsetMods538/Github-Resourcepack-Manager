@@ -9,7 +9,6 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 import static top.offsetmonkey538.githubresourcepackmanager.platform.ServiceLoader.load;
 
 public interface PlatformServerProperties {

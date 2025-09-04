@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.*;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public class GitHandler {
 

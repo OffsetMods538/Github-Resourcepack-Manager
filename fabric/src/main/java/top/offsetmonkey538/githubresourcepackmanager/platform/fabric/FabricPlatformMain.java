@@ -6,25 +6,16 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
-import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
 import top.offsetmonkey538.monkeylib538.fabric.api.text.FabricMonkeyLibText;
 
 import java.nio.file.Path;
-import java.util.LinkedList;
 import java.util.List;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public class FabricPlatformMain implements PlatformMain, DedicatedServerModInitializer {
     private static @Nullable MinecraftServer minecraftServer = null;

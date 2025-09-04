@@ -2,7 +2,6 @@ package top.offsetmonkey538.githubresourcepackmanager.platform.fabric;
 
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.*;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformText;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
 import top.offsetmonkey538.monkeylib538.fabric.api.text.FabricMonkeyLibText;
