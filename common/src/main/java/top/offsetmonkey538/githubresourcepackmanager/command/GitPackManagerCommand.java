@@ -89,15 +89,17 @@ public final class GitPackManagerCommand {
         } catch (GithubResourcepackManagerException e) {
             CommandAbstractionApi.sendError(context, "Failed to update repository, git related placeholders will not be replaced!");
             CommandAbstractionApi.sendError(context, "Cause:\n%s\n", e);
+            LOGGER.error("Failed to update repository, git related placeholders will not be replaced!", e);
         }
         final Map<String, String> placeholders = generatePlaceholders(gitHandler, isResource ? resourcePackHandler : null, UpdateType.COMMAND, isResource ? "resource" : "data", true);
 
         final MonkeyLibText[] text;
         try {
-            text = createUpdateMessage(config.get().resourcePackProvider.updateMessage, placeholders);
+            text = createUpdateMessage(isResource ? config.get().resourcePackProvider.updateMessage : config.get().dataPackProvider.updateMessage, placeholders);
         } catch (GithubResourcepackManagerException e) {
             CommandAbstractionApi.sendError(context, "Failed to create update message!");
             CommandAbstractionApi.sendError(context, "Cause:\n%s\n", e);
+            LOGGER.error("Failed to create update message for %spack!", e, isResource ? "resource" : "data");
             return 0;
         }
 
