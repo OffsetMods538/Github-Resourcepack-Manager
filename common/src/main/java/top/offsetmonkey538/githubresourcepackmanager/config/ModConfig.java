@@ -211,52 +211,8 @@ public class ModConfig implements Config {
                     // 3 -> 4
                     final Marshaller marsh = jankson.getMarshaller();
 
-                    {
-                        final JsonObject resourcePackProvider = (JsonObject) original.get("resourcePackProvider");
-                        assert resourcePackProvider != null;
-
-                        final String updateMessage = datafixGetAndRemove(marsh, String.class, resourcePackProvider, "updateMessage");
-                        if (updateMessage == null) {
-                            original.put("updateMessage", JsonNull.INSTANCE);
-                            return;
-                        }
-
-                        final String updateMessageHoverMessage = datafixGetAndRemove(marsh, String.class, resourcePackProvider, "updateMessageHoverMessage");
-                        resourcePackProvider.remove("updateMessageHoverMessage");
-
-                        final String[] newUpdateMessage = updateMessage.split("\\n");
-                        for (int i = 0; i < newUpdateMessage.length; i++) {
-                            newUpdateMessage[i] = newUpdateMessage[i].replaceAll("\\{packUpdateCommand}", "&{hoverText,'Click to update pack','&{runCommand,'{packUpdateCommand}','[HERE]'}'}");
-                            if (updateMessageHoverMessage != null)
-                                newUpdateMessage[i] = "&{hoverText,'%s','%s'}".formatted(updateMessageHoverMessage, newUpdateMessage[i]);
-                        }
-                        resourcePackProvider.put("updateMessage", new JsonArray(newUpdateMessage, marsh));
-
-                        original.put("resourcePackProvider", resourcePackProvider);
-                    }
-                    {
-
-                        final JsonObject dataPackProvider = (JsonObject) original.get("dataPackProvider");
-                        assert dataPackProvider != null;
-
-                        final String updateMessage = datafixGetAndRemove(marsh, String.class, dataPackProvider, "updateMessage");
-                        if (updateMessage == null) {
-                            original.put("updateMessage", JsonNull.INSTANCE);
-                            return;
-                        }
-
-                        final String updateMessageHoverMessage = datafixGetAndRemove(marsh, String.class, dataPackProvider, "updateMessageHoverMessage");
-                        dataPackProvider.remove("updateMessageHoverMessage");
-
-                        final String[] newUpdateMessage = updateMessage.split("\\n");
-                        for (int i = 0; i < newUpdateMessage.length; i++) {
-                            newUpdateMessage[i] =  newUpdateMessage[i].replaceAll("\\{packUpdateCommand}", "&{hoverText,'Click to update pack','&{runCommand,'{packUpdateCommand}','[HERE]'}'}");
-                            if (updateMessageHoverMessage != null) newUpdateMessage[i] = "&{hoverText,'%s','%s'}".formatted(updateMessageHoverMessage, newUpdateMessage[i]);
-                        }
-                        dataPackProvider.put("updateMessage", new JsonArray(newUpdateMessage, marsh));
-
-                        original.put("dataPackProvider", dataPackProvider);
-                    }
+                    original.put("resourcePackProvider", datafix3to4UpdateMessage((JsonObject) original.get("resourcePackProvider"), marsh));
+                    original.put("dataPackProvider", datafix3to4UpdateMessage((JsonObject) original.get("dataPackProvider"), marsh));
                 }
         };
     }
@@ -284,6 +240,26 @@ public class ModConfig implements Config {
         }
         object.remove(key);
         return marsh.marshall(type, jsonValue);
+    }
+
+    private static JsonObject datafix3to4UpdateMessage(final @NotNull JsonObject originalJson, final @NotNull Marshaller marsh) {
+        final String updateMessage = datafixGetAndRemove(marsh, String.class, originalJson, "updateMessage");
+        if (updateMessage == null) {
+            originalJson.put("updateMessage", JsonNull.INSTANCE);
+            return originalJson;
+        }
+
+        final String updateMessageHoverMessage = datafixGetAndRemove(marsh, String.class, originalJson, "updateMessageHoverMessage");
+
+        final String[] newUpdateMessage = updateMessage.split("\\n");
+        for (int i = 0; i < newUpdateMessage.length; i++) {
+            newUpdateMessage[i] = newUpdateMessage[i].replaceAll("\\{packUpdateCommand}", "&{hoverText,'Click to update pack','&{runCommand,'{packUpdateCommand}','[HERE]'}'}");
+            if (updateMessageHoverMessage != null)
+                newUpdateMessage[i] = "&{hoverText,'%s','%s'}".formatted(updateMessageHoverMessage, newUpdateMessage[i].replace("'", "\\'"));
+        }
+        originalJson.put("updateMessage", new JsonArray(newUpdateMessage, marsh));
+
+        return originalJson;
     }
 
     @Override
