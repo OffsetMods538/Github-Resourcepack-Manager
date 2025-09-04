@@ -103,7 +103,7 @@ public class DataPackHandler {
 
     private State readStateFile() throws IOException {
         if (Files.notExists(STATE_FILE)) {
-            LOGGER.warn("State file '%s' not found! No datapacks will be deleted!");
+            LOGGER.warn("State file '%s' not found! No datapacks will be deleted!".formatted(STATE_FILE));
             return new State(new String[]{});
         }
 
