@@ -1,6 +1,8 @@
 package top.offsetmonkey538.githubresourcepackmanager;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.command.GitPackManagerCommand;
 import top.offsetmonkey538.githubresourcepackmanager.config.ModConfig;
@@ -15,6 +17,7 @@ import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
 import top.offsetmonkey538.meshlib.api.HttpHandlerRegistry;
 import top.offsetmonkey538.monkeylib538.api.command.ConfigCommandApi;
 import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
+import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibStyle;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
 import top.offsetmonkey538.monkeylib538.api.text.TextFormattingApi;
 import top.offsetmonkey538.offsetconfig538.api.config.ConfigHolder;
@@ -48,14 +51,22 @@ public final class GithubResourcepackManager {
 
     public static final Map<String, String> STATIC_PLACEHOLDERS = Map.of("{packUpdateCommand}", "/gh-rp-manager request-pack");
 
-    public static ConfigHolder<ModConfig> config = ConfigManager.INSTANCE.init(ConfigHolder.create(ModConfig::new, LOGGER::error));
+    private static final List<MonkeyLibText> MESSAGE_QUEUE = new ArrayList<>();
+
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    public static @NotNull ConfigHolder<ModConfig> config;
 
     public static ResourcePackHandler resourcePackHandler;
 
     private static boolean disabled;
 
     public static void initialize() {
-        PlatformMain.INSTANCE.registerLogToAdminListener();
+        addLogToAdminListeners();
+        PlatformMain.INSTANCE.registerSendMessageQueueOnAdminJoin(MESSAGE_QUEUE);
+
+        // config should be initialized after the error listeners
+        config = ConfigManager.INSTANCE.init(ConfigHolder.create(ModConfig::new, LOGGER::error));
+
         GitPackManagerCommand.register();
         ConfigCommandApi.registerConfigCommand(
                 config,
@@ -76,6 +87,24 @@ public final class GithubResourcepackManager {
         PlatformMain.INSTANCE.runOnServerStart(() -> updatePack(UpdateType.RESTART));
     }
 
+    private static void addLogToAdminListeners() {
+        LOGGER.addListener(MonkeyLibLogger.LogLevel.ERROR, createLogToAdminListener(MonkeyLibLogger.LogLevel.ERROR, MonkeyLibStyle.Color.RED));
+        LOGGER.addListener(MonkeyLibLogger.LogLevel.WARN, createLogToAdminListener(MonkeyLibLogger.LogLevel.WARN, MonkeyLibStyle.Color.YELLOW));
+    }
+
+    private static MonkeyLibLogger.LogListener createLogToAdminListener(MonkeyLibLogger.LogLevel logLevel, int textColor) {
+        return (message, error) -> {
+            final MonkeyLibText text = MonkeyLibText
+                    .of("[%s] %s".formatted(MOD_ID, message))
+                    .applyStyle(style -> style.withColor(textColor));
+
+            if (error != null) text.applyStyle(style -> style.withShowText(MonkeyLibText.of(ExceptionUtils.getRootCauseMessage(error))));
+
+            PlatformMain.INSTANCE.sendMessageToAdmins(text);
+            MESSAGE_QUEUE.addLast(text);
+        };
+    }
+
     private static void createFolderStructure() throws GithubResourcepackManagerException {
         try {
             Files.createDirectories(RESOURCEPACK_OUTPUT_FOLDER);
@@ -87,6 +116,11 @@ public final class GithubResourcepackManager {
     }
 
     public static void updatePack(final UpdateType updateType) {
+        if (updateType != UpdateType.RESTART) {
+            LOGGER.debug("Clearing admin message queue before updating after a restart...");
+            MESSAGE_QUEUE.clear();
+        }
+
         if (disabled) {
             LOGGER.warn("Skipping pack updating because config was invalid!");
             return;
@@ -177,7 +211,7 @@ public final class GithubResourcepackManager {
         try {
             if (!failed) sendUpdateMessage(config.get().resourcePackProvider.updateMessage, wasUpdated, placeholders);
         } catch (GithubResourcepackManagerException e) {
-            LOGGER.error("Failed to send update message in chat!", e);
+            LOGGER.error("Failed to send update message for resource pack in chat!", e);
         }
 
         // Trigger webhooks
@@ -227,7 +261,7 @@ public final class GithubResourcepackManager {
         try {
             sendUpdateMessage(config.get().dataPackProvider.updateMessage, true, placeholders, true);
         } catch (GithubResourcepackManagerException e) {
-            LOGGER.error("Failed to send update message in chat!", e);
+            LOGGER.error("Failed to send update message for datapack in chat!", e);
         }
 
         // Trigger webhooks

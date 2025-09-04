@@ -16,29 +16,24 @@ import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
 import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
+import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
+import top.offsetmonkey538.monkeylib538.fabric.api.text.FabricMonkeyLibText;
 
 import java.nio.file.Path;
 import java.util.LinkedList;
+import java.util.List;
 
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
 public class FabricPlatformMain implements PlatformMain, DedicatedServerModInitializer {
     private static @Nullable MinecraftServer minecraftServer = null;
-    private static final LinkedList<Text> messageQueue = new LinkedList<>();
 
     @Override
     public void onInitializeServer() {
         GithubResourcepackManager.initialize();
 
         ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer1 -> minecraftServer = minecraftServer1);
-        ServerPlayConnectionEvents.JOIN.register((serverPlayNetworkHandler, packetSender, minecraftServer1) -> {
-            if (!minecraftServer1.getPlayerManager().isOperator(serverPlayNetworkHandler.player.getGameProfile())) return;
-
-            for (Text text : messageQueue) {
-                serverPlayNetworkHandler.player.sendMessage(text);
-            }
-        });
     }
 
     public static @Nullable MinecraftServer getServer() {
@@ -57,27 +52,20 @@ public class FabricPlatformMain implements PlatformMain, DedicatedServerModIniti
     }
 
     @Override
-    public void registerLogToAdminListener() {
-        LOGGER.addListener(MonkeyLibLogger.LogLevel.ERROR, (message, error) -> {
-            MutableText text = Text
-                    .literal(String.format("[%s] %s", MOD_ID, message))
-                    .setStyle(Style.EMPTY.withColor(Formatting.RED));
-            if (error != null) text = text.setStyle(Style.EMPTY.withColor(Formatting.RED).withHoverEvent(
-                    new HoverEvent(
-                            HoverEvent.Action.SHOW_TEXT,
-                            Text.literal(ExceptionUtils.getRootCauseMessage(error))
-                    )
-            ));
+    public void sendMessageToAdmins(MonkeyLibText message) {
+        if (getServer() == null) return;
+        for (final PlayerEntity player : getServer().getPlayerManager().getPlayerList()) {
+            if (!getServer().getPlayerManager().isOperator(player.getGameProfile())) continue;
+            player.sendMessage(FabricMonkeyLibText.of(message).getText(), false);
+        }
+    }
 
-            boolean sent = false;
-            if (getServer() != null) for (final PlayerEntity player : getServer().getPlayerManager().getPlayerList()) {
-                if (!getServer().getPlayerManager().isOperator(player.getGameProfile())) continue;
-                player.sendMessage(text, false);
-                sent = true;
-            }
-            if (sent) return;
+    @Override
+    public void registerSendMessageQueueOnAdminJoin(List<MonkeyLibText> messageQueue) {
+        ServerPlayConnectionEvents.JOIN.register((serverPlayNetworkHandler, packetSender, minecraftServer1) -> {
+            if (!minecraftServer1.getPlayerManager().isOperator(serverPlayNetworkHandler.player.getGameProfile())) return;
 
-            messageQueue.addLast(text);
+            for (MonkeyLibText text : messageQueue) serverPlayNetworkHandler.player.sendMessage(FabricMonkeyLibText.of(text).getText());
         });
     }
 
