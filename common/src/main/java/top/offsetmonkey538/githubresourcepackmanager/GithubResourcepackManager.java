@@ -88,11 +88,11 @@ public final class GithubResourcepackManager {
     }
 
     private static void addLogToAdminListeners() {
-        LOGGER.addListener(MonkeyLibLogger.LogLevel.ERROR, createLogToAdminListener(MonkeyLibLogger.LogLevel.ERROR, MonkeyLibStyle.Color.RED));
-        LOGGER.addListener(MonkeyLibLogger.LogLevel.WARN, createLogToAdminListener(MonkeyLibLogger.LogLevel.WARN, MonkeyLibStyle.Color.YELLOW));
+        LOGGER.addListener(MonkeyLibLogger.LogLevel.ERROR, createLogToAdminListener(MonkeyLibStyle.Color.RED));
+        LOGGER.addListener(MonkeyLibLogger.LogLevel.WARN, createLogToAdminListener(MonkeyLibStyle.Color.YELLOW));
     }
 
-    private static MonkeyLibLogger.LogListener createLogToAdminListener(MonkeyLibLogger.LogLevel logLevel, int textColor) {
+    private static MonkeyLibLogger.LogListener createLogToAdminListener(final int textColor) {
         return (message, error) -> {
             final MonkeyLibText text = MonkeyLibText
                     .of("[%s] %s".formatted(MOD_ID, message))
