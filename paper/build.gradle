@@ -41,7 +41,9 @@ dependencies {
     paperweight.paperDevBundle(project.paper_version)
 
     implementation "xyz.jpenilla:reflection-remapper:${project.reflection_remapper_version}"
-    implementation "top.offsetmonkey538.meshlib:mesh-lib-paper:${rootProject.meshlib_version}"
+    implementation("top.offsetmonkey538.meshlib:mesh-lib-paper:${rootProject.meshlib_version}+1.21.4") {
+        exclude(group: "top.offsetmonkey538.monkeylib538")
+    }
 
     common project(path: ":common", configuration: "shadow")
 }

@@ -99,7 +99,9 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fapi_version}"
 
-    include runtimeOnly("top.offsetmonkey538.meshlib:mesh-lib-fabric:${rootProject.meshlib_version}")
+    runtimeOnly("top.offsetmonkey538.meshlib:mesh-lib-fabric:${rootProject.meshlib_version}+1.21.4") {
+        exclude(group: "top.offsetmonkey538.monkeylib538")
+    }
 
     include project(path: ":common", configuration: "shadow")
     common project(":common")

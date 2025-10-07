@@ -1,5 +1,7 @@
 package top.offsetmonkey538.githubresourcepackmanager;
 
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +16,10 @@ import top.offsetmonkey538.githubresourcepackmanager.handler.ResourcePackHandler
 import top.offsetmonkey538.githubresourcepackmanager.networking.MainHttpHandler;
 import top.offsetmonkey538.githubresourcepackmanager.platform.*;
 import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
-import top.offsetmonkey538.meshlib.api.HttpHandlerRegistry;
+import top.offsetmonkey538.meshlib.api.router.HttpRouter;
+import top.offsetmonkey538.meshlib.api.router.HttpRouterRegistry;
+import top.offsetmonkey538.meshlib.api.router.rule.HttpRule;
+import top.offsetmonkey538.meshlib.impl.router.rule.DomainHttpRule;
 import top.offsetmonkey538.monkeylib538.api.command.ConfigCommandApi;
 import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibStyle;
@@ -82,7 +87,25 @@ public final class GithubResourcepackManager {
             LOGGER.error("Failed to create folder structure!", e);
         }
 
-        HttpHandlerRegistry.INSTANCE.register(MOD_URI, new MainHttpHandler());
+        HttpRouterRegistry.INSTANCE.register(MOD_URI, new HttpRouter(
+                new HttpRule<>() {
+                    @Override
+                    public String getType() {
+                        return "2hartqwf";
+                    }
+
+                    @Override
+                    public Object getData() {
+                        return new Object();
+                    }
+
+                    @Override
+                    public boolean matches(FullHttpRequest httpRequest) {
+                        return MOD_URI.equals(httpRequest.uri().split("/")[1]);
+                    }
+                },
+                new MainHttpHandler(new Object())
+        ));
 
         PlatformMain.INSTANCE.runOnServerStart(() -> updatePack(UpdateType.RESTART));
     }

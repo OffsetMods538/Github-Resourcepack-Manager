@@ -15,13 +15,16 @@ repositories {
 }
 
 dependencies {
-    implementation "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"
+    implementation "org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}"
 
     shadow compileOnlyApi("top.offsetmonkey538.monkeylib538:monkeylib538-common:${project.monkeylib538_version}")
 
-    shadow compileOnly("top.offsetmonkey538.meshlib:mesh-lib-api:${project.meshlib_version}")
+    shadow compileOnly("top.offsetmonkey538.meshlib:mesh-lib-api:${project.meshlib_version}") {
+        exclude(group: "top.offsetmonkey538.monkeylib538")
+    }
 
     // should be bundled with minecraft
+    shadow compileOnly("com.mojang:brigadier:1.3.10") //todo put in properties
     shadow compileOnly("com.google.guava:guava:${project.guava_version}")
     shadow compileOnly("commons-io:commons-io:${project.commonsio_version}")
     shadow compileOnly("org.apache.commons:commons-lang3:${project.commonslang_version}")
@@ -31,3 +34,13 @@ dependencies {
     shadow compileOnly("org.jetbrains:annotations:24.0.0")
 }
 tasks.build.dependsOn(shadowJar)
+
+processResources {
+    final Map properties = [
+            "modVersion":                 project.version
+    ]
+    inputs.properties(properties)
+    filesMatching("META-INF/neoforge.mods.toml") {
+        expand(properties)
+    }
+}

@@ -1,0 +1,39 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license="MIT"
+
+issueTrackerURL="https://github.com/OffsetMods538/Github-Resourcepack-manager"
+
+
+[[mods]]
+modId="git_pack_manager"
+displayName="Git Pack Manager"
+version="${modVersion}"
+displayURL="https://modrinth.com/mod/github-resourcepack-manager"
+authors="OffsetMonkey538"
+description="Modify server resourcepack from GitHub"
+
+[[mixins]]
+config="github-resourcepack-manager.mixins.json"
+
+
+[[dependencies.git_pack_manager]]
+modId="minecraft"
+type="required"
+versionRange="${supportedMinecraftVersions}"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.git_pack_manager]]
+modId="monkeylib538_common_neoforge"
+type="required"
+versionRange="[${monkeylib538Version},)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.git_pack_manager]]
+modId="mesh_lib_common"
+type="required"
+versionRange="[${meshLibVersion},)"
+ordering="NONE"
+side="BOTH"

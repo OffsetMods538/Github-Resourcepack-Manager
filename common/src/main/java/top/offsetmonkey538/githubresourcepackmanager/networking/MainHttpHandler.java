@@ -9,7 +9,11 @@ import top.offsetmonkey538.meshlib.api.HttpHandler;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
 
-public class MainHttpHandler implements HttpHandler {
+public class MainHttpHandler extends HttpHandler<Object> {
+
+    public MainHttpHandler(Object data) {
+        super(data);
+    }
 
     @Override
     public void handleRequest(@NotNull ChannelHandlerContext ctx, @NotNull FullHttpRequest request) throws Exception {
