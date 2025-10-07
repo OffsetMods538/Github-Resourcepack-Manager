@@ -70,7 +70,7 @@ public final class GithubResourcepackManager {
         PlatformMain.INSTANCE.registerSendMessageQueueOnAdminJoin(MESSAGE_QUEUE);
 
         // config should be initialized after the error listeners
-        config = ConfigManager.INSTANCE.init(ConfigHolder.create(ModConfig::new, LOGGER::error));
+        config = ConfigManager.init(ConfigHolder.create(ModConfig::new, LOGGER::error));
 
         GitPackManagerCommand.register();
         ConfigCommandApi.registerConfigCommand(
