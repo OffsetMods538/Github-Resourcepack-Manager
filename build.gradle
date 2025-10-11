@@ -1,9 +1,34 @@
 import dex.plugins.outlet.v2.util.ReleaseType
 
+import java.nio.file.Files
+
 plugins {
 	id 'fabric-loom' version '1.10-SNAPSHOT' apply false
 	id 'io.github.dexman545.outlet' version '1.6.1' apply false
 	id 'com.modrinth.minotaur' version '2.+' apply false
+}
+
+ext {
+    versionPrefix = rootProject.mod_version
+    if (!Boolean.parseBoolean(System.getenv("IS_RELEASE"))) {
+        String preReleaseVersion = System.currentTimeMillis()
+
+        if (Boolean.parseBoolean(System.getenv("PRESERVE_PRERELEASE_VERSION"))) {
+            var preReleaseVersionFile = file("preReleaseVersion.txt").toPath()
+            if (Files.exists(preReleaseVersionFile)) preReleaseVersion = Files.readString(preReleaseVersionFile)
+            Files.writeString(preReleaseVersionFile, preReleaseVersion)
+        }
+
+        var separator = "-"
+        if (versionPrefix.contains("-")) separator = "."
+        versionPrefix = "${versionPrefix}${separator}${preReleaseVersion}"
+    }
+    final String versionSuffix = System.getenv("VERSION_SUFFIX")
+    if (versionSuffix != null && !versionSuffix.isEmpty()) {
+        versionPrefix = "${versionPrefix}+${versionSuffix}"
+    }
+
+    System.out.println("Version Prefix: " + versionPrefix)
 }
 
 allprojects {
@@ -27,7 +52,7 @@ subprojects {
 	apply plugin: "java"
 
 	base.archivesName = "github-resourcepack-manager-${project.nameSuffix}"
-	version = "${project.mod_version}+${project.minecraft_version}"
+	version = "${rootProject.versionPrefix}+${project.minecraft_version}"
 
 	java {
 		withSourcesJar()
@@ -69,5 +94,4 @@ configure(subprojects.findAll { it.name != "common" }) {
 		}
 	}
 	tasks.modrinth.dependsOn(tasks.modrinthSyncBody)
-
 }

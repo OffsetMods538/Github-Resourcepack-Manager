@@ -109,7 +109,7 @@ dependencies {
 
 processResources {
     final Map properties = Map<String, String>.of(
-            "modVersion",                 project.mod_version,
+            "modVersion",                 project.version,
             "supportedMinecraftVersions", project.supported_minecraft_versions,
             "monkeylib538Version",        project.monkeylib538_version
     )

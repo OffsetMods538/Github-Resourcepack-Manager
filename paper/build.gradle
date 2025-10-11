@@ -51,7 +51,7 @@ tasks.build.dependsOn(shadowJar)
 
 processResources {
     final Map properties = Map<String, String>.of(
-            "modVersion",                 project.mod_version,
+            "modVersion",                 project.version,
             "lowestMinecraftVersion",     outlet.mcVersions().first() // Hopefully outlet always does stuff in this order
     )
 
