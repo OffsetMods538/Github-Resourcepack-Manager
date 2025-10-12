@@ -40,15 +40,17 @@ public class PaperPlatformMain implements PlatformMain {
     }
 
     @Override
-    public void registerSendMessageQueueOnAdminJoin(List<MonkeyLibText> messageQueue) {
+    public void registerSendMessageQueueOnAdminJoin(List<MonkeyLibText> messageQueue, MonkeyLibText lastMessage) {
         record AdminMessageQueueEventHandler(List<MonkeyLibText> messageQueue) implements Listener {
             @EventHandler(priority = EventPriority.MONITOR)
             public void onPlayerJoin(PlayerJoinEvent event) {
+                if (messageQueue.isEmpty()) return;
                 if (!event.getPlayer().isOp()) return;
 
                 for (MonkeyLibText text : messageQueue) {
-                    // todo: once monkeylib has paper support: event.getPlayer().sendMessage(PaperMonkeyLibText.of(text));
+                    // todo: once monkeylib has paper support: event.getPlayer().sendMessage(PaperMonkeyLibText.of(text).getText());
                 }
+                // todo: once monkeylib has paper support: event.getPlayer().sendMessage(PaperMonkeyLibText.of(lastMessage).getText());
             }
         }
 

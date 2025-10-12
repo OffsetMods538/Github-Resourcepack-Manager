@@ -51,11 +51,13 @@ public class NeoforgePlatformMain implements PlatformMain {
     }
 
     @Override
-    public void registerSendMessageQueueOnAdminJoin(List<MonkeyLibText> messageQueue) {
+    public void registerSendMessageQueueOnAdminJoin(List<MonkeyLibText> messageQueue, MonkeyLibText lastMessage) {
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, playerLoggedInEvent -> {
+            if (messageQueue.isEmpty()) return;
             if (!playerLoggedInEvent.getEntity().getServer().getPlayerList().isOp(playerLoggedInEvent.getEntity().getGameProfile())) return;
 
             for (MonkeyLibText text : messageQueue) playerLoggedInEvent.getEntity().displayClientMessage(NeoforgeMonkeyLibText.of(text).getText(), false);
+            playerLoggedInEvent.getEntity().displayClientMessage(NeoforgeMonkeyLibText.of(lastMessage).getText(), false);
         });
     }
 

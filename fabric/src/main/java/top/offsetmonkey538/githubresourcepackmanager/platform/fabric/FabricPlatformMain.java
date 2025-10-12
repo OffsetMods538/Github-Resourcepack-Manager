@@ -52,11 +52,13 @@ public class FabricPlatformMain implements PlatformMain, DedicatedServerModIniti
     }
 
     @Override
-    public void registerSendMessageQueueOnAdminJoin(List<MonkeyLibText> messageQueue) {
+    public void registerSendMessageQueueOnAdminJoin(List<MonkeyLibText> messageQueue, MonkeyLibText lastMessage) {
         ServerPlayConnectionEvents.JOIN.register((serverPlayNetworkHandler, packetSender, minecraftServer1) -> {
+            if (messageQueue.isEmpty()) return;
             if (!minecraftServer1.getPlayerManager().isOperator(serverPlayNetworkHandler.player.getGameProfile())) return;
 
             for (MonkeyLibText text : messageQueue) serverPlayNetworkHandler.player.sendMessage(FabricMonkeyLibText.of(text).getText());
+            serverPlayNetworkHandler.player.sendMessage(FabricMonkeyLibText.of(lastMessage).getText());
         });
     }
 

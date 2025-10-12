@@ -58,6 +58,15 @@ public final class GithubResourcepackManager {
 
     private static final List<MonkeyLibText> MESSAGE_QUEUE = new ArrayList<>();
 
+    private static final MonkeyLibText MESSAGE_QUEUE_EMPTY_MESSAGE;
+    static {
+        try {
+            MESSAGE_QUEUE_EMPTY_MESSAGE = TextFormattingApi.styleText("Admin message queue can be emptied using the &{hoverText,'Click to run','&{runCommand,'/gh-rp-manager reset-admin-message-queue','[/gh-rp-manager reset-admin-message-queue]'}'} command.");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @SuppressWarnings("NotNullFieldNotInitialized")
     public static @NotNull ConfigHolder<ModConfig> config;
 
@@ -67,7 +76,10 @@ public final class GithubResourcepackManager {
 
     public static void initialize() {
         addLogToAdminListeners();
-        PlatformMain.INSTANCE.registerSendMessageQueueOnAdminJoin(MESSAGE_QUEUE);
+        PlatformMain.INSTANCE.registerSendMessageQueueOnAdminJoin(
+                MESSAGE_QUEUE,
+                MESSAGE_QUEUE_EMPTY_MESSAGE
+        );
 
         // config should be initialized after the error listeners
         config = ConfigManager.init(ConfigHolder.create(ModConfig::new, LOGGER::error));
@@ -342,6 +354,10 @@ public final class GithubResourcepackManager {
         LOGGER.info("Placeholders: %s", placeholders);
 
         return placeholders;
+    }
+
+    public static void clearAdminMessageQueue() {
+        MESSAGE_QUEUE.clear();
     }
 
     private static String getOldResourcePackName() {

@@ -57,6 +57,15 @@ public final class GitPackManagerCommand {
                         .requires(CommandAbstractionApi::isOp)
                         .then(literal("resource").executes(context -> runTestUpdateMessage(context, true)))
                         .then(literal("data").executes(context -> runTestUpdateMessage(context, false)))
+                )
+
+                .then(literal("reset-admin-message-queue")
+                        .requires(CommandAbstractionApi::isOp)
+                        .executes(context -> {
+                            clearAdminMessageQueue();
+                            CommandAbstractionApi.sendMessage(context, "Admin message queue cleared!");
+                            return 1;
+                        })
                 );
     }
 
