@@ -85,10 +85,10 @@ public final class GitPackManagerCommand {
         GithubResourcepackManager.LOGGER.addListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
         GithubResourcepackManager.LOGGER.addListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
 
-        GithubResourcepackManager.updatePack(force ? GithubResourcepackManager.UpdateType.COMMAND_FORCE : GithubResourcepackManager.UpdateType.COMMAND);
-
-        GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
-        GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
+        GithubResourcepackManager.updatePack(force ? GithubResourcepackManager.UpdateType.COMMAND_FORCE : GithubResourcepackManager.UpdateType.COMMAND, false).thenRun(() -> {
+            GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.INFO, infoListener);
+            GithubResourcepackManager.LOGGER.removeListener(MonkeyLibLogger.LogLevel.WARN, warnListener);
+        });
     }
 
     private static int runTestUpdateMessage(CommandContext<Object> context, boolean isResource) {

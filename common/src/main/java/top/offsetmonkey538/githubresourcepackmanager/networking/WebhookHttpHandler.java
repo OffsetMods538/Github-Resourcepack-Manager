@@ -12,6 +12,6 @@ public final class WebhookHttpHandler {
 
     public static void handleRequest(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, OK)).addListener(ChannelFutureListener.CLOSE);
-        GithubResourcepackManager.updatePack(GithubResourcepackManager.UpdateType.WEBHOOK);
+        GithubResourcepackManager.updatePack(GithubResourcepackManager.UpdateType.WEBHOOK, false);
     }
 }

@@ -1,5 +1,6 @@
 package top.offsetmonkey538.githubresourcepackmanager;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import org.apache.commons.io.FileUtils;
@@ -32,6 +33,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.regex.Pattern;
 
 public final class GithubResourcepackManager {
@@ -55,6 +60,8 @@ public final class GithubResourcepackManager {
     public static final UUID RESOURCEPACK_UUID = UUID.fromString("60ab8dc7-08d1-4f5f-a9a8-9a01d048b7b9");
 
     public static final Map<String, String> STATIC_PLACEHOLDERS = Map.of("{packUpdateCommand}", "/gh-rp-manager request-pack");
+
+    private static final Executor EXECUTOR = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(MOD_ID + "-%d").build());
 
     private static final List<MonkeyLibText> MESSAGE_QUEUE = new ArrayList<>();
 
@@ -119,7 +126,7 @@ public final class GithubResourcepackManager {
                 new MainHttpHandler(new Object())
         ));
 
-        PlatformMain.INSTANCE.runOnServerStart(() -> updatePack(UpdateType.RESTART));
+        PlatformMain.INSTANCE.runOnServerStart(() -> updatePack(UpdateType.RESTART, true));
     }
 
     private static void addLogToAdminListeners() {
@@ -150,7 +157,14 @@ public final class GithubResourcepackManager {
         }
     }
 
-    public static void updatePack(final UpdateType updateType) {
+    public static CompletableFuture<Void> updatePack(final UpdateType updateType, final boolean onSameThread) {
+        if (!onSameThread) return CompletableFuture.runAsync(() -> updatePack(updateType), EXECUTOR);
+
+        updatePack(updateType);
+        return CompletableFuture.completedFuture(null);
+    }
+
+    private static void updatePack(final UpdateType updateType) {
         if (updateType != UpdateType.RESTART) {
             LOGGER.debug("Clearing admin message queue before updating after a restart...");
             MESSAGE_QUEUE.clear();
