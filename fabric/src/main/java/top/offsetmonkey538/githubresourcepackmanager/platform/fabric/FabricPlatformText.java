@@ -4,6 +4,7 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformText;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
+import top.offsetmonkey538.monkeylib538.fabric.api.player.FabricPlayerApi;
 import top.offsetmonkey538.monkeylib538.fabric.api.text.FabricMonkeyLibText;
 
 public class FabricPlatformText implements PlatformText {
@@ -19,7 +20,7 @@ public class FabricPlatformText implements PlatformText {
         }
 
         for (final ServerPlayerEntity player : playerManager.getPlayerList()) {
-            if (!playerManager.isOperator(player.getGameProfile())) continue;
+            if (!FabricPlayerApi.isPlayerOp(playerManager, player)) continue;
             player.sendMessageToClient(FabricMonkeyLibText.of(updateMessage).getText(), false);
         }
     }

@@ -1,7 +1,7 @@
 import dex.plugins.outlet.v2.util.ReleaseType
 
 plugins {
-    id 'fabric-loom' version '1.10-SNAPSHOT'
+    id 'fabric-loom' version '1.11-SNAPSHOT'
     id 'io.github.dexman545.outlet' version '1.6.1'
 }
 
@@ -10,9 +10,9 @@ outlet {
     mcVersionRange = rootProject.supported_minecraft_versions
     allowedReleaseTypes = Set.of(ReleaseType.RELEASE)
     propertiesData = [
-            'yarn_version': outlet.yarnVersion(rootProject.minecraft_version),
+            'yarn_version': outlet.yarnVersion(project.minecraft_version),
             'loader_version': outlet.loaderVersion(),
-            'fapi_version': outlet.fapiVersion(rootProject.minecraft_version)
+            'fapi_version': outlet.fapiVersion(project.minecraft_version)
     ]
 }
 
@@ -83,7 +83,7 @@ dependencies {
 
     modRuntimeOnly "me.djtheredstoner:DevAuth-fabric:${project.devauth_version}"
 
-    modRuntimeOnly("top.offsetmonkey538.monkeylib538:monkeylib538-fabric-1.20.5:${project.monkeylib538_version}+1.20.5") {
+    modRuntimeOnly("top.offsetmonkey538.monkeylib538:monkeylib538-fabric-1.21.9:${project.monkeylib538_version}+1.21.9") {
         exclude(group: "net.fabricmc.fabric-api")
         exclude(group: "top.offsetmonkey538.monkeylib538:monkeylib538-fabric")
     }
@@ -100,6 +100,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fapi_version}"
 
     runtimeOnly("top.offsetmonkey538.meshlib:mesh-lib-fabric:${rootProject.meshlib_version}+1.21.4") {
+        exclude(group: "net.fabricmc.fabric-api")
         exclude(group: "top.offsetmonkey538.monkeylib538")
     }
 

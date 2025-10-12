@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
+import top.offsetmonkey538.monkeylib538.fabric.api.player.FabricPlayerApi;
 import top.offsetmonkey538.monkeylib538.fabric.api.text.FabricMonkeyLibText;
 
 import java.nio.file.Path;
@@ -46,7 +47,7 @@ public class FabricPlatformMain implements PlatformMain, DedicatedServerModIniti
     public void sendMessageToAdmins(MonkeyLibText message) {
         if (getServer() == null) return;
         for (final PlayerEntity player : getServer().getPlayerManager().getPlayerList()) {
-            if (!getServer().getPlayerManager().isOperator(player.getGameProfile())) continue;
+            if (!FabricPlayerApi.isPlayerOp(getServer().getPlayerManager(), player)) continue;
             player.sendMessage(FabricMonkeyLibText.of(message).getText(), false);
         }
     }
@@ -55,7 +56,7 @@ public class FabricPlatformMain implements PlatformMain, DedicatedServerModIniti
     public void registerSendMessageQueueOnAdminJoin(List<MonkeyLibText> messageQueue, MonkeyLibText lastMessage) {
         ServerPlayConnectionEvents.JOIN.register((serverPlayNetworkHandler, packetSender, minecraftServer1) -> {
             if (messageQueue.isEmpty()) return;
-            if (!minecraftServer1.getPlayerManager().isOperator(serverPlayNetworkHandler.player.getGameProfile())) return;
+            if (!FabricPlayerApi.isPlayerOp(minecraftServer1.getPlayerManager(), serverPlayNetworkHandler.player)) return;
 
             for (MonkeyLibText text : messageQueue) serverPlayNetworkHandler.player.sendMessage(FabricMonkeyLibText.of(text).getText());
             serverPlayNetworkHandler.player.sendMessage(FabricMonkeyLibText.of(lastMessage).getText());
