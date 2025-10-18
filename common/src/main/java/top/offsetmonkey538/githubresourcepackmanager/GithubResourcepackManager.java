@@ -344,7 +344,7 @@ public final class GithubResourcepackManager {
         final MonkeyLibText[] result = new MonkeyLibText[updateMessage.length];
 
         for (int lineIndex = 0; lineIndex < updateMessage.length; lineIndex++) {
-            final String line = StringUtils.replacePlaceholders(updateMessage[lineIndex], placeholders, true, false);
+            final String line = StringUtils.replacePlaceholders(updateMessage[lineIndex], placeholders, true, false).replace("\\n", "\n");
 
             try {
                 result[lineIndex] = TextFormattingApi.styleText(line);
