@@ -4,27 +4,16 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import org.jetbrains.annotations.NotNull;
-import top.offsetmonkey538.meshlib.api.HttpHandler;
+import top.offsetmonkey538.meshlib.api.handler.HttpHandler;
+import top.offsetmonkey538.meshlib.api.rule.HttpRule;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.LOGGER;
+import static top.offsetmonkey538.meshlib.api.util.HttpResponseUtil.sendError;
 
-public class MainHttpHandler extends HttpHandler<Object> {
-
-    public MainHttpHandler(Object data) {
-        super(data);
-    }
+public class MainHttpHandler implements HttpHandler {
 
     @Override
-    public void handleRequest(@NotNull ChannelHandlerContext ctx, @NotNull FullHttpRequest request) throws Exception {
-        if (!request.decoderResult().isSuccess()) {
-            HttpHandler.sendError(ctx, BAD_REQUEST);
-            return;
-        }
-
-        LOGGER.debug("Received Request: &s", request);
-
-
+    public void handleRequest(@NotNull ChannelHandlerContext ctx, @NotNull FullHttpRequest request, @NotNull HttpRule rule) throws Exception {
         final HttpMethod method = request.method();
 
         // GET request should go to fileserver
@@ -40,6 +29,6 @@ public class MainHttpHandler extends HttpHandler<Object> {
         }
 
         // If we reach this point, then the request method isn't supported
-        HttpHandler.sendError(ctx, METHOD_NOT_ALLOWED);
+        sendError(ctx, METHOD_NOT_ALLOWED);
     }
 }
