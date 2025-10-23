@@ -37,11 +37,6 @@ public class NeoforgePlatformMain implements PlatformMain {
     }
 
     @Override
-    public void runOnServerStart(Runnable work) {
-        NeoForge.EVENT_BUS.addListener(ServerStartedEvent.class, serverStartedEvent -> work.run());
-    }
-
-    @Override
     public void sendMessageToAdmins(MonkeyLibText message) {
         if (getServer() == null) return;
         for (final Player player : getServer().getPlayerList().getPlayers()) {

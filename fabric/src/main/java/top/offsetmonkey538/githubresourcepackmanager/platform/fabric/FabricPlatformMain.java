@@ -39,11 +39,6 @@ public class FabricPlatformMain implements PlatformMain, DedicatedServerModIniti
     }
 
     @Override
-    public void runOnServerStart(Runnable work) {
-        ServerLifecycleEvents.SERVER_STARTED.register(minecraftServer1 -> work.run());
-    }
-
-    @Override
     public void sendMessageToAdmins(MonkeyLibText message) {
         if (getServer() == null) return;
         for (final PlayerEntity player : getServer().getPlayerManager().getPlayerList()) {

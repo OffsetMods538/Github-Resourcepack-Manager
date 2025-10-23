@@ -22,6 +22,7 @@ import top.offsetmonkey538.meshlib.api.router.HttpRouterRegistry;
 import top.offsetmonkey538.meshlib.api.router.rule.HttpRule;
 import top.offsetmonkey538.meshlib.impl.router.rule.DomainHttpRule;
 import top.offsetmonkey538.monkeylib538.api.command.ConfigCommandApi;
+import top.offsetmonkey538.monkeylib538.api.lifecycle.ServerLifecycleApi;
 import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibStyle;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
@@ -126,7 +127,7 @@ public final class GithubResourcepackManager {
                 new MainHttpHandler(new Object())
         ));
 
-        PlatformMain.INSTANCE.runOnServerStart(() -> updatePack(UpdateType.RESTART, true));
+        ServerLifecycleApi.runOnServerStarted(() -> updatePack(UpdateType.RESTART, true));
     }
 
     private static void addLogToAdminListeners() {

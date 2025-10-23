@@ -22,11 +22,6 @@ public class PaperPlatformMain implements PlatformMain {
     }
 
     @Override
-    public void runOnServerStart(Runnable work) {
-        work.run();
-    }
-
-    @Override
     public void refreshDatapacks() {
         MinecraftServer.getServer().getPackRepository().reload();
     }

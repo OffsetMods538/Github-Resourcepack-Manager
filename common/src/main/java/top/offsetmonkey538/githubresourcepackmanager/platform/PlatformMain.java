@@ -21,13 +21,6 @@ public interface PlatformMain {
     Path getConfigDir();
 
     /**
-     * Must be called when initializing
-     *
-     * @param work the stuff to run
-     */
-    void runOnServerStart(Runnable work);
-
-    /**
      * Tell the server to refresh the list of available datapacks.
      * <p>
      * This way the user won't have to run {@code /datapack list} before being able to enable them
