@@ -3,7 +3,6 @@ package top.offsetmonkey538.githubresourcepackmanager.platform.fabric;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.Nullable;
@@ -13,10 +12,7 @@ import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
 import top.offsetmonkey538.monkeylib538.fabric.api.player.FabricPlayerApi;
 import top.offsetmonkey538.monkeylib538.fabric.api.text.FabricMonkeyLibText;
 
-import java.nio.file.Path;
 import java.util.List;
-
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
 
 public class FabricPlatformMain implements PlatformMain, DedicatedServerModInitializer {
     private static @Nullable MinecraftServer minecraftServer = null;
@@ -32,11 +28,6 @@ public class FabricPlatformMain implements PlatformMain, DedicatedServerModIniti
         return minecraftServer;
     }
 
-
-    @Override
-    public Path getConfigDir() {
-        return FabricLoader.getInstance().getConfigDir().resolve(MOD_ID);
-    }
 
     @Override
     public void sendMessageToAdmins(MonkeyLibText message) {

@@ -5,10 +5,10 @@ import blue.endless.jankson.api.Marshaller;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.offsetmonkey538.githubresourcepackmanager.exception.GithubResourcepackManagerException;
-import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformServerProperties;
 import top.offsetmonkey538.githubresourcepackmanager.utils.StringUtils;
 import top.offsetmonkey538.githubresourcepackmanager.utils.WebhookSender;
+import top.offsetmonkey538.monkeylib538.api.platform.PlatformUtil;
 import top.offsetmonkey538.offsetconfig538.api.config.Config;
 import top.offsetmonkey538.offsetconfig538.api.config.Datafixer;
 
@@ -268,29 +268,29 @@ public class ModConfig implements Config {
     }
 
     @Override
-    public @NotNull Path getFilePath() {
-        return PlatformMain.INSTANCE.getConfigDir().resolve("config").resolve("main.json");
+    public @NotNull Path getConfigDirPath() {
+        return PlatformUtil.getConfigDir();
     }
 
     @Override
     public @NotNull String getId() {
-        return MOD_ID + "/main";
+        return MOD_ID + "config/main";
     }
 
     @Override
     public void beforeLoadStart() {
-        if (Files.exists(PlatformMain.INSTANCE.getConfigDir().getParent().resolve(MOD_ID + ".json"))) {
+        if (Files.exists(PlatformUtil.getConfigDir().resolve(MOD_ID + ".json"))) {
             try {
-                Files.createDirectories(PlatformMain.INSTANCE.getConfigDir().resolve(MOD_ID + ".json").getParent());
-                Files.move(PlatformMain.INSTANCE.getConfigDir().getParent().resolve(MOD_ID + ".json"), PlatformMain.INSTANCE.getConfigDir().resolve(MOD_ID + ".json"));
+                Files.createDirectories(PlatformUtil.getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json").getParent());
+                Files.move(PlatformUtil.getConfigDir().resolve(MOD_ID + ".json"), PlatformUtil.getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json"));
             } catch (IOException e) {
                 throw new RuntimeException("Failed to move config file to new location!", e);
             }
         }
-        if (Files.exists(PlatformMain.INSTANCE.getConfigDir().resolve(MOD_ID + ".json"))) {
+        if (Files.exists(PlatformUtil.getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json"))) {
             try {
                 Files.createDirectories(getFilePath().getParent());
-                Files.move(PlatformMain.INSTANCE.getConfigDir().resolve(MOD_ID + ".json"), getFilePath());
+                Files.move(PlatformUtil.getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json"), getFilePath());
             } catch (IOException e) {
                 throw new RuntimeException("Failed to move config file to new location!", e);
             }

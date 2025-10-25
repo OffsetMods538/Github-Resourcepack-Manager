@@ -2,22 +2,14 @@ package top.offsetmonkey538.githubresourcepackmanager.platform.neoforge;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.server.ServerStartedEvent;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.jetbrains.annotations.Nullable;
-import top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
 import top.offsetmonkey538.monkeylib538.neoforge.api.text.NeoforgeMonkeyLibText;
 
-import java.nio.file.Path;
 import java.util.List;
-
-import static top.offsetmonkey538.githubresourcepackmanager.GithubResourcepackManager.MOD_ID;
 
 public class NeoforgePlatformMain implements PlatformMain {
     private static @Nullable MinecraftServer minecraftServer = null;
@@ -30,11 +22,6 @@ public class NeoforgePlatformMain implements PlatformMain {
         minecraftServer = server;
     }
 
-
-    @Override
-    public Path getConfigDir() {
-        return FMLPaths.CONFIGDIR.get().resolve(MOD_ID);
-    }
 
     @Override
     public void sendMessageToAdmins(MonkeyLibText message) {

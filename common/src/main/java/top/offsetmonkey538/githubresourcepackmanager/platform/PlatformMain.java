@@ -2,23 +2,12 @@ package top.offsetmonkey538.githubresourcepackmanager.platform;
 
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
 
-import java.nio.file.Path;
 import java.util.List;
 
 import static top.offsetmonkey538.githubresourcepackmanager.platform.ServiceLoader.load;
 
 public interface PlatformMain {
     PlatformMain INSTANCE = load(PlatformMain.class);
-
-    /**
-     * Must already contain the mod id.
-     * <p>
-     * Example: .minecraft/config/github-resourcepack-manager/
-     * Example: .minecraft/plugins/Github-Resourcepack-Manager/
-     *
-     * @return config directory for the mod
-     */
-    Path getConfigDir();
 
     /**
      * Tell the server to refresh the list of available datapacks.

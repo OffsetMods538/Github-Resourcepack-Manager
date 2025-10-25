@@ -10,16 +10,11 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import top.offsetmonkey538.githubresourcepackmanager.platform.PlatformMain;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
 
-import java.nio.file.Path;
 import java.util.List;
 
 public class PaperPlatformMain implements PlatformMain {
     private static PaperPlugin plugin;
 
-    @Override
-    public Path getConfigDir() {
-        return getPlugin().getDataPath();
-    }
 
     @Override
     public void refreshDatapacks() {

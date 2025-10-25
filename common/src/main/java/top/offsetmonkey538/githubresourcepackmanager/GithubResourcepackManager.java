@@ -21,6 +21,7 @@ import top.offsetmonkey538.meshlib.api.rule.rules.PathHttpRule;
 import top.offsetmonkey538.monkeylib538.api.command.ConfigCommandApi;
 import top.offsetmonkey538.monkeylib538.api.lifecycle.ServerLifecycleApi;
 import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
+import top.offsetmonkey538.monkeylib538.api.platform.PlatformUtil;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibStyle;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
 import top.offsetmonkey538.monkeylib538.api.text.TextFormattingApi;
@@ -45,7 +46,7 @@ public final class GithubResourcepackManager {
     public static final MonkeyLibLogger LOGGER = MonkeyLibLogger.create(MOD_ID);
     public static final String MOD_URI = "gh-rp-manager";
 
-    public static final Path DATA_FOLDER =  PlatformMain.INSTANCE.getConfigDir().resolve(".packs");
+    public static final Path DATA_FOLDER =  PlatformUtil.getConfigDir().resolve(MOD_ID).resolve(".packs");
     public static final Path GIT_FOLDER = DATA_FOLDER.resolve("git");
 
     public static final Path RESOURCEPACK_FOLDER =  DATA_FOLDER.resolve("resource-pack");
