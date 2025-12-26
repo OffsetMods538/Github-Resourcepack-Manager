@@ -22,9 +22,11 @@ import top.offsetmonkey538.monkeylib538.api.command.ConfigCommandApi;
 import top.offsetmonkey538.monkeylib538.api.lifecycle.ServerLifecycleApi;
 import top.offsetmonkey538.monkeylib538.api.log.MonkeyLibLogger;
 import top.offsetmonkey538.monkeylib538.api.platform.PlatformUtil;
+import top.offsetmonkey538.monkeylib538.api.telemetry.TelemetryRegistry;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibStyle;
 import top.offsetmonkey538.monkeylib538.api.text.MonkeyLibText;
 import top.offsetmonkey538.monkeylib538.api.text.TextFormattingApi;
+import top.offsetmonkey538.monkeylib538.telemetry.TelemetryHandler;
 import top.offsetmonkey538.offsetconfig538.api.config.ConfigHolder;
 import top.offsetmonkey538.offsetconfig538.api.config.ConfigManager;
 
@@ -80,11 +82,17 @@ public final class GithubResourcepackManager {
     private static boolean disabled;
 
     public static void initialize() {
+        TelemetryRegistry.register("git-pack-manager"); // TODO: replace with MOD_ID once I do that
+
         addLogToAdminListeners();
-        PlatformMain.INSTANCE.registerSendMessageQueueOnAdminJoin(
-                MESSAGE_QUEUE,
-                MESSAGE_QUEUE_EMPTY_MESSAGE
-        );
+        PlatformUtil.sendMessagesToAdminsOnJoin(() -> {
+            if (MESSAGE_QUEUE.isEmpty()) return new MonkeyLibText[] {};
+
+            final MonkeyLibText[] result = new MonkeyLibText[MESSAGE_QUEUE.size() + 1];
+            MESSAGE_QUEUE.toArray(result);
+            result[result.length - 1] = MESSAGE_QUEUE_EMPTY_MESSAGE;
+            return result;
+        });
 
         // config should be initialized after the error listeners
         config = ConfigManager.init(ConfigHolder.create(ModConfig::new, LOGGER::error));

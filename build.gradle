@@ -3,7 +3,7 @@ import dex.plugins.outlet.v2.util.ReleaseType
 import java.nio.file.Files
 
 plugins {
-	id 'fabric-loom' version '1.11-SNAPSHOT' apply false
+	id 'fabric-loom' version '1.14-SNAPSHOT' apply false
 	id 'io.github.dexman545.outlet' version '1.6.1' apply false
 	id 'com.modrinth.minotaur' version '2.+' apply false
 }

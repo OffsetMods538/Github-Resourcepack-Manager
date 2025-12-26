@@ -22,11 +22,4 @@ public interface PlatformMain {
      * @param message the message to send
      */
     void sendMessageToAdmins(final MonkeyLibText message);
-
-    /**
-     * Sends messages contained in the provided list to admins when they join
-     *
-     * @param messageQueue list containing messages to send to admins when they join. Contents can be changed after calling this method.
-     */
-    void registerSendMessageQueueOnAdminJoin(final List<MonkeyLibText> messageQueue, final MonkeyLibText lastMessage);
 }
