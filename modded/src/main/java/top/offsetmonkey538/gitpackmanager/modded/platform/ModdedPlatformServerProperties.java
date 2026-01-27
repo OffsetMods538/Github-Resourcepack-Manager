@@ -6,9 +6,9 @@ import net.minecraft.server.dedicated.DedicatedServerSettings;
 import net.minecraft.world.level.storage.LevelResource;
 import org.jspecify.annotations.Nullable;
 import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
-import top.offsetmonkey538.gitpackmanager.modded.mixin.SettingsAccessor;
 import top.offsetmonkey538.gitpackmanager.modded.mixin.DedicatedServerAccessor;
 import top.offsetmonkey538.gitpackmanager.modded.mixin.DedicatedServerSettingsAccessor;
+import top.offsetmonkey538.gitpackmanager.modded.mixin.SettingsAccessor;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformServerProperties;
 
 import java.nio.file.Path;

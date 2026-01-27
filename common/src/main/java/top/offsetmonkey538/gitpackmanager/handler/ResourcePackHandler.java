@@ -18,7 +18,10 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Stream;
 
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.*;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.RESOURCEPACK_FOLDER;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.RESOURCEPACK_OUTPUT_FOLDER;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
 
 public class ResourcePackHandler {
     private @Nullable Path outputPackPath = null;

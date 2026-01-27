@@ -9,7 +9,9 @@ import top.offsetmonkey538.meshlib.common.api.handler.HttpHandler;
 import top.offsetmonkey538.meshlib.common.api.rule.HttpRule;
 import top.offsetmonkey538.meshlib.common.api.util.HttpResponseUtil;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.resourcePackHandler;
 import static top.offsetmonkey538.meshlib.common.api.util.HttpResponseUtil.sendError;

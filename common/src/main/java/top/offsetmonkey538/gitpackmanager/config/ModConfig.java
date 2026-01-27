@@ -1,10 +1,13 @@
 package top.offsetmonkey538.gitpackmanager.config;
 
-import blue.endless.jankson.*;
+import blue.endless.jankson.Comment;
+import blue.endless.jankson.JsonArray;
+import blue.endless.jankson.JsonElement;
+import blue.endless.jankson.JsonNull;
+import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.api.Marshaller;
 import org.jspecify.annotations.Nullable;
 import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
-import top.offsetmonkey538.gitpackmanager.platform.PlatformServerProperties;
 import top.offsetmonkey538.gitpackmanager.utils.StringUtils;
 import top.offsetmonkey538.gitpackmanager.utils.WebhookSender;
 import top.offsetmonkey538.monkeylib538.common.api.platform.LoaderUtil;
@@ -17,7 +20,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.*;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.GIT_FOLDER;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.MOD_ID;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.MOD_URI;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.UpdateType;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
 
 public class ModConfig implements Config {
 

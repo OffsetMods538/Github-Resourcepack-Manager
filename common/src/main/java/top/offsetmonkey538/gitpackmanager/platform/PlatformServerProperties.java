@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.*;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.RESOURCEPACK_UUID;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
 import static top.offsetmonkey538.gitpackmanager.platform.ServiceLoader.load;
 
 public interface PlatformServerProperties {

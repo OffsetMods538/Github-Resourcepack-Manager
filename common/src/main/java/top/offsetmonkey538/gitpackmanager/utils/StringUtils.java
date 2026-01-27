@@ -6,8 +6,8 @@ import java.io.File;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.RESOURCEPACK_NAME_PATTERN;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.RESOURCEPACK_NAME_PATTERN;
 
 public final class StringUtils {
     private StringUtils() {}

@@ -1,6 +1,7 @@
 package top.offsetmonkey538.gitpackmanager.config;
 
-import blue.endless.jankson.*;
+import blue.endless.jankson.Jankson;
+import blue.endless.jankson.JsonGrammar;
 import top.offsetmonkey538.gitpackmanager.config.webhook.BasicWebhook;
 import top.offsetmonkey538.gitpackmanager.config.webhook.DefaultWebhookBody;
 import top.offsetmonkey538.gitpackmanager.config.webhook.discord.basic.BasicFailMessage;
@@ -14,7 +15,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.*;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
 
 public final class ConfigHandler {
     private ConfigHandler() {

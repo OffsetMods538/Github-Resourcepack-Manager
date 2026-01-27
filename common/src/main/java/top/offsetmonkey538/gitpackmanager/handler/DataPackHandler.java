@@ -9,10 +9,13 @@ import top.offsetmonkey538.gitpackmanager.platform.PlatformServerProperties;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.*;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.DATAPACK_FOLDER;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
 
 public class DataPackHandler {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

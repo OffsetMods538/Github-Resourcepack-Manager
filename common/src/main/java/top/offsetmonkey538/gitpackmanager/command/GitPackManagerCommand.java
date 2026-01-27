@@ -18,7 +18,14 @@ import java.util.Map;
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.*;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.MOD_ID;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.UpdateType;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.clearAdminMessageQueue;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.createUpdateMessage;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.generatePlaceholders;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.resourcePackHandler;
 import static top.offsetmonkey538.monkeylib538.common.api.command.CommandAbstractionApi.literal;
 import static top.offsetmonkey538.monkeylib538.common.api.command.CommandAbstractionApi.sendText;
 

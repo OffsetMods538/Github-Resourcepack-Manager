@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.*;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.GIT_FOLDER;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
 
 public class GitHandler {
 
