@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "top.offsetmonkey538.gitpackmanager.modded.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "SettingsAccessor",
+    "DedicatedServerAccessor",
+    "DedicatedServerSettingsAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -16,7 +16,7 @@ dependencies {
     compileOnlyApi "top.offsetmonkey538.monkeylib538:monkeylib538-common:${rootProject.monkeylib538_version}+common"
     compileOnlyApi "top.offsetmonkey538.meshlib:meshlib-common:${rootProject.meshlib_version}+common"
 
-    implementation "org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}"
+    api "org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}"
 
     // should be bundled with minecraft
     compileOnly "com.mojang:brigadier:${rootProject.brigadier_version}"

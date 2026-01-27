@@ -13,7 +13,7 @@ allprojects {
             extra = ["discord": "https://discord.offsetmonkey538.top"]
         }
         environment = Environment.SERVER
-        serverEntrypoint("top.offsetmonkey538.gitpackmanager.fabric.platform.PlatformUtilImpl\$GitPackManagerInitializer")
+        serverEntrypoint("top.offsetmonkey538.gitpackmanager.fabric.GitPackManagerInitializer")
         mixin("git-pack-manager.modded.mixins.json")
 
         depends("fabric-api", "*")
