@@ -1,26 +1,30 @@
 package top.offsetmonkey538.gitpackmanager.paper.platform;
 
-import net.minecraft.network.chat.*;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerList;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformText;
 import top.offsetmonkey538.monkeylib538.common.api.text.MonkeyLibText;
+import top.offsetmonkey538.monkeylib538.paper.api.text.PaperMonkeyLibText;
+
+import java.util.Collection;
 
 public class PaperPlatformText implements PlatformText {
     @Override
     public void sendUpdateMessage(MonkeyLibText updateMessage, boolean adminsOnly) {
-        final PlayerList players = MinecraftServer.getServer().getPlayerList();
+        final Collection<? extends Player> players = Bukkit.getOnlinePlayers();
         if (!adminsOnly) {
-            players.broadcastSystemMessage(Component.empty(), false);
-            // TODO: once I implement paper version of monke: players.broadcastSystemMessage(PaperMonkeyLibText.of(updateMessage).getText(), false);
+            sendToAll(players, PaperMonkeyLibText.of(updateMessage).getText());
             return;
         }
 
-        for (final ServerPlayer player : players.players) {
-            // TODO: GAME PROFILE ISNT CORRETCT: if (!players.isOp(player.getGameProfile())) continue;
-            player.sendSystemMessage(Component.empty());
-            // TODO: once I implement paper version of monke: player.sendSystemMessage(PaperMonkeyLibText.of(updateMessage).getText());
+        for (final Player player : players) {
+            if (!player.isOp()) continue;
+            player.sendMessage(PaperMonkeyLibText.of(updateMessage).getText());
         }
+    }
+
+    private static void sendToAll(Collection<? extends Player> players, Component component) {
+        for (Player player : players) player.sendMessage(component);
     }
 }

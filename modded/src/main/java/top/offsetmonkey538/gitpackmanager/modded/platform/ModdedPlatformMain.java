@@ -5,6 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformMain;
 import top.offsetmonkey538.monkeylib538.common.api.text.MonkeyLibText;
+import top.offsetmonkey538.monkeylib538.modded.api.player.ModdedPlayerApi;
 import top.offsetmonkey538.monkeylib538.modded.api.text.ModdedMonkeyLibText;
 
 public class ModdedPlatformMain implements PlatformMain {
@@ -22,7 +23,7 @@ public class ModdedPlatformMain implements PlatformMain {
     public void sendMessageToAdmins(MonkeyLibText message) {
         if (getServer() == null) return;
         for (final Player player : getServer().getPlayerList().getPlayers()) {
-            // TODO: GAME PROFILE ISNT CORRETCT: if (!getServer().getPlayerList().isOp(player.getGameProfile())) continue;
+            if (!ModdedPlayerApi.isPlayerOp(getServer().getPlayerList(), player)) continue;
             player.displayClientMessage(ModdedMonkeyLibText.of(message).getText(), false);
         }
     }

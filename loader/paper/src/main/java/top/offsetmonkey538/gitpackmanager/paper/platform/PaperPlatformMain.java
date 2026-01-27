@@ -6,6 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import top.offsetmonkey538.gitpackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformMain;
 import top.offsetmonkey538.monkeylib538.common.api.text.MonkeyLibText;
+import top.offsetmonkey538.monkeylib538.paper.api.text.PaperMonkeyLibText;
 
 public class PaperPlatformMain implements PlatformMain {
     private static GitPackManagerInitializer plugin;
@@ -19,7 +20,7 @@ public class PaperPlatformMain implements PlatformMain {
     public void sendMessageToAdmins(MonkeyLibText message) {
         for (final OfflinePlayer operator : getPlugin().getServer().getOperators()) {
             if (operator.getPlayer() == null) continue;
-            // todo: once monkeylib has da paper: operator.getPlayer().sendMessage(PaperMonkeyLibText.of(text));
+            operator.getPlayer().sendMessage(PaperMonkeyLibText.of(message).getText());
         }
     }
 
