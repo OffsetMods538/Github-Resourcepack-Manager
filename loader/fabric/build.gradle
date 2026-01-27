@@ -1,0 +1,60 @@
+import dex.plugins.outlet.v2.util.ReleaseType
+import xyz.jpenilla.resourcefactory.fabric.Environment
+
+plugins {
+    id 'multiloader-fabric'
+}
+
+allprojects {
+    fabricModJson {
+        mitLicense()
+        author("OffsetMonkey538")
+        contact {
+            extra = ["discord": "https://discord.offsetmonkey538.top"]
+        }
+        environment = Environment.SERVER
+        serverEntrypoint("top.offsetmonkey538.gitpackmanager.fabric.platform.PlatformUtilImpl\$GitPackManagerInitializer")
+        mixin("git-pack-manager.modded.mixins.json")
+
+        depends("fabric-api", "*")
+        depends("monkeylib538", ">=${rootProject.monkeylib538_version}")
+        depends("meshlib", ">=${rootProject.meshlib_version}")
+    }
+
+    // Gotta have this here cause I can't import it in buildSrc
+    outlet.allowedReleaseTypes = Set.of(ReleaseType.RELEASE)
+
+    dependencies {
+        modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fapi_version}"
+
+        modCompileOnly("top.offsetmonkey538.monkeylib538:monkeylib538-fabric:${rootProject.monkeylib538_version}+fabric") {
+            exclude(group: "net.fabricmc.fabric-api")
+        }
+        modCompileOnly("top.offsetmonkey538.meshlib:meshlib-fabric:${rootProject.meshlib_version}+fabric") {
+            exclude(group: "net.fabricmc.fabric-api")
+            exclude(group: "top.offsetmonkey538.monkeylib538")
+        }
+    }
+}
+
+subprojects {
+    dependencies {
+        modImplementation("top.offsetmonkey538.monkeylib538:monkeylib538-fabric-${project.monkeylib538_suffix}:${rootProject.monkeylib538_version}+fabric+${project.monkeylib538_suffix}") {
+            exclude(group: "net.fabricmc.fabric-api")
+        }
+        modImplementation("top.offsetmonkey538.meshlib:meshlib-fabric-${project.meshlib_suffix}:${rootProject.meshlib_version}+fabric+${project.meshlib_suffix}") {
+            exclude(group: "net.fabricmc.fabric-api")
+            exclude(group: "top.offsetmonkey538.monkeylib538")
+        }
+
+        includeRuntime "org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}"
+    }
+
+    modrinth {
+        dependencies {
+            required.project "fabric-api"
+            required.project "monkeylib538"
+            required.project "mesh-lib"
+        }
+    }
+}

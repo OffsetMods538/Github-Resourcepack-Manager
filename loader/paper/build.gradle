@@ -1,0 +1,48 @@
+import dex.plugins.outlet.v2.util.ReleaseType
+import xyz.jpenilla.resourcefactory.paper.PaperPluginYaml
+
+plugins {
+    id 'multiloader-paper'
+}
+
+allprojects {
+    // Gotta have this here cause I can't import it in buildSrc
+    outlet.allowedReleaseTypes = Set.of(ReleaseType.RELEASE)
+
+    paperPluginYaml {
+        main = "top.offsetmonkey538.gitpackmanager.paper.platform.PlatformUtilImpl\$GitPackManagerInitializer"
+        authors.add("OffsetMonkey538")
+        load = "STARTUP"
+        dependencies {
+            server("MonkeyLib538", PaperPluginYaml.Load.BEFORE, true, true)
+            server("MESH_Lib", PaperPluginYaml.Load.BEFORE, true, true)
+        }
+    }
+
+    dependencies {
+        compileOnly("top.offsetmonkey538.monkeylib538:monkeylib538-paper:${rootProject.monkeylib538_version}+paper")
+        compileOnly("top.offsetmonkey538.meshlib:meshlib-paper:${rootProject.meshlib_version}+paper") {
+            exclude(group: "top.offsetmonkey538.monkeylib538")
+        }
+    }
+}
+
+subprojects {
+    dependencies {
+        implementation "org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}" // TODO: does jgit need trasitive = false?
+    }
+
+    tasks.runServer {
+        downloadPlugins {
+            url("https://maven.offsetmonkey538.top/releases/top/offsetmonkey538/monkeylib538/monkeylib538-paper-${project.monkeylib538_suffix}/${rootProject.monkeylib538_version}+paper+${project.monkeylib538_suffix}/monkeylib538-paper-${project.monkeylib538_suffix}-${rootProject.monkeylib538_version}+paper+${project.monkeylib538_suffix}-all.jar")
+            url("https://maven.offsetmonkey538.top/releases/top/offsetmonkey538/meshlib/meshlib-paper-${project.meshlib_suffix}/${rootProject.meshlib_version}+paper+${project.meshlib_suffix}/meshlib-paper-${project.meshlib_suffix}-${rootProject.meshlib_version}+paper+${project.meshlib_suffix}-all.jar")
+        }
+    }
+
+    modrinth {
+        dependencies {
+            required.project "monkeylib538"
+            required.project "mesh-lib"
+        }
+    }
+}

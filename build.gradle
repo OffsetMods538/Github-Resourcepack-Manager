@@ -1,97 +1,43 @@
-import dex.plugins.outlet.v2.util.ReleaseType
-
-import java.nio.file.Files
-
 plugins {
-	id 'fabric-loom' version '1.14-SNAPSHOT' apply false
-	id 'io.github.dexman545.outlet' version '1.6.1' apply false
-	id 'com.modrinth.minotaur' version '2.+' apply false
+	id 'multiloader-root'
+	id 'java'
+	id 'net.neoforged.moddev'           version "${neoforged_moddev}"            apply false
+	id 'fabric-loom'                    version "${fabric_loom}"                 apply false
+	id 'io.papermc.paperweight.userdev' version "${papermc_paperweight_userdev}" apply false
+	id 'xyz.jpenilla.run-paper'         version "${jpenilla_run_task}"           apply false
+	id 'com.gradleup.shadow'            version "${gradleup_shadow}"             apply false
+	id 'xyz.jpenilla.resource-factory'  version "${jpenilla_resource_factory}"   apply false
+	id 'io.github.dexman545.outlet'     version "${dexman_outlet}"               apply false
+	id 'com.modrinth.minotaur'          version "${modrinth_minotaur}"           apply false
+	id 'hamburg.janove.elevator-music'  version "0.1"
 }
 
-ext {
-    versionPrefix = rootProject.mod_version
-    if (!Boolean.parseBoolean(System.getenv("IS_RELEASE"))) {
-        String preReleaseVersion = System.currentTimeMillis()
-
-        if (Boolean.parseBoolean(System.getenv("PRESERVE_PRERELEASE_VERSION"))) {
-            var preReleaseVersionFile = file("preReleaseVersion.txt").toPath()
-            if (Files.exists(preReleaseVersionFile)) preReleaseVersion = Files.readString(preReleaseVersionFile)
-            Files.writeString(preReleaseVersionFile, preReleaseVersion)
-        }
-
-        var separator = "-"
-        if (versionPrefix.contains("-")) separator = "."
-        versionPrefix = "${versionPrefix}${separator}${preReleaseVersion}"
-    }
-    final String versionSuffix = System.getenv("VERSION_SUFFIX")
-    if (versionSuffix != null && !versionSuffix.isEmpty()) {
-        versionPrefix = "${versionPrefix}+${versionSuffix}"
-    }
-
-    System.out.println("Version Prefix: " + versionPrefix)
-}
-
-allprojects {
-	group = "top.offsetmonkey538.githubresourcepackmanager"
-
-	repositories {
-		mavenLocal()
-        maven {
-            name = "OffsetMods538"
-            url = "https://maven.offsetmonkey538.top/releases"
-            content {
-                includeGroup "top.offsetmonkey538.meshlib"
-                includeGroup "top.offsetmonkey538.monkeylib538"
-                includeGroup "top.offsetmonkey538.offsetconfig538"
-            }
-        }
-	}
-}
+//elevatorMusic {
+//    if (Boolean.parseBoolean(System.getenv("DISABLE_MUSIC"))) return
+//    waitMusic = file("${rootProject.projectDir}/veryImportant/music.wav")
+//    successSound = file("${rootProject.projectDir}/veryImportant/done.wav")
+//}
 
 subprojects {
-	apply plugin: "java"
+	apply plugin: "java-library"
 
-	base.archivesName = "github-resourcepack-manager-${project.nameSuffix}"
-	version = "${rootProject.versionPrefix}+${project.minecraft_version}"
-
-	java {
-		withSourcesJar()
-	}
-
-	jar {
-		from("${rootProject.projectDir}/LICENSE") {
-			rename { "${it}" }
+	repositories {
+		mavenCentral()
+		mavenLocal()
+		exclusiveContent {
+			forRepository {
+				maven {
+					name = "OffsetMods538"
+					url = "https://maven.offsetmonkey538.top/releases"
+				}
+			}
+			filter {
+				includeGroupAndSubgroups "top.offsetmonkey538"
+			}
 		}
 	}
-}
 
-configure(subprojects.findAll { it.name != "common" }) {
-	apply plugin: 'com.modrinth.minotaur'
-	apply plugin: 'io.github.dexman545.outlet'
-
-	outlet {
-		mcVersionRange = rootProject.supported_minecraft_versions
-		allowedReleaseTypes = Set.of(ReleaseType.RELEASE)
+	dependencies {
+		compileOnlyApi "org.jspecify:jspecify:${rootProject.jspecify_version}"
 	}
-
-	modrinth {
-		token = System.getenv("MODRINTH_TOKEN")
-		projectId = "github-resourcepack-manager"
-		def customVersionName = System.getenv("VERSION_NAME")
-		if (customVersionName != null) versionName = customVersionName
-		versionNumber = "${project.version}"
-		versionType = "alpha"
-		def isPreRelease = System.getenv("VERSION_IS_PRERELEASE")
-		versionType = !"false".equals(isPreRelease) ? "beta" : "release"
-		additionalFiles = [sourcesJar.archiveFile]
-		gameVersions = outlet.mcVersions()
-		syncBodyFrom = rootProject.file("README.md").text
-		def changelogEnv = System.getenv("VERSION_CHANGELOG")
-		if (changelogEnv != null) changelog = changelogEnv
-
-		dependencies {
-			embedded.version "mesh-lib", "${project.meshlib_version}"
-		}
-	}
-	tasks.modrinth.dependsOn(tasks.modrinthSyncBody)
 }

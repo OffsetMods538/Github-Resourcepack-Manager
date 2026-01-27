@@ -1,0 +1,17 @@
+plugins {
+	id 'multiloader-modded'
+}
+
+allprojects {
+	dependencies {
+		modCompileOnly "top.offsetmonkey538.monkeylib538:monkeylib538-modded:${rootProject.monkeylib538_version}+modded"
+		modCompileOnly "top.offsetmonkey538.meshlib:meshlib-modded:${rootProject.meshlib_version}+modded"
+	}
+}
+
+subprojects {
+	dependencies {
+		modCompileOnly "top.offsetmonkey538.monkeylib538:monkeylib538-modded-${project.monkeylib538_suffix}:${rootProject.monkeylib538_version}+modded+${project.monkeylib538_suffix}"
+		modCompileOnly "top.offsetmonkey538.meshlib:meshlib-modded-${project.meshlib_suffix}:${rootProject.meshlib_version}+modded+${project.meshlib_suffix}"
+	}
+}
