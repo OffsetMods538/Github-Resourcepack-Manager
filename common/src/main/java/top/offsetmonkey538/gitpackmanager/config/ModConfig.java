@@ -274,29 +274,34 @@ public class ModConfig implements Config {
 
     @Override
     public @NonNull String getId() {
-        return MOD_ID + "config/main"; // TODO: this looks wrong
+        return MOD_ID + "/main";
     }
 
     @Override
     public void beforeLoadStart() {
-        // TODO: replace all instances of MOD_ID here with "github-resourcepack-manager"
-        if (Files.exists(LoaderUtil.getConfigDir().resolve("github-resourcepack-manager.json"))) {
-            try {
-                Files.createDirectories(LoaderUtil.getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json").getParent());
-                Files.move(LoaderUtil.getConfigDir().resolve(MOD_ID + ".json"), LoaderUtil.getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json"));
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to move config file to new location!", e);
-            }
-        }
-        if (Files.exists(LoaderUtil.getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json"))) {
-            try {
-                Files.createDirectories(getFilePath().getParent());
-                Files.move(LoaderUtil.getConfigDir().resolve(MOD_ID).resolve(MOD_ID + ".json"), getFilePath());
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to move config file to new location!", e);
-            }
-        }
+        tryMoveConfig(
+                LoaderUtil.getConfigDir().resolve("github-resourcepack-manager.json"),
+                LoaderUtil.getConfigDir().resolve("github-resourcepack-manager").resolve("github-resourcepack-manager.json")
+        );
+        tryMoveConfig(
+                LoaderUtil.getConfigDir().resolve("github-resourcepack-manager").resolve("github-resourcepack-manager.json"),
+                LoaderUtil.getConfigDir().resolve("github-resourcepack-manager/main.json")
+        );
+        tryMoveConfig(
+                LoaderUtil.getConfigDir().resolve("github-resourcepack-manager/main.json"),
+                getFilePath()
+        );
+    }
 
+    private static void tryMoveConfig(final Path oldPath, final Path newPath) {
+        if (Files.exists(oldPath)) {
+            try {
+                Files.createDirectories(newPath.getParent());
+                Files.move(oldPath, newPath);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to move config file to new location!", e);
+            }
+        }
     }
 
     @SuppressWarnings("HttpUrlsUsage")
