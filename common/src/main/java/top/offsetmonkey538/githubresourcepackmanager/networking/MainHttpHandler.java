@@ -29,6 +29,6 @@ public class MainHttpHandler implements HttpHandler {
         }
 
         // If we reach this point, then the request method isn't supported
-        sendError(ctx, METHOD_NOT_ALLOWED);
+        sendError(ctx, request, METHOD_NOT_ALLOWED);
     }
 }
