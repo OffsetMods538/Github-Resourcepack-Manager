@@ -1,30 +1,36 @@
 package top.offsetmonkey538.gitpackmanager.networking;
 
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
-import org.jspecify.annotations.NonNull;
+import top.offsetmonkey538.gitpackmanager.GithubResourcepackManager;
 import top.offsetmonkey538.meshlib.common.api.handler.HttpHandler;
 import top.offsetmonkey538.meshlib.common.api.rule.HttpRule;
+import top.offsetmonkey538.meshlib.common.api.util.HttpResponseUtil;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.resourcePackHandler;
 import static top.offsetmonkey538.meshlib.common.api.util.HttpResponseUtil.sendError;
+import static top.offsetmonkey538.meshlib.common.api.util.HttpResponseUtil.sendFile;
 
 public class MainHttpHandler implements HttpHandler {
-
     @Override
-    public void handleRequest(@NonNull ChannelHandlerContext ctx, @NonNull FullHttpRequest request, @NonNull HttpRule rule) throws Exception {
+    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest request, HttpRule rule) throws Exception {
         final HttpMethod method = request.method();
 
-        // GET request should go to fileserver
+        // GET request should be sent the resource pack
         if (method == HttpMethod.GET) {
-            FileHttpHandler.handleRequest(ctx, request);
+            if (resourcePackHandler.getOutputPackPath() == null) sendError(ctx, request, NOT_FOUND);
+            else sendFile(ctx, request, resourcePackHandler.getOutputPackPath());
             return;
         }
 
-        // POST request should go to the webhook handler
+        // POST request should trigger a pack update
         if (method == HttpMethod.POST) {
-            WebhookHttpHandler.handleRequest(ctx, request);
+            HttpResponseUtil.sendResponse(ctx, request, new DefaultFullHttpResponse(HTTP_1_1, OK));
+            GithubResourcepackManager.updatePack(GithubResourcepackManager.UpdateType.WEBHOOK, false);
             return;
         }
 

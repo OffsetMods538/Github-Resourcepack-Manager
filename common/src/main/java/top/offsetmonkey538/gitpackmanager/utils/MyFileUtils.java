@@ -6,9 +6,7 @@ import java.io.File;
 import java.io.IOException;
 
 public final class MyFileUtils {
-    private MyFileUtils() {
-
-    }
+    private MyFileUtils() {}
 
     public static File createDir(File file) throws GithubResourcepackManagerException {
         if (!file.exists() && !file.mkdirs()) throw new GithubResourcepackManagerException("Failed to create directory '%s'!", file);

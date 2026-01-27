@@ -28,7 +28,7 @@ import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.*;
 
 public class GitHandler {
 
-    private CommitProperties commitProperties;
+    private @Nullable CommitProperties commitProperties = null;
     private @Nullable List<String> changedFiles;
 
     public void updateRepositoryAndGenerateCommitProperties() throws GithubResourcepackManagerException {
@@ -128,7 +128,7 @@ public class GitHandler {
         }
     }
 
-    private static void cloneRepository(CredentialsProvider credentialsProvider) throws GithubResourcepackManagerException {
+    private static void cloneRepository(@Nullable CredentialsProvider credentialsProvider) throws GithubResourcepackManagerException {
         try {
             Git git = Git.cloneRepository()
                     .setURI(config.get().repositoryInfo.url)
@@ -192,7 +192,7 @@ public class GitHandler {
         }
     }
 
-    public CommitProperties getCommitProperties() {
+    public @Nullable CommitProperties getCommitProperties() {
         return commitProperties;
     }
 

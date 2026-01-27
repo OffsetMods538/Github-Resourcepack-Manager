@@ -14,15 +14,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Stream;
 
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.*;
 
 public class ResourcePackHandler {
-    private Path outputPackPath;
+    private @Nullable Path outputPackPath = null;
 
-    public void generatePack(boolean wasUpdated, Path oldPackPath, String oldPackName) throws GithubResourcepackManagerException {
+    public void generatePack(boolean wasUpdated, @Nullable Path oldPackPath, @Nullable String oldPackName) throws GithubResourcepackManagerException {
         outputPackPath = handleOldPackAndGetOutputPackPath(wasUpdated, oldPackPath, oldPackName);
 
         // If using the old pack, don't generate a new one.
@@ -67,7 +68,7 @@ public class ResourcePackHandler {
 
         // Zip the pack content and put the output file in the output directory.
         try {
-            ZipUtils.zipDirectory(tempOutputDir, outputPackPath.toFile());
+            ZipUtils.zipDirectory(tempOutputDir, Objects.requireNonNull(getOutputPackFile()));
         } catch (GithubResourcepackManagerException e) {
             throw new GithubResourcepackManagerException("Failed to zip pack content!", e);
         }
@@ -167,7 +168,7 @@ public class ResourcePackHandler {
     }
 
 
-    private Path handleOldPackAndGetOutputPackPath(boolean wasUpdated, @Nullable Path oldPackPath, String oldPackName) {
+    private @Nullable Path handleOldPackAndGetOutputPackPath(boolean wasUpdated, @Nullable Path oldPackPath, @Nullable String oldPackName) {
         if (!wasUpdated) return oldPackPath;
 
         final String newPackName = generateRandomPackName(oldPackName);
@@ -193,15 +194,15 @@ public class ResourcePackHandler {
         return newPackName + ".zip";
     }
 
-    public Path getOutputPackPath() {
+    public @Nullable Path getOutputPackPath() {
         return outputPackPath;
     }
 
-    public File getOutputPackFile() {
-        return getOutputPackPath().toFile();
+    public @Nullable File getOutputPackFile() {
+        return getOutputPackPath() == null ? null : getOutputPackPath().toFile();
     }
 
-    public String getOutputPackName() {
-        return getOutputPackFile().getName();
+    public @Nullable String getOutputPackName() {
+        return getOutputPackFile() == null ? null : getOutputPackFile().getName();
     }
 }

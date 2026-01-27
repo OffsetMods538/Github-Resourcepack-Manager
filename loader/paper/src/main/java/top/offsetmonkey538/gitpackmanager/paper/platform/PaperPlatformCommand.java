@@ -8,7 +8,6 @@ import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
 import net.minecraft.server.MinecraftServer;
 import org.bukkit.entity.Player;
-import org.jspecify.annotations.NonNull;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformCommand;
 import top.offsetmonkey538.monkeylib538.paper.api.command.PaperCommandAbstractionApi;
 
@@ -17,7 +16,7 @@ import java.net.URI;
 public class PaperPlatformCommand implements PlatformCommand {
     @SuppressWarnings("UnstableApiUsage")
     @Override
-    public int executeRequestPackCommand(@NonNull CommandContext<Object> ctx) throws CommandSyntaxException {
+    public int executeRequestPackCommand(CommandContext<Object> ctx) throws CommandSyntaxException {
         final CommandSourceStack source = PaperCommandAbstractionApi.get(ctx);
         final Player player = (Player) source.getExecutor();
         if (player == null) return 0;

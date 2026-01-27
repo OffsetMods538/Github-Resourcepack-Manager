@@ -3,7 +3,6 @@ package top.offsetmonkey538.gitpackmanager;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import top.offsetmonkey538.gitpackmanager.command.GitPackManagerCommand;
 import top.offsetmonkey538.gitpackmanager.config.ModConfig;
@@ -74,9 +73,9 @@ public final class GithubResourcepackManager {
     }
 
     @SuppressWarnings("NotNullFieldNotInitialized")
-    public static @NonNull ConfigHolder<ModConfig> config;
+    public static ConfigHolder<ModConfig> config;
 
-    public static ResourcePackHandler resourcePackHandler;
+    public static @Nullable ResourcePackHandler resourcePackHandler = null;
 
     private static boolean disabled;
 
@@ -352,7 +351,7 @@ public final class GithubResourcepackManager {
         final Map<String, String> placeholders = new HashMap<>();
 
         if (gitHandler.getCommitProperties() != null) placeholders.putAll(gitHandler.getCommitProperties().toPlaceholdersMap());
-        if (resourcePackHandler != null) placeholders.put("{downloadUrl}", config.get().getPackUrl(resourcePackHandler.getOutputPackName()));
+        if (resourcePackHandler != null) placeholders.put("{downloadUrl}", config.get().getPackUrl(Objects.requireNonNull(resourcePackHandler.getOutputPackName())));
         placeholders.putAll(STATIC_PLACEHOLDERS);
         placeholders.put("{packType}", packType);
         placeholders.put("{updateType}", updateType.name());
@@ -366,7 +365,7 @@ public final class GithubResourcepackManager {
         MESSAGE_QUEUE.clear();
     }
 
-    private static String getOldResourcePackName() {
+    private static @Nullable String getOldResourcePackName() {
         final String oldPackUrl = PlatformServerProperties.INSTANCE.getResourcePackUrl();
         if (oldPackUrl == null) return null;
 

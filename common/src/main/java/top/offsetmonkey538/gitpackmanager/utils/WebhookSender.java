@@ -10,9 +10,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public final class WebhookSender {
-    private WebhookSender() {
-
-    }
+    private WebhookSender() {}
 
     public static void send(String body, URI url, GithubResourcepackManager.UpdateType updateType, boolean updateSucceeded) throws GithubResourcepackManagerException {
         final HttpRequest request = HttpRequest.newBuilder(url)
@@ -22,25 +20,12 @@ public final class WebhookSender {
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
-        final HttpClient client = HttpClient.newHttpClient();
-
         final HttpResponse<String> response;
-        try {
+        // I think we now depend on JDK 21 so HttpClient will always be AutoCloseable
+        try (final HttpClient client = HttpClient.newHttpClient()) {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             throw new GithubResourcepackManagerException("Failed to send http request!", e);
-        }
-
-        // From JDK 21 the HttpClient class extends AutoCloseable, but as we want to support Minecraft versions
-        //  that use JDK 17, where HttpClient doesn't extend AutoCloseable, we need to check if it's
-        //  an instance of AutoCloseable before trying to close it.
-        //noinspection ConstantValue
-        if (client instanceof AutoCloseable) {
-            try {
-                ((AutoCloseable) client).close();
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
         }
 
         final int statusCode = response.statusCode();

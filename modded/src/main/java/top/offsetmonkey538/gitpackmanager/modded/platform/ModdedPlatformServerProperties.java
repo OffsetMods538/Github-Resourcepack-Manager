@@ -4,6 +4,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.server.dedicated.DedicatedServerSettings;
 import net.minecraft.world.level.storage.LevelResource;
+import org.jspecify.annotations.Nullable;
 import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.gitpackmanager.modded.mixin.SettingsAccessor;
 import top.offsetmonkey538.gitpackmanager.modded.mixin.DedicatedServerAccessor;
@@ -18,15 +19,10 @@ import java.util.Properties;
 public class ModdedPlatformServerProperties implements PlatformServerProperties {
 
     @Override
-    public String getResourcePackUrl() {
+    public @Nullable String getResourcePackUrl() {
         final Optional<MinecraftServer.ServerResourcePackInfo> resourcePackProperties = ModdedPlatformMain.getServer().getServerResourcePack();
 
         return resourcePackProperties.map(MinecraftServer.ServerResourcePackInfo::url).orElse(null);
-    }
-
-    @Override
-    public String getServerPort() {
-        return String.valueOf(ModdedPlatformMain.getServer().getPort());
     }
 
     @Override

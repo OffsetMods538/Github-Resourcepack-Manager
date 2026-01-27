@@ -8,9 +8,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public final class ZipUtils {
-    private ZipUtils() {
-
-    }
+    private ZipUtils() {}
 
     public static void zipDirectory(File directoryToZip, File destinationFile) throws GithubResourcepackManagerException {
         if (!directoryToZip.exists())

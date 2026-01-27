@@ -5,6 +5,7 @@ import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.server.dedicated.DedicatedServerSettings;
 import net.minecraft.world.level.storage.LevelResource;
+import org.jspecify.annotations.Nullable;
 import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformServerProperties;
 
@@ -15,15 +16,10 @@ import java.util.Optional;
 
 public class PaperPlatformServerProperties implements PlatformServerProperties {
     @Override
-    public String getResourcePackUrl() {
+    public @Nullable String getResourcePackUrl() {
         final Optional<MinecraftServer.ServerResourcePackInfo> resourcePackProperties = MinecraftServer.getServer().getServerResourcePack();
 
         return resourcePackProperties.map(MinecraftServer.ServerResourcePackInfo::url).orElse(null);
-    }
-
-    @Override
-    public String getServerPort() {
-        return String.valueOf(MinecraftServer.getServer().getPort());
     }
 
     @Override

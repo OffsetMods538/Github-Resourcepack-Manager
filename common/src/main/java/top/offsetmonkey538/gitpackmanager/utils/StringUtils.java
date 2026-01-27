@@ -10,9 +10,7 @@ import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.RESOU
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
 
 public final class StringUtils {
-    private StringUtils() {
-
-    }
+    private StringUtils() {}
 
     /**
      * Replaces all instances of the keys in the placeholders map with their values.

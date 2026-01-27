@@ -2,7 +2,6 @@ package top.offsetmonkey538.gitpackmanager.config;
 
 import blue.endless.jankson.*;
 import blue.endless.jankson.api.Marshaller;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformServerProperties;
@@ -32,25 +31,26 @@ public class ModConfig implements Config {
     public static class ServerInfo {
         @SuppressWarnings("HttpUrlsUsage")
         @Comment("The public ip of your server, may also specify the protocol (\"123.45.67.89\" or \"http://play.coolserver.net\")")
-        public String publicIp = null;
+        public @Nullable String publicIp = null;
 
         @Comment("If set, this port will be used in the server.properties file instead of the Minecraft server port. The HTTP server will still be hosted on the Minecraft port. Only useful when running the server behind a proxy like nginx, traefik, cloudflare tunnel, etc.")
-        public String proxyPort = null;
+        // TODO: rename to externalPort and make it required
+        public @Nullable String proxyPort = null;
     }
 
     public static class RepositoryInfo {
         @Comment("Should be \"[YOUR BRANCH NAME HERE]\". Common names include \"master\" and \"main\"")
         public String branch = "master";
         @Comment("The URL of your repository. For example \"https://github.com/MyName/MyRepository\"")
-        public String url = null;
+        public @Nullable String url = null;
 
         @Comment("Whether or not the repository is private. Username and token will need to be populated when this is set to 'true'!")
         public boolean isPrivate = false;
 
         @Comment("The two values below only need to be set when 'isPrivate' is true!")
-        public String username = null;
+        public @Nullable String username = null;
         @Comment("PLEASE DO NOT SHARE THIS WITH ANYONE")
-        public String token = null;
+        public @Nullable String token = null;
     }
 
     public static class ResourcePackProvider {
@@ -118,9 +118,9 @@ public class ModConfig implements Config {
         public boolean enabled = false;
 
         @Comment("The URL to send the webhook to. For example \"https://discord.com/api/webhooks/1234567890123456789/eW91J3JlIG5vdCBzdGVhbGluZyBhIHRva2Vu_bm9wZQ==_eWVyJyBub3Q=\" or something custom like \"https://api.example.com/NDI6IHRoZSBtZWFuaW5nIG9mIGxpZmUsIHRoZSB1bml2ZXJzZSwgYW5kIGV2ZXJ5dGhpbmc=\"")
-        public String url = null;
+        public @Nullable String url = null;
         @Comment("The relative path from the config directory to a webhook body file. For example \"discord/basic_message.json\" or \"discord/embed_message.json\"")
-        public String body = null;
+        public @Nullable String body = null;
 
         public void trigger(final boolean updateSucceeded, final Map<String, String> placeholders, final UpdateType updateType) throws GithubResourcepackManagerException {
             if (!enabled) return;
@@ -147,7 +147,7 @@ public class ModConfig implements Config {
     }
 
     @Override
-    public @NonNull Datafixer[] getDatafixers() {
+    public Datafixer[] getDatafixers() {
         return new Datafixer[]{
                 (original, jankson) -> {
                     // 0 -> 1
@@ -217,10 +217,10 @@ public class ModConfig implements Config {
         };
     }
 
-    private static void datafixField(final @NonNull JsonObject originalObject, final @NonNull String originalKey, final @NonNull String newKey) {
+    private static void datafixField(final JsonObject originalObject, final String originalKey, final String newKey) {
         datafixField(originalObject, originalKey, originalObject, newKey);
     }
-    private static void datafixField(final @NonNull JsonObject originalObject, final @NonNull String originalKey, final @NonNull JsonObject newObject, final @NonNull String newKey) {
+    private static void datafixField(final JsonObject originalObject, final String originalKey, final JsonObject newObject, final String newKey) {
         final JsonElement originalValue = originalObject.get(originalKey);
         if (originalValue == null) {
             LOGGER.warn("JSON of current config doesn't contain value with key '%s', new value with key '%s' will be reset to default!", originalKey, newKey);
@@ -232,7 +232,7 @@ public class ModConfig implements Config {
     }
 
     @Nullable
-    private static <T> T datafixGetAndRemove(final @NonNull Marshaller marsh, final @NonNull Class<T> type, final @NonNull JsonObject object, final @NonNull String key) {
+    private static <T> T datafixGetAndRemove(final Marshaller marsh, final Class<T> type, final JsonObject object, final String key) {
         final JsonElement jsonValue = object.get(key);
         if (jsonValue == null) {
             LOGGER.warn("JSON of current config doesn't contain value with key '%s'!", key);
@@ -242,7 +242,7 @@ public class ModConfig implements Config {
         return marsh.marshall(type, jsonValue);
     }
 
-    private static JsonObject datafix3to4UpdateMessage(final @NonNull JsonObject originalJson, final @NonNull Marshaller marsh) {
+    private static JsonObject datafix3to4UpdateMessage(final JsonObject originalJson, final Marshaller marsh) {
         final String updateMessage = datafixGetAndRemove(marsh, String.class, originalJson, "updateMessage");
         if (updateMessage == null) {
             originalJson.put("updateMessage", JsonNull.INSTANCE);
@@ -268,12 +268,12 @@ public class ModConfig implements Config {
     }
 
     @Override
-    public @NonNull Path getConfigDirPath() {
+    public Path getConfigDirPath() {
         return LoaderUtil.getConfigDir();
     }
 
     @Override
-    public @NonNull String getId() {
+    public String getId() {
         return MOD_ID + "/main";
     }
 
@@ -310,7 +310,7 @@ public class ModConfig implements Config {
                 "%s%s:%s/%s/%s",
                 (serverInfo.publicIp.startsWith("http://") || serverInfo.publicIp.startsWith("https://") ? "" : "http://"),
                 serverInfo.publicIp,
-                serverInfo.proxyPort == null ? PlatformServerProperties.INSTANCE.getServerPort() : serverInfo.proxyPort,
+                serverInfo.proxyPort,
                 MOD_URI,
                 outputFileName
         );

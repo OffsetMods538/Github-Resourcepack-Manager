@@ -1,7 +1,6 @@
 package top.offsetmonkey538.gitpackmanager.config;
 
 import blue.endless.jankson.*;
-import org.jspecify.annotations.NonNull;
 import top.offsetmonkey538.gitpackmanager.config.webhook.BasicWebhook;
 import top.offsetmonkey538.gitpackmanager.config.webhook.DefaultWebhookBody;
 import top.offsetmonkey538.gitpackmanager.config.webhook.discord.basic.BasicFailMessage;
@@ -63,7 +62,7 @@ public final class ConfigHandler {
         }
     }
 
-    private static @NonNull List<String> checkConfigErrors() {
+    private static List<String> checkConfigErrors() {
         final List<String> errors = new ArrayList<>();
 
         if (config.get().serverInfo.publicIp == null) errors.add("Field 'serverInfo.publicIp' not set!");

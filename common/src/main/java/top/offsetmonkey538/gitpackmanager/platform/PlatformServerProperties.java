@@ -1,6 +1,7 @@
 package top.offsetmonkey538.gitpackmanager.platform;
 
 import com.google.common.hash.Hashing;
+import org.jspecify.annotations.Nullable;
 import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.gitpackmanager.handler.ResourcePackHandler;
 
@@ -14,8 +15,7 @@ import static top.offsetmonkey538.gitpackmanager.platform.ServiceLoader.load;
 public interface PlatformServerProperties {
     PlatformServerProperties INSTANCE = load(PlatformServerProperties.class);
 
-    String getResourcePackUrl();
-    String getServerPort();
+    @Nullable String getResourcePackUrl();
     Path getDatapacksDir();
     void setProperties(Map<String, String> properties);
     void reload() throws GithubResourcepackManagerException;

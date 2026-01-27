@@ -7,7 +7,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import org.jspecify.annotations.NonNull;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformCommand;
 import top.offsetmonkey538.monkeylib538.modded.api.command.ModdedCommandAbstractionApi;
 
@@ -17,7 +16,7 @@ import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 
 public class ModdedPlatformCommand implements PlatformCommand {
     @Override
-    public int executeRequestPackCommand(@NonNull CommandContext<Object> ctx) throws CommandSyntaxException {
+    public int executeRequestPackCommand(CommandContext<Object> ctx) throws CommandSyntaxException {
         final CommandSourceStack source = ModdedCommandAbstractionApi.get(ctx);
         final ServerPlayer player = source.getPlayerOrException();
         final MinecraftServer.ServerResourcePackInfo resourcePackProperties = source.getServer().getServerResourcePack().orElse(null);
