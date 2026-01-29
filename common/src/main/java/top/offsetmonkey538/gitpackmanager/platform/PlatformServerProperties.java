@@ -2,7 +2,7 @@ package top.offsetmonkey538.gitpackmanager.platform;
 
 import com.google.common.hash.Hashing;
 import org.jspecify.annotations.Nullable;
-import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
+import top.offsetmonkey538.gitpackmanager.exception.GitPackManager;
 import top.offsetmonkey538.gitpackmanager.handler.ResourcePackHandler;
 
 import java.io.IOException;
@@ -20,9 +20,9 @@ public interface PlatformServerProperties {
     @Nullable String getResourcePackUrl();
     Path getDatapacksDir();
     void setProperties(Map<String, String> properties);
-    void reload() throws GithubResourcepackManagerException;
+    void reload() throws GitPackManager;
 
-    default void updatePackProperties(ResourcePackHandler packHandler) throws GithubResourcepackManagerException {
+    default void updatePackProperties(ResourcePackHandler packHandler) throws GitPackManager {
         final String resourcePackUrl = config.get().getPackUrl(packHandler.getOutputPackName());
         final String resourcePackSha1;
         try {
@@ -30,7 +30,7 @@ public interface PlatformServerProperties {
             //noinspection deprecation
             resourcePackSha1 = Hashing.sha1().hashBytes(com.google.common.io.Files.toByteArray(packHandler.getOutputPackFile())).toString();
         } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to get sha1 hash from pack file '%s'!", e, packHandler.getOutputPackFile());
+            throw new GitPackManager("Failed to get sha1 hash from pack file '%s'!", e, packHandler.getOutputPackFile());
         }
 
         LOGGER.info("Saving new resource pack properties to 'server.properties' file...");

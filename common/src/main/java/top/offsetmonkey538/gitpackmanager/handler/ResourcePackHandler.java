@@ -3,7 +3,7 @@ package top.offsetmonkey538.gitpackmanager.handler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.jspecify.annotations.Nullable;
-import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
+import top.offsetmonkey538.gitpackmanager.exception.GitPackManager;
 import top.offsetmonkey538.gitpackmanager.utils.MyFileUtils;
 import top.offsetmonkey538.gitpackmanager.utils.StringUtils;
 import top.offsetmonkey538.gitpackmanager.utils.ZipUtils;
@@ -26,7 +26,7 @@ import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.confi
 public class ResourcePackHandler {
     private @Nullable Path outputPackPath = null;
 
-    public void generatePack(boolean wasUpdated, @Nullable Path oldPackPath, @Nullable String oldPackName) throws GithubResourcepackManagerException {
+    public void generatePack(boolean wasUpdated, @Nullable Path oldPackPath, @Nullable String oldPackName) throws GitPackManager {
         outputPackPath = handleOldPackAndGetOutputPackPath(wasUpdated, oldPackPath, oldPackName);
 
         // If using the old pack, don't generate a new one.
@@ -36,13 +36,13 @@ public class ResourcePackHandler {
         generateNewPack();
     }
 
-    private void generateNewPack() throws GithubResourcepackManagerException {
+    private void generateNewPack() throws GitPackManager {
         final List<File> sourcePacks;
 
         try {
             sourcePacks = gatherSourcePacks();
-        } catch (GithubResourcepackManagerException e) {
-            throw new GithubResourcepackManagerException("Failed to gather source packs!", e);
+        } catch (GitPackManager e) {
+            throw new GitPackManager("Failed to gather source packs!", e);
         }
 
 
@@ -51,40 +51,40 @@ public class ResourcePackHandler {
         try {
             tmpDir = Files.createDirectories(RESOURCEPACK_FOLDER.resolve("temp"));
         } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to create temporary directory!", e);
+            throw new GitPackManager("Failed to create temporary directory!", e);
         }
         final File tempOutputDir = MyFileUtils.createDir(tmpDir.resolve("output").toFile());
 
         // Extract packs into the temporary packs directory
         try {
             extractSourcePacks(sourcePacks, tempOutputDir);
-        } catch (GithubResourcepackManagerException e) {
-            throw new GithubResourcepackManagerException("Failed to extract source packs!", e);
+        } catch (GitPackManager e) {
+            throw new GitPackManager("Failed to extract source packs!", e);
         }
 
         // Write file with source pack names
         try {
             writeSourcePacksFile(sourcePacks, tempOutputDir);
-        } catch (GithubResourcepackManagerException e) {
-            throw new GithubResourcepackManagerException("Failed to write pack content file!", e);
+        } catch (GitPackManager e) {
+            throw new GitPackManager("Failed to write pack content file!", e);
         }
 
         // Zip the pack content and put the output file in the output directory.
         try {
             ZipUtils.zipDirectory(tempOutputDir, Objects.requireNonNull(getOutputPackFile()));
-        } catch (GithubResourcepackManagerException e) {
-            throw new GithubResourcepackManagerException("Failed to zip pack content!", e);
+        } catch (GitPackManager e) {
+            throw new GitPackManager("Failed to zip pack content!", e);
         }
 
         // Delete temp directories.
         try {
             FileUtils.deleteDirectory(tmpDir.toFile());
         } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to delete temporary directory!", e);
+            throw new GitPackManager("Failed to delete temporary directory!", e);
         }
     }
 
-    private void writeSourcePacksFile(List<File> sourcePacks, File outputDir) throws GithubResourcepackManagerException {
+    private void writeSourcePacksFile(List<File> sourcePacks, File outputDir) throws GitPackManager {
         if (sourcePacks.size() == 1) return;
 
         final Path sourcePacksFile = outputDir.toPath().resolve("content.txt");
@@ -99,18 +99,18 @@ public class ResourcePackHandler {
         try {
             Files.writeString(sourcePacksFile, fileContent);
         } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to write to file '%s'!", e, sourcePacksFile);
+            throw new GitPackManager("Failed to write to file '%s'!", e, sourcePacksFile);
         }
     }
 
-    private void extractSourcePacks(List<File> sourcePacks, File tempOutputDir) throws GithubResourcepackManagerException {
+    private void extractSourcePacks(List<File> sourcePacks, File tempOutputDir) throws GitPackManager {
         // Extract source packs
         for (File sourcePack : sourcePacks) {
             if (sourcePack.isDirectory()) {
                 try {
                     FileUtils.copyDirectory(sourcePack, tempOutputDir, HiddenFileFilter.VISIBLE);
                 } catch (IOException e) {
-                    throw new GithubResourcepackManagerException("Failed to copy pack '%s' into output directory '%s'!", e, sourcePack, tempOutputDir);
+                    throw new GitPackManager("Failed to copy pack '%s' into output directory '%s'!", e, sourcePack, tempOutputDir);
                 }
                 continue;
             }
@@ -124,10 +124,10 @@ public class ResourcePackHandler {
         }
     }
 
-    private List<File> gatherSourcePacksFrom(final Path packsDir) throws GithubResourcepackManagerException {
+    private List<File> gatherSourcePacksFrom(final Path packsDir) throws GitPackManager {
         // Gather resource packs
         final File[] sourcePacksArray = packsDir.toFile().listFiles();
-        if (sourcePacksArray == null) throw new GithubResourcepackManagerException("Repository contains empty 'packs' folder!");
+        if (sourcePacksArray == null) throw new GitPackManager("Repository contains empty 'packs' folder!");
 
         // Return source packs sorted in correct order.
         return Stream.of(sourcePacksArray)
@@ -141,7 +141,7 @@ public class ResourcePackHandler {
                 .toList();
     }
 
-    private List<File> gatherSourcePacks() throws GithubResourcepackManagerException {
+    private List<File> gatherSourcePacks() throws GitPackManager {
         LOGGER.info("Checking for 'pack.mcmeta' in resource pack root...");
         final boolean hasPackMcmeta = config.get().resourcePackProvider.getPackRoot().resolve("pack.mcmeta").toFile().exists();
         LOGGER.info("%sFound!", hasPackMcmeta ? "" : "Not ");
@@ -152,7 +152,7 @@ public class ResourcePackHandler {
         LOGGER.info("%sFound!", hasPacksFolder ? "" : "Not ");
 
         if (hasPackMcmeta && hasPacksFolder) {
-            throw new GithubResourcepackManagerException("Found both 'pack.mcmeta' and the 'packs' directory in resource pack root '%s'!", config.get().resourcePackProvider.getPackPacksDir().toAbsolutePath());
+            throw new GitPackManager("Found both 'pack.mcmeta' and the 'packs' directory in resource pack root '%s'!", config.get().resourcePackProvider.getPackPacksDir().toAbsolutePath());
         }
         if (!hasPackMcmeta && !hasPacksFolder) {
             LOGGER.info("Found neither 'pack.mcmeta' nor the 'packs' directory in resource pack root '%s'!", config.get().resourcePackProvider.getPackPacksDir().toAbsolutePath());
@@ -179,7 +179,7 @@ public class ResourcePackHandler {
         try {
             if (oldPackPath != null && Files.exists(oldPackPath)) Files.delete(oldPackPath);
         } catch (IOException e) {
-            LOGGER.error("Failed to delete old pack!", new GithubResourcepackManagerException("Failed to delete old pack '%s'!", e, oldPackPath));
+            LOGGER.error("Failed to delete old pack!", new GitPackManager("Failed to delete old pack '%s'!", e, oldPackPath));
         }
         return RESOURCEPACK_OUTPUT_FOLDER.resolve(newPackName);
     }

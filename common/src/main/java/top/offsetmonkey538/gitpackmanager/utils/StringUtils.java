@@ -1,6 +1,6 @@
 package top.offsetmonkey538.gitpackmanager.utils;
 
-import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
+import top.offsetmonkey538.gitpackmanager.exception.GitPackManager;
 
 import java.io.File;
 import java.util.Map;
@@ -55,12 +55,12 @@ public final class StringUtils {
         return Integer.parseInt(matcher.group().replace('-', ' ').strip());
     }
 
-    public static String nameWithoutPriorityString(File file) throws GithubResourcepackManagerException {
+    public static String nameWithoutPriorityString(File file) throws GitPackManager {
         final String filename = file.getName();
 
         final Matcher matcher = RESOURCEPACK_NAME_PATTERN.matcher(filename);
 
-        if (!matcher.find()) throw new GithubResourcepackManagerException("File '%s' doesn't start with priority!", file);
+        if (!matcher.find()) throw new GitPackManager("File '%s' doesn't start with priority!", file);
 
         return filename.replace(matcher.group(), "").strip();
     }

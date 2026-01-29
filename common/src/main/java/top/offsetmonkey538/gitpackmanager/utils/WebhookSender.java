@@ -1,7 +1,7 @@
 package top.offsetmonkey538.gitpackmanager.utils;
 
 import top.offsetmonkey538.gitpackmanager.GithubResourcepackManager;
-import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
+import top.offsetmonkey538.gitpackmanager.exception.GitPackManager;
 
 import java.io.IOException;
 import java.net.URI;
@@ -12,7 +12,7 @@ import java.net.http.HttpResponse;
 public final class WebhookSender {
     private WebhookSender() {}
 
-    public static void send(String body, URI url, GithubResourcepackManager.UpdateType updateType, boolean updateSucceeded) throws GithubResourcepackManagerException {
+    public static void send(String body, URI url, GithubResourcepackManager.UpdateType updateType, boolean updateSucceeded) throws GitPackManager {
         final HttpRequest request = HttpRequest.newBuilder(url)
                 .header("Content-Type", "application/json")
                 .header("X-Resource-Pack-Update-Type", updateType.name())
@@ -25,12 +25,12 @@ public final class WebhookSender {
         try (final HttpClient client = HttpClient.newHttpClient()) {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
-            throw new GithubResourcepackManagerException("Failed to send http request!", e);
+            throw new GitPackManager("Failed to send http request!", e);
         }
 
         final int statusCode = response.statusCode();
         if (statusCode < 200 || statusCode >= 300) {
-            throw new GithubResourcepackManagerException("Http status code '%s'! Response was: '%s'.", statusCode, response.body());
+            throw new GitPackManager("Http status code '%s'! Response was: '%s'.", statusCode, response.body());
         }
     }
 }

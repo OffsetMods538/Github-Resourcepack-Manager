@@ -4,7 +4,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import top.offsetmonkey538.gitpackmanager.GithubResourcepackManager;
-import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
+import top.offsetmonkey538.gitpackmanager.exception.GitPackManager;
 import top.offsetmonkey538.gitpackmanager.handler.GitHandler;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformCommand;
 import top.offsetmonkey538.monkeylib538.common.api.command.CommandAbstractionApi;
@@ -103,7 +103,7 @@ public final class GitPackManagerCommand {
         final GitHandler gitHandler = new GitHandler();
         try {
             gitHandler.updateRepositoryAndGenerateCommitProperties();
-        } catch (GithubResourcepackManagerException e) {
+        } catch (GitPackManager e) {
             CommandAbstractionApi.sendError(context, "Failed to update repository, git related placeholders will not be replaced!");
             CommandAbstractionApi.sendError(context, "Cause:\n%s\n", e);
             LOGGER.error("Failed to update repository, git related placeholders will not be replaced!", e);
@@ -113,7 +113,7 @@ public final class GitPackManagerCommand {
         final MonkeyLibText[] text;
         try {
             text = createUpdateMessage(isResource ? config.get().resourcePackProvider.updateMessage : config.get().dataPackProvider.updateMessage, placeholders);
-        } catch (GithubResourcepackManagerException e) {
+        } catch (GitPackManager e) {
             CommandAbstractionApi.sendError(context, "Failed to create update message!");
             CommandAbstractionApi.sendError(context, "Cause:\n%s\n", e);
             LOGGER.error("Failed to create update message for %spack!", e, isResource ? "resource" : "data");

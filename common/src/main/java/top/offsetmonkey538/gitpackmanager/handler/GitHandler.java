@@ -17,7 +17,7 @@ import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.jspecify.annotations.Nullable;
-import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
+import top.offsetmonkey538.gitpackmanager.exception.GitPackManager;
 import top.offsetmonkey538.gitpackmanager.git.CommitProperties;
 
 import java.io.IOException;
@@ -34,11 +34,11 @@ public class GitHandler {
     private @Nullable CommitProperties commitProperties = null;
     private @Nullable List<String> changedFiles;
 
-    public void updateRepositoryAndGenerateCommitProperties() throws GithubResourcepackManagerException {
+    public void updateRepositoryAndGenerateCommitProperties() throws GitPackManager {
         String originalCommitHash;
         try {
             originalCommitHash = getLatestCommitHash();
-        } catch (GithubResourcepackManagerException e) {
+        } catch (GitPackManager e) {
             if (!(e.getCause() instanceof RepositoryNotFoundException)) throw e;
 
             originalCommitHash = "";
@@ -60,7 +60,7 @@ public class GitHandler {
     }
 
 
-    private static CommitProperties getLatestCommitProperties(String lastCommitHash, String newCommitHash) throws GithubResourcepackManagerException {
+    private static CommitProperties getLatestCommitProperties(String lastCommitHash, String newCommitHash) throws GitPackManager {
         try {
             final Repository repository = getRepository();
             final RevCommit commit = new RevWalk(getRepository()).parseCommit(getLatestCommit().getObjectId());
@@ -76,11 +76,11 @@ public class GitHandler {
                     String.valueOf(commit.getCommitTime())
             );
         } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to parse latest commit!", e);
+            throw new GitPackManager("Failed to parse latest commit!", e);
         }
     }
 
-    private static void updateRepository(boolean retry) throws GithubResourcepackManagerException {
+    private static void updateRepository(boolean retry) throws GitPackManager {
         // Create credentials provider if repository is private
         CredentialsProvider credentialsProvider = null;
         if (config.get().repositoryInfo.isPrivate)
@@ -131,7 +131,7 @@ public class GitHandler {
         }
     }
 
-    private static void cloneRepository(@Nullable CredentialsProvider credentialsProvider) throws GithubResourcepackManagerException {
+    private static void cloneRepository(@Nullable CredentialsProvider credentialsProvider) throws GitPackManager {
         try {
             Git git = Git.cloneRepository()
                     .setURI(config.get().repositoryInfo.url)
@@ -141,19 +141,19 @@ public class GitHandler {
                     .call();
             git.close();
         } catch (GitAPIException e) {
-            throw new GithubResourcepackManagerException("Failed to clone repository!", e);
+            throw new GitPackManager("Failed to clone repository!", e);
         }
     }
 
-    private static String getLatestCommitHash() throws GithubResourcepackManagerException {
+    private static String getLatestCommitHash() throws GitPackManager {
         return getLatestCommit().getObjectId().getName();
     }
 
-    private static Ref getLatestCommit() throws GithubResourcepackManagerException {
+    private static Ref getLatestCommit() throws GitPackManager {
         try {
             return getRepository().findRef("HEAD");
         } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to get latest commit in repository!", e);
+            throw new GitPackManager("Failed to get latest commit in repository!", e);
         }
     }
 
@@ -187,11 +187,11 @@ public class GitHandler {
         }
     }
 
-    private static Repository getRepository() throws GithubResourcepackManagerException {
+    private static Repository getRepository() throws GitPackManager {
         try (Git git = Git.open(GIT_FOLDER.toFile())) {
             return git.getRepository();
         } catch (IOException e) {
-            throw new GithubResourcepackManagerException("Failed to open repository!", e);
+            throw new GitPackManager("Failed to open repository!", e);
         }
     }
 

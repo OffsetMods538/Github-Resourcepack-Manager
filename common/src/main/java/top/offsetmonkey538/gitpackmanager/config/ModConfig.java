@@ -7,7 +7,7 @@ import blue.endless.jankson.JsonNull;
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.api.Marshaller;
 import org.jspecify.annotations.Nullable;
-import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
+import top.offsetmonkey538.gitpackmanager.exception.GitPackManager;
 import top.offsetmonkey538.gitpackmanager.utils.StringUtils;
 import top.offsetmonkey538.gitpackmanager.utils.WebhookSender;
 import top.offsetmonkey538.meshlib.common.api.MESHLibApi;
@@ -133,7 +133,7 @@ public class ModConfig implements Config {
         @Comment("The relative path from the config directory to a webhook body file. For example \"discord/basic_message.json\" or \"discord/embed_message.json\"")
         public @Nullable String body = null;
 
-        public void trigger(final boolean updateSucceeded, final Map<String, String> placeholders, final UpdateType updateType) throws GithubResourcepackManagerException {
+        public void trigger(final boolean updateSucceeded, final Map<String, String> placeholders, final UpdateType updateType) throws GitPackManager {
             if (!enabled) return;
 
             try {
@@ -143,7 +143,7 @@ public class ModConfig implements Config {
 
                 WebhookSender.send(webhookBody, getWebhookUrl(), updateType, updateSucceeded);
             } catch (IOException e) {
-                throw new GithubResourcepackManagerException("Failed to read content of webhook body file '%s'!", e, config.get().resourcePackProvider.successWebhook.body);
+                throw new GitPackManager("Failed to read content of webhook body file '%s'!", e, config.get().resourcePackProvider.successWebhook.body);
             }
         }
 
