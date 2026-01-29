@@ -8,6 +8,7 @@ import top.offsetmonkey538.gitpackmanager.config.webhook.discord.basic.BasicFail
 import top.offsetmonkey538.gitpackmanager.config.webhook.discord.basic.BasicSuccessMessage;
 import top.offsetmonkey538.gitpackmanager.config.webhook.discord.embed.EmbedFailMessage;
 import top.offsetmonkey538.gitpackmanager.config.webhook.discord.embed.EmbedSuccessMessage;
+import top.offsetmonkey538.meshlib.common.api.MESHLibApi;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,19 +25,27 @@ public final class ConfigHandler {
     }
 
     public static boolean handleConfig() {
+        MESHLibApi.reload();
+
         LOGGER.info("Writing default webhook bodies");
         createDefaultWebhooks();
 
         // Checking if config is valid
         final List<String> errors = checkConfigErrors();
 
-        // Return false when nothing's wrong (disables the mod)
-        if (errors.isEmpty()) return false;
+        boolean success = true;
+        if (!errors.isEmpty()) {
+            // There were errors, time to log em.
+            LOGGER.error("There were problems with the config for Git Pack Manager, see below for more details!");
+            errors.stream().map(string -> "    " + string).forEach(LOGGER::error);
+            success = false;
+        }
+        if (MESHLibApi.getExternalPort() == null) {
+            LOGGER.error("MESH Lib hasn't been configured correctly! Disabling Git Pack Manager!");
+            success = false;
+        }
 
-        // There were errors, time to log em.
-        LOGGER.error("There were problems with the config for GitHub Resourcepack Manager, see below for more details!");
-        errors.stream().map(string -> "    " + string).forEach(LOGGER::error);
-        return true;
+        return !success;
     }
 
     private static void createDefaultWebhooks() {

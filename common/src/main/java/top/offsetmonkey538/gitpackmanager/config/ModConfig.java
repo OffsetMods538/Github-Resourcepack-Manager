@@ -10,6 +10,9 @@ import org.jspecify.annotations.Nullable;
 import top.offsetmonkey538.gitpackmanager.exception.GithubResourcepackManagerException;
 import top.offsetmonkey538.gitpackmanager.utils.StringUtils;
 import top.offsetmonkey538.gitpackmanager.utils.WebhookSender;
+import top.offsetmonkey538.meshlib.common.api.MESHLibApi;
+import top.offsetmonkey538.meshlib.common.api.rule.HttpRule;
+import top.offsetmonkey538.meshlib.common.api.rule.rules.PathHttpRule;
 import top.offsetmonkey538.monkeylib538.common.api.platform.LoaderUtil;
 import top.offsetmonkey538.offsetutils538.api.config.Config;
 import top.offsetmonkey538.offsetutils538.api.config.Datafixer;
@@ -23,9 +26,9 @@ import java.util.Map;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.GIT_FOLDER;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.MOD_ID;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.MOD_URI;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.UpdateType;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
+import static top.offsetmonkey538.offsetutils538.api.text.ArgReplacer.replaceArgs;
 
 public class ModConfig implements Config {
 
@@ -37,13 +40,13 @@ public class ModConfig implements Config {
 
 
     public static class ServerInfo {
-        @SuppressWarnings("HttpUrlsUsage")
-        @Comment("The public ip of your server, may also specify the protocol (\"123.45.67.89\" or \"http://play.coolserver.net\")")
+        @Comment("The MESH Lib rule to use for routing to the Git Pack Manager http handler. See MESH Lib docs: https://mesh-lib.docs.offsetmonkey538.top/WHATEVER/PAGE/WILL/TELL/YOU/HOW/TO/USE/RULES") // TODO: real link once meshlib has docs
+        public HttpRule routingRule = new PathHttpRule(MOD_ID);
+        @Comment("The public ip of your server. (\"123.45.67.89\" or \"play.coolserver.net\")")
         public @Nullable String publicIp = null;
-
-        @Comment("If set, this port will be used in the server.properties file instead of the Minecraft server port. The HTTP server will still be hosted on the Minecraft port. Only useful when running the server behind a proxy like nginx, traefik, cloudflare tunnel, etc.")
-        // TODO: rename to externalPort and make it required
-        public @Nullable String proxyPort = null;
+        @SuppressWarnings("HttpUrlsUsage")
+        @Comment("The url matched by the routing rule defined above. May include placeholders for \"{exposedPort}\" (defined in MESH Lib config), \"{publicIp}\" (defined above) and \"{filename}\" (the file to download). Used for generating the download url for clients. Default value: \"http://{publicIp}:{exposedPort}/" + MOD_ID + "/{filename}\"")
+        public String downloadUrlPattern = "http://{publicIp}:{exposedPort}/" + MOD_ID + "/{filename}";
     }
 
     public static class RepositoryInfo {
@@ -68,8 +71,8 @@ public class ModConfig implements Config {
         public String rootLocation = "/resourcepacks";
 
         @Comment("Messages sent in chat when pack has been updated. Each entry will be on a new line. May be 'null' or empty to disable.")
-        public String[] updateMessage = new String[] {
-                "&{hoverText,'{longDescription}','Server resourcepack has been updated!'}",
+        public @Nullable String[] updateMessage = new String[] {
+                "&{hoverText,'{longDescription}','Server resource pack has been updated!'}",
                 "&{hoverText,'{longDescription}','Please click &{hoverText,'Click to update pack','&{runCommand,'{packUpdateCommand}','[HERE]'}'} to get the most up to date pack.'}"
         };
 
@@ -221,6 +224,10 @@ public class ModConfig implements Config {
 
                     original.put("resourcePackProvider", datafix3to4UpdateMessage((JsonObject) original.get("resourcePackProvider"), marsh));
                     original.put("dataPackProvider", datafix3to4UpdateMessage((JsonObject) original.get("dataPackProvider"), marsh));
+                },
+                (original, jankson) -> {
+                    // 4 -> 5
+                    original.remove("proxyPort");
                 }
         };
     }
@@ -272,7 +279,7 @@ public class ModConfig implements Config {
 
     @Override
     public int getConfigVersion() {
-        return 4;
+        return 5;
     }
 
     @Override
@@ -312,16 +319,11 @@ public class ModConfig implements Config {
         }
     }
 
-    @SuppressWarnings("HttpUrlsUsage")
     public String getPackUrl(String outputFileName) {
-        return String.format(
-                "%s%s:%s/%s/%s",
-                (serverInfo.publicIp.startsWith("http://") || serverInfo.publicIp.startsWith("https://") ? "" : "http://"),
-                serverInfo.publicIp,
-                serverInfo.proxyPort,
-                MOD_URI,
-                outputFileName
-        );
+        return serverInfo.downloadUrlPattern
+                .replace("{publicIp}", serverInfo.publicIp)
+                .replace("{exposedPort}", String.valueOf(MESHLibApi.getExternalPort()))
+                .replace("{filename}", outputFileName);
     }
 
     public String getGithubRef() {

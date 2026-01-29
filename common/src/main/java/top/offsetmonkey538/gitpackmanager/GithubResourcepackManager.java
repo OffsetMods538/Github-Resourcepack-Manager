@@ -50,7 +50,6 @@ public final class GithubResourcepackManager {
     }
 
     public static final String MOD_ID = "git-pack-manager";
-    public static final String MOD_URI = MOD_ID;
     public static final OffsetLogger LOGGER = OffsetLogger.create(MOD_ID);
 
     public static final Path DATA_FOLDER =  LoaderUtil.getConfigDir().resolve(MOD_ID).resolve(".packs");
@@ -79,8 +78,7 @@ public final class GithubResourcepackManager {
         }
     }
 
-    @SuppressWarnings("NotNullFieldNotInitialized")
-    public static ConfigHolder<ModConfig> config;
+    public static ConfigHolder<ModConfig> config = ConfigHolder.create(ModConfig::new, LOGGER);
 
     public static @Nullable ResourcePackHandler resourcePackHandler = null;
 
@@ -89,42 +87,45 @@ public final class GithubResourcepackManager {
     public static void initialize() {
         TelemetryRegistry.register(MOD_ID);
 
-        addLogToAdminListeners();
-        LoaderUtil.sendMessagesToAdminsOnJoin(() -> {
-            if (MESSAGE_QUEUE.isEmpty()) return new MonkeyLibText[] {};
+        // Have to run all this stuff (definitely initializing config at least) after other mods have initialized. Namely, after MESH-Lib has its rule serialization stuff to the jankson event
+        ServerLifecycleApi.STARTED.listen(() ->  {
+            addLogToAdminListeners();
+            LoaderUtil.sendMessagesToAdminsOnJoin(() -> {
+                if (MESSAGE_QUEUE.isEmpty()) return new MonkeyLibText[]{};
 
-            final MonkeyLibText[] result = new MonkeyLibText[MESSAGE_QUEUE.size() + 1];
-            MESSAGE_QUEUE.toArray(result);
-            result[result.length - 1] = MESSAGE_QUEUE_EMPTY_MESSAGE;
-            return result;
+                final MonkeyLibText[] result = new MonkeyLibText[MESSAGE_QUEUE.size() + 1];
+                MESSAGE_QUEUE.toArray(result);
+                result[result.length - 1] = MESSAGE_QUEUE_EMPTY_MESSAGE;
+                return result;
+            });
+
+            // config should be initialized after the error listeners
+            ConfigManager.init(config);
+
+            GitPackManagerCommand.register();
+            ConfigCommandApi.registerConfigCommand(
+                    config,
+                    () -> disabled = ConfigHandler.handleConfig(),
+                    "gh-rp-manager", "config"
+            );
+
+            disabled = ConfigHandler.handleConfig();
+
+            try {
+                createFolderStructure();
+            } catch (GithubResourcepackManagerException e) {
+                LOGGER.error("Failed to create folder structure!", e);
+            }
+
+            updatePack(UpdateType.RESTART, true);
         });
 
-        // config should be initialized after the error listeners
-        config = ConfigManager.init(ConfigHolder.create(ModConfig::new, LOGGER));
-
-        GitPackManagerCommand.register();
-        ConfigCommandApi.registerConfigCommand(
-                config,
-                () -> disabled = ConfigHandler.handleConfig(),
-                "gh-rp-manager", "config"
-        );
-
-        disabled = ConfigHandler.handleConfig();
-
-        try {
-            createFolderStructure();
-        } catch (GithubResourcepackManagerException e) {
-            LOGGER.error("Failed to create folder structure!", e);
-        }
-
-        HttpRouterRegistry.HTTP_ROUTER_REGISTRATION_EVENT.listen(registry -> {
-            registry.register(MOD_ID, new HttpRouter(
-                    new PathHttpRule(MOD_URI),
-                    new MainHttpHandler()
-            ));
-        });
-
-        ServerLifecycleApi.STARTED.listen(() -> updatePack(UpdateType.RESTART, true));
+        HttpRouterRegistry.HTTP_ROUTER_REGISTRATION_EVENT.listen(registry -> registry.register(
+                MOD_ID, new HttpRouter(
+                        config.get().serverInfo.routingRule,
+                        new MainHttpHandler()
+                )
+        ));
     }
 
     private static void addLogToAdminListeners() {
@@ -169,7 +170,7 @@ public final class GithubResourcepackManager {
         }
 
         if (disabled) {
-            LOGGER.warn("Skipping pack updating because config was invalid!");
+            LOGGER.warn("Skipping pack updating because mod is disabled!");
             return;
         }
 
