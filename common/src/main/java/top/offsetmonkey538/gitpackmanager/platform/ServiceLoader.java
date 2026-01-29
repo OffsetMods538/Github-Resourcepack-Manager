@@ -1,6 +1,6 @@
 package top.offsetmonkey538.gitpackmanager.platform;
 
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.LOGGER;
 
 public final class ServiceLoader {
     private ServiceLoader() {}

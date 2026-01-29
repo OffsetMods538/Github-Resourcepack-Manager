@@ -3,7 +3,7 @@ package top.offsetmonkey538.gitpackmanager.handler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.io.file.PathUtils;
-import top.offsetmonkey538.gitpackmanager.exception.GitPackManager;
+import top.offsetmonkey538.gitpackmanager.exception.GitPackManagerException;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformServerProperties;
 
 import java.io.IOException;
@@ -13,9 +13,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.DATAPACK_FOLDER;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.DATAPACK_FOLDER;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.LOGGER;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.config;
 import static top.offsetmonkey538.offsetutils538.api.text.ArgReplacer.replaceArgs;
 
 public class DataPackHandler {
@@ -23,7 +23,7 @@ public class DataPackHandler {
 
     private static final Path STATE_FILE = DATAPACK_FOLDER.resolve("state.json");
 
-    public void generatePack() throws GitPackManager {
+    public void generatePack() throws GitPackManagerException {
         final Path datapacks = PlatformServerProperties.INSTANCE.getDatapacksDir();
 
 
@@ -32,7 +32,7 @@ public class DataPackHandler {
         try {
             existingPacks = readStateFile();
         } catch (IOException e) {
-            throw new GitPackManager("Failed to read state file!", e);
+            throw new GitPackManagerException("Failed to read state file!", e);
         }
 
         Arrays.stream(existingPacks.packs)
@@ -57,8 +57,8 @@ public class DataPackHandler {
 
         try {
             sourcePacks = gatherSourcePacks();
-        } catch (GitPackManager e) {
-            throw new GitPackManager("Failed to gather source packs!", e);
+        } catch (GitPackManagerException e) {
+            throw new GitPackManagerException("Failed to gather source packs!", e);
         }
 
         // Delete ones with same name from datapacks
@@ -71,7 +71,7 @@ public class DataPackHandler {
                 PathUtils.delete(path);
                 LOGGER.info("Deleted pack at '%s'!", path.toAbsolutePath());
             } catch (IOException e) {
-                throw new GitPackManager("Failed to delete pack at '%s'!", e, path.toAbsolutePath());
+                throw new GitPackManagerException("Failed to delete pack at '%s'!", e, path.toAbsolutePath());
             }
         }
 
@@ -85,14 +85,14 @@ public class DataPackHandler {
 
                 LOGGER.info("Copied pack from '%s' to '%s'.", path.toAbsolutePath(), destination.toAbsolutePath());
             } catch (IOException e) {
-                throw new GitPackManager("Failed to copy pack at '%s' to datapacks directory at '%s'!", e, path.toAbsolutePath(), datapacks.toAbsolutePath());
+                throw new GitPackManagerException("Failed to copy pack at '%s' to datapacks directory at '%s'!", e, path.toAbsolutePath(), datapacks.toAbsolutePath());
             }
         }
 
         try {
             writeStateFile(sourcePacks);
         } catch (IOException e) {
-            throw new GitPackManager("Failed to write state file!", e);
+            throw new GitPackManagerException("Failed to write state file!", e);
         }
     }
 
@@ -113,7 +113,7 @@ public class DataPackHandler {
         return GSON.fromJson(Files.readString(STATE_FILE), State.class);
     }
 
-    private List<Path> gatherSourcePacks() throws GitPackManager {
+    private List<Path> gatherSourcePacks() throws GitPackManagerException {
         LOGGER.info("Checking for 'pack.mcmeta' in data pack root...");
         final boolean hasPackMcmeta = Files.exists(config.get().dataPackProvider.getPackRoot().resolve("pack.mcmeta"));
         LOGGER.info("%sFound!", hasPackMcmeta ? "" : "Not ");
@@ -124,7 +124,7 @@ public class DataPackHandler {
         LOGGER.info("%sFound!", hasPacksFolder ? "" : "Not ");
 
         if (hasPackMcmeta && hasPacksFolder) {
-            throw new GitPackManager("Found both 'pack.mcmeta' and the 'packs' directory in data pack root '%s'!", config.get().dataPackProvider.getPackRoot().toAbsolutePath());
+            throw new GitPackManagerException("Found both 'pack.mcmeta' and the 'packs' directory in data pack root '%s'!", config.get().dataPackProvider.getPackRoot().toAbsolutePath());
         }
         if (!hasPackMcmeta && !hasPacksFolder) {
             LOGGER.info("Found neither 'pack.mcmeta' nor the 'packs' directory in data pack root '%s'!", config.get().dataPackProvider.getPackPacksDir().toAbsolutePath());
@@ -142,7 +142,7 @@ public class DataPackHandler {
         return gatherSourcePacksFrom(packsDir);
     }
 
-    private List<Path> gatherSourcePacksFrom(final Path packsDir) throws GitPackManager {
+    private List<Path> gatherSourcePacksFrom(final Path packsDir) throws GitPackManagerException {
         try (final Stream<Path> sourcePacks = Files.list(packsDir)) {
             final List<Path> result = sourcePacks
                     .filter(path -> {
@@ -154,11 +154,11 @@ public class DataPackHandler {
                     .toList();
 
             if (result.isEmpty())
-                throw new GitPackManager("Repository contains empty 'packs' folder!");
+                throw new GitPackManagerException("Repository contains empty 'packs' folder!");
 
             return result;
         } catch (IOException e) {
-            throw new GitPackManager("Failed to list files in 'packs' folder'!", e);
+            throw new GitPackManagerException("Failed to list files in 'packs' folder'!", e);
         }
     }
 

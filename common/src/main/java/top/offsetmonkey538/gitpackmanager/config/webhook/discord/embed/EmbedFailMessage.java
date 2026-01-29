@@ -4,8 +4,8 @@ import top.offsetmonkey538.gitpackmanager.config.webhook.DefaultWebhookBody;
 
 public final class EmbedFailMessage implements DefaultWebhookBody {
 
-    public final String username = "GitHub Resource Pack Manager";
-    public final String avatar_url = "https://github.com/OffsetMods538/Github-Resourcepack-Manager/blob/master/src/main/resources/assets/github-resourcepack-manager/icon.png?raw=true";
+    public final String username = "Git Pack Manager";
+    public final String avatar_url = "https://github.com/OffsetMods538/Git-Pack-Manager/blob/master/common/src/main/resources/assets/git-pack-manager/icon.png?raw=true";
     public final Embed[] embeds = new Embed[] {
             new Embed(
                     "Pack update failed!",

@@ -7,7 +7,7 @@ import blue.endless.jankson.JsonNull;
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.api.Marshaller;
 import org.jspecify.annotations.Nullable;
-import top.offsetmonkey538.gitpackmanager.exception.GitPackManager;
+import top.offsetmonkey538.gitpackmanager.exception.GitPackManagerException;
 import top.offsetmonkey538.gitpackmanager.utils.StringUtils;
 import top.offsetmonkey538.gitpackmanager.utils.WebhookSender;
 import top.offsetmonkey538.meshlib.common.api.MESHLibApi;
@@ -23,16 +23,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.GIT_FOLDER;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.MOD_ID;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.UpdateType;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.GIT_FOLDER;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.LOGGER;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.MOD_ID;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.UpdateType;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.config;
 import static top.offsetmonkey538.offsetutils538.api.text.ArgReplacer.replaceArgs;
 
 public class ModConfig implements Config {
 
-    @Comment("!!!!Please check the wiki for how to set up the mod. It is linked on both the Modrinth and GitHub pages!!!!")
+    @Comment("!!!! Please check the wiki for how to set up the mod. It should be available here: https://git-pack-manager.docs.offsetmonkey538.top and is also linked on the Modrinth page. !!!!")
     public ServerInfo serverInfo = new ServerInfo();
     public RepositoryInfo repositoryInfo = new RepositoryInfo();
     public ResourcePackProvider resourcePackProvider = new ResourcePackProvider();
@@ -133,7 +133,7 @@ public class ModConfig implements Config {
         @Comment("The relative path from the config directory to a webhook body file. For example \"discord/basic_message.json\" or \"discord/embed_message.json\"")
         public @Nullable String body = null;
 
-        public void trigger(final boolean updateSucceeded, final Map<String, String> placeholders, final UpdateType updateType) throws GitPackManager {
+        public void trigger(final boolean updateSucceeded, final Map<String, String> placeholders, final UpdateType updateType) throws GitPackManagerException {
             if (!enabled) return;
 
             try {
@@ -143,7 +143,7 @@ public class ModConfig implements Config {
 
                 WebhookSender.send(webhookBody, getWebhookUrl(), updateType, updateSucceeded);
             } catch (IOException e) {
-                throw new GitPackManager("Failed to read content of webhook body file '%s'!", e, config.get().resourcePackProvider.successWebhook.body);
+                throw new GitPackManagerException("Failed to read content of webhook body file '%s'!", e, config.get().resourcePackProvider.successWebhook.body);
             }
         }
 

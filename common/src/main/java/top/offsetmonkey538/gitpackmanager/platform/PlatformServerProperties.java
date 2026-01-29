@@ -2,16 +2,16 @@ package top.offsetmonkey538.gitpackmanager.platform;
 
 import com.google.common.hash.Hashing;
 import org.jspecify.annotations.Nullable;
-import top.offsetmonkey538.gitpackmanager.exception.GitPackManager;
+import top.offsetmonkey538.gitpackmanager.exception.GitPackManagerException;
 import top.offsetmonkey538.gitpackmanager.handler.ResourcePackHandler;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.RESOURCEPACK_UUID;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.LOGGER;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.RESOURCEPACK_UUID;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.config;
 import static top.offsetmonkey538.gitpackmanager.platform.ServiceLoader.load;
 
 public interface PlatformServerProperties {
@@ -20,9 +20,9 @@ public interface PlatformServerProperties {
     @Nullable String getResourcePackUrl();
     Path getDatapacksDir();
     void setProperties(Map<String, String> properties);
-    void reload() throws GitPackManager;
+    void reload() throws GitPackManagerException;
 
-    default void updatePackProperties(ResourcePackHandler packHandler) throws GitPackManager {
+    default void updatePackProperties(ResourcePackHandler packHandler) throws GitPackManagerException {
         final String resourcePackUrl = config.get().getPackUrl(packHandler.getOutputPackName());
         final String resourcePackSha1;
         try {
@@ -30,7 +30,7 @@ public interface PlatformServerProperties {
             //noinspection deprecation
             resourcePackSha1 = Hashing.sha1().hashBytes(com.google.common.io.Files.toByteArray(packHandler.getOutputPackFile())).toString();
         } catch (IOException e) {
-            throw new GitPackManager("Failed to get sha1 hash from pack file '%s'!", e, packHandler.getOutputPackFile());
+            throw new GitPackManagerException("Failed to get sha1 hash from pack file '%s'!", e, packHandler.getOutputPackFile());
         }
 
         LOGGER.info("Saving new resource pack properties to 'server.properties' file...");

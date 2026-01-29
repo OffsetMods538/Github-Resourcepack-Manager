@@ -3,8 +3,8 @@ package top.offsetmonkey538.gitpackmanager.command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import top.offsetmonkey538.gitpackmanager.GithubResourcepackManager;
-import top.offsetmonkey538.gitpackmanager.exception.GitPackManager;
+import top.offsetmonkey538.gitpackmanager.GitPackManager;
+import top.offsetmonkey538.gitpackmanager.exception.GitPackManagerException;
 import top.offsetmonkey538.gitpackmanager.handler.GitHandler;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformCommand;
 import top.offsetmonkey538.monkeylib538.common.api.command.CommandAbstractionApi;
@@ -18,14 +18,14 @@ import java.util.Map;
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.MOD_ID;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.UpdateType;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.clearAdminMessageQueue;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.createUpdateMessage;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.generatePlaceholders;
-import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.resourcePackHandler;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.LOGGER;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.MOD_ID;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.UpdateType;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.clearAdminMessageQueue;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.config;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.createUpdateMessage;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.generatePlaceholders;
+import static top.offsetmonkey538.gitpackmanager.GitPackManager.resourcePackHandler;
 import static top.offsetmonkey538.monkeylib538.common.api.command.CommandAbstractionApi.literal;
 import static top.offsetmonkey538.monkeylib538.common.api.command.CommandAbstractionApi.sendText;
 import static top.offsetmonkey538.offsetutils538.api.text.ArgReplacer.replaceArgs;
@@ -90,12 +90,12 @@ public final class GitPackManagerCommand {
 
             sendText(context, text);
         };
-        GithubResourcepackManager.LOGGER.addListener(OffsetLogger.LogLevel.INFO, infoListener);
-        GithubResourcepackManager.LOGGER.addListener(OffsetLogger.LogLevel.WARN, warnListener);
+        GitPackManager.LOGGER.addListener(OffsetLogger.LogLevel.INFO, infoListener);
+        GitPackManager.LOGGER.addListener(OffsetLogger.LogLevel.WARN, warnListener);
 
-        GithubResourcepackManager.updatePack(force ? GithubResourcepackManager.UpdateType.COMMAND_FORCE : GithubResourcepackManager.UpdateType.COMMAND, false).thenRun(() -> {
-            GithubResourcepackManager.LOGGER.removeListener(OffsetLogger.LogLevel.INFO, infoListener);
-            GithubResourcepackManager.LOGGER.removeListener(OffsetLogger.LogLevel.WARN, warnListener);
+        GitPackManager.updatePack(force ? GitPackManager.UpdateType.COMMAND_FORCE : GitPackManager.UpdateType.COMMAND, false).thenRun(() -> {
+            GitPackManager.LOGGER.removeListener(OffsetLogger.LogLevel.INFO, infoListener);
+            GitPackManager.LOGGER.removeListener(OffsetLogger.LogLevel.WARN, warnListener);
         });
     }
 
@@ -103,7 +103,7 @@ public final class GitPackManagerCommand {
         final GitHandler gitHandler = new GitHandler();
         try {
             gitHandler.updateRepositoryAndGenerateCommitProperties();
-        } catch (GitPackManager e) {
+        } catch (GitPackManagerException e) {
             CommandAbstractionApi.sendError(context, "Failed to update repository, git related placeholders will not be replaced!");
             CommandAbstractionApi.sendError(context, "Cause:\n%s\n", e);
             LOGGER.error("Failed to update repository, git related placeholders will not be replaced!", e);
@@ -113,7 +113,7 @@ public final class GitPackManagerCommand {
         final MonkeyLibText[] text;
         try {
             text = createUpdateMessage(isResource ? config.get().resourcePackProvider.updateMessage : config.get().dataPackProvider.updateMessage, placeholders);
-        } catch (GitPackManager e) {
+        } catch (GitPackManagerException e) {
             CommandAbstractionApi.sendError(context, "Failed to create update message!");
             CommandAbstractionApi.sendError(context, "Cause:\n%s\n", e);
             LOGGER.error("Failed to create update message for %spack!", e, isResource ? "resource" : "data");

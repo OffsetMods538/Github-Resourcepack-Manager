@@ -6,7 +6,7 @@ import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.server.dedicated.DedicatedServerSettings;
 import net.minecraft.world.level.storage.LevelResource;
 import org.jspecify.annotations.Nullable;
-import top.offsetmonkey538.gitpackmanager.exception.GitPackManager;
+import top.offsetmonkey538.gitpackmanager.exception.GitPackManagerException;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformServerProperties;
 
 import java.lang.reflect.Field;
@@ -39,7 +39,7 @@ public class PaperPlatformServerProperties implements PlatformServerProperties {
     }
 
     @Override
-    public void reload() throws GitPackManager {
+    public void reload() throws GitPackManagerException {
         final DedicatedServerSettings settings = ((DedicatedServer) MinecraftServer.getServer()).settings;
 
         try {
@@ -54,7 +54,7 @@ public class PaperPlatformServerProperties implements PlatformServerProperties {
                     DedicatedServerProperties.fromFile((Path) sourceField.get(settings), MinecraftServer.getServer().options)
             );
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new GitPackManager("Failed to reload 'server.properties' file!", e);
+            throw new GitPackManagerException("Failed to reload 'server.properties' file!", e);
         }
     }
 }

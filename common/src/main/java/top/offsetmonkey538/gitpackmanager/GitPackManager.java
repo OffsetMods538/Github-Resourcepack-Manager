@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 import top.offsetmonkey538.gitpackmanager.command.GitPackManagerCommand;
 import top.offsetmonkey538.gitpackmanager.config.ConfigHandler;
 import top.offsetmonkey538.gitpackmanager.config.ModConfig;
-import top.offsetmonkey538.gitpackmanager.exception.GitPackManager;
+import top.offsetmonkey538.gitpackmanager.exception.GitPackManagerException;
 import top.offsetmonkey538.gitpackmanager.handler.DataPackHandler;
 import top.offsetmonkey538.gitpackmanager.handler.GitHandler;
 import top.offsetmonkey538.gitpackmanager.handler.ResourcePackHandler;
@@ -45,8 +45,8 @@ import java.util.regex.Pattern;
 
 import static top.offsetmonkey538.offsetutils538.api.text.ArgReplacer.replaceArgs;
 
-public final class GithubResourcepackManager {
-    private GithubResourcepackManager() {
+public final class GitPackManager {
+    private GitPackManager() {
 
     }
 
@@ -114,7 +114,7 @@ public final class GithubResourcepackManager {
 
             try {
                 createFolderStructure();
-            } catch (GitPackManager e) {
+            } catch (GitPackManagerException e) {
                 LOGGER.error("Failed to create folder structure!", e);
             }
 
@@ -147,13 +147,13 @@ public final class GithubResourcepackManager {
         };
     }
 
-    private static void createFolderStructure() throws GitPackManager {
+    private static void createFolderStructure() throws GitPackManagerException {
         try {
             Files.createDirectories(RESOURCEPACK_OUTPUT_FOLDER);
             Files.createDirectories(DATAPACK_FOLDER);
             Files.createDirectories(GIT_FOLDER);
         } catch (IOException e) {
-            throw new GitPackManager("Failed to create directory!", e);
+            throw new GitPackManagerException("Failed to create directory!", e);
         }
     }
 
@@ -189,7 +189,7 @@ public final class GithubResourcepackManager {
 
         try {
             createFolderStructure();
-        } catch (GitPackManager e) {
+        } catch (GitPackManagerException e) {
             LOGGER.error("Failed to create folder structure!", e);
         }
 
@@ -200,7 +200,7 @@ public final class GithubResourcepackManager {
         boolean failed = false;
         try {
             gitHandler.updateRepositoryAndGenerateCommitProperties();
-        } catch (GitPackManager e) {
+        } catch (GitPackManagerException e) {
             LOGGER.error("Failed to update git repository!", e);
             failed = true;
         }
@@ -239,7 +239,7 @@ public final class GithubResourcepackManager {
         boolean failed = false;
         try {
             resourcePackHandler.generatePack(wasUpdated, oldResourcePackPath, oldResourcePackName);
-        } catch (GitPackManager e) {
+        } catch (GitPackManagerException e) {
             LOGGER.error("Failed to generate pack!", e);
             failed = updateFailed = true;
         }
@@ -249,7 +249,7 @@ public final class GithubResourcepackManager {
         // Update server.properties file.
         try {
             PlatformServerProperties.INSTANCE.updatePackProperties(resourcePackHandler);
-        } catch (GitPackManager e) {
+        } catch (GitPackManagerException e) {
             LOGGER.error("Failed to update server.properties file!", e);
         }
 
@@ -259,7 +259,7 @@ public final class GithubResourcepackManager {
         // Send chat message
         try {
             if (!failed) sendUpdateMessage(config.get().resourcePackProvider.updateMessage, wasUpdated, placeholders);
-        } catch (GitPackManager e) {
+        } catch (GitPackManagerException e) {
             LOGGER.error("Failed to send update message for resource pack in chat!", e);
         }
 
@@ -270,12 +270,12 @@ public final class GithubResourcepackManager {
         }
         if (!updateFailed) try {
             config.get().resourcePackProvider.successWebhook.trigger(true, placeholders, updateType);
-        } catch (GitPackManager e) {
+        } catch (GitPackManagerException e) {
             LOGGER.error("Failed to trigger success webhook!", e);
         }
         else try {
             config.get().resourcePackProvider.failWebhook.trigger(false, placeholders, updateType);
-        } catch (GitPackManager e) {
+        } catch (GitPackManagerException e) {
             LOGGER.error("Failed to trigger fail webhook!", e);
         }
     }
@@ -294,7 +294,7 @@ public final class GithubResourcepackManager {
         LOGGER.info("Getting pack location...");
         try {
             dataPackHandler.generatePack();
-        } catch (GitPackManager e) {
+        } catch (GitPackManagerException e) {
             LOGGER.error("Failed to generate pack!", e);
             updateFailed = true;
         }
@@ -309,28 +309,28 @@ public final class GithubResourcepackManager {
         // Send chat message
         try {
             sendUpdateMessage(config.get().dataPackProvider.updateMessage, true, placeholders, true);
-        } catch (GitPackManager e) {
+        } catch (GitPackManagerException e) {
             LOGGER.error("Failed to send update message for datapack in chat!", e);
         }
 
         // Trigger webhooks
         if (!updateFailed) try {
             config.get().dataPackProvider.successWebhook.trigger(true, placeholders, updateType);
-        } catch (GitPackManager e) {
+        } catch (GitPackManagerException e) {
             LOGGER.error("Failed to trigger success webhook!", e);
         }
         else try {
             config.get().dataPackProvider.failWebhook.trigger(false, placeholders, updateType);
-        } catch (GitPackManager e) {
+        } catch (GitPackManagerException e) {
             LOGGER.error("Failed to trigger fail webhook!", e);
         }
     }
 
-    private static void sendUpdateMessage(final String[] updateMessage, boolean wasUpdated, final Map<String, String> placeholders) throws GitPackManager {
+    private static void sendUpdateMessage(final String[] updateMessage, boolean wasUpdated, final Map<String, String> placeholders) throws GitPackManagerException {
         sendUpdateMessage(updateMessage, wasUpdated, placeholders, false);
     }
 
-    private static void sendUpdateMessage(final String[] updateMessage, boolean wasUpdated, final Map<String, String> placeholders, boolean adminsOnly) throws GitPackManager {
+    private static void sendUpdateMessage(final String[] updateMessage, boolean wasUpdated, final Map<String, String> placeholders, boolean adminsOnly) throws GitPackManagerException {
         if (!wasUpdated) {
             LOGGER.info("Not sending chat message because pack was not updated.");
             return;
@@ -340,7 +340,7 @@ public final class GithubResourcepackManager {
             PlatformText.INSTANCE.sendUpdateMessage(line, adminsOnly);
     }
 
-    public static MonkeyLibText[] createUpdateMessage(final String[] updateMessage, final Map<String, String> placeholders) throws GitPackManager {
+    public static MonkeyLibText[] createUpdateMessage(final String[] updateMessage, final Map<String, String> placeholders) throws GitPackManagerException {
         final MonkeyLibText[] result = new MonkeyLibText[updateMessage.length];
 
         for (int lineIndex = 0; lineIndex < updateMessage.length; lineIndex++) {
@@ -349,7 +349,7 @@ public final class GithubResourcepackManager {
             try {
                 result[lineIndex] = TextFormattingApi.styleText(line);
             } catch (Exception e) {
-                throw new GitPackManager("Failed to style update message at line %s!", e, lineIndex);
+                throw new GitPackManagerException("Failed to style update message at line %s!", e, lineIndex);
             }
         }
 
