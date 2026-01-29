@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.DATAPACK_FOLDER;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
+import static top.offsetmonkey538.offsetutils538.api.text.ArgReplacer.replaceArgs;
 
 public class DataPackHandler {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -105,7 +106,7 @@ public class DataPackHandler {
 
     private State readStateFile() throws IOException {
         if (Files.notExists(STATE_FILE)) {
-            LOGGER.warn("State file '%s' not found! No datapacks will be deleted!".formatted(STATE_FILE));
+            LOGGER.warn(replaceArgs("State file '%s' not found! No datapacks will be deleted!", STATE_FILE));
             return new State(new String[]{});
         }
 

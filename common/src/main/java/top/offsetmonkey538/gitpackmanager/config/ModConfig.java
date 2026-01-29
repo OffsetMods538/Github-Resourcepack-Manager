@@ -270,7 +270,7 @@ public class ModConfig implements Config {
         for (int i = 0; i < newUpdateMessage.length; i++) {
             newUpdateMessage[i] = newUpdateMessage[i].replaceAll("\\{packUpdateCommand}", "&{hoverText,'Click to update pack','&{runCommand,'{packUpdateCommand}','[HERE]'}'}");
             if (updateMessageHoverMessage != null)
-                newUpdateMessage[i] = "&{hoverText,'%s','%s'}".formatted(updateMessageHoverMessage, newUpdateMessage[i].replace("'", "\\'"));
+                newUpdateMessage[i] = replaceArgs("&{hoverText,'%s','%s'}", updateMessageHoverMessage, newUpdateMessage[i].replace("'", "\\'"));
         }
         originalJson.put("updateMessage", new JsonArray(newUpdateMessage, marsh));
 

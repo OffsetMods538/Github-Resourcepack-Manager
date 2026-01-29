@@ -44,6 +44,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
+import static top.offsetmonkey538.offsetutils538.api.text.ArgReplacer.replaceArgs;
+
 public final class GithubResourcepackManager {
     private GithubResourcepackManager() {
 
@@ -136,7 +138,7 @@ public final class GithubResourcepackManager {
     private static OffsetLogger.LogListener createLogToAdminListener(final int textColor) {
         return (message, error) -> {
             final MonkeyLibText text = MonkeyLibText
-                    .of("[%s] %s".formatted(MOD_ID, message))
+                    .of(replaceArgs("[%s] %s", MOD_ID, message))
                     .applyStyle(style -> style.withColor(textColor));
 
             if (error != null) text.applyStyle(style -> style.withShowText(MonkeyLibText.of(ExceptionUtils.getRootCauseMessage(error))));

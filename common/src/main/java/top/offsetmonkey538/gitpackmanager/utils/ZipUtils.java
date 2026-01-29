@@ -11,6 +11,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import static top.offsetmonkey538.offsetutils538.api.text.ArgReplacer.replaceArgs;
+
 public final class ZipUtils {
     private ZipUtils() {}
 
@@ -159,7 +161,7 @@ public final class ZipUtils {
         String destinationFilePath = destinationFile.getCanonicalPath();
 
         if (!destinationFilePath.startsWith(destinationDirPath + File.separator)) {
-            throw new IOException(String.format("Entry is outside of the target dir '%s'!", zipEntry.getName()));
+            throw new IOException(replaceArgs("Entry is outside of the target dir '%s'!", zipEntry.getName()));
         }
 
         return destinationFile;

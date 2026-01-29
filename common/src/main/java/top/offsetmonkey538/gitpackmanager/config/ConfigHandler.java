@@ -18,6 +18,7 @@ import java.util.List;
 
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
+import static top.offsetmonkey538.offsetutils538.api.text.ArgReplacer.replaceArgs;
 
 public final class ConfigHandler {
     private ConfigHandler() {
@@ -97,10 +98,10 @@ public final class ConfigHandler {
     private static void checkWebhookErrors(final List<String> errors, final ModConfig.WebhookInfo webhook, final String webhookPath) {
         if (!webhook.enabled) return;
 
-        if (webhook.url == null) errors.add("Field '%s.url' not set, but '%s.enabled' is true!".formatted(webhookPath, webhookPath));
-        if (webhook.body == null) errors.add("Field '%s.body' not set, but '%s.enabled' is true!".formatted(webhookPath, webhookPath));
+        if (webhook.url == null) errors.add(replaceArgs("Field '%s.url' not set, but '%s.enabled' is true!", webhookPath, webhookPath));
+        if (webhook.body == null) errors.add(replaceArgs("Field '%s.body' not set, but '%s.enabled' is true!", webhookPath, webhookPath));
 
         final Path bodyPath = webhook.getBodyPath();
-        if (bodyPath != null && !Files.exists(bodyPath)) errors.add("Field '%s.body' points to file '%s', which doesn't exist!".formatted(webhookPath, bodyPath.toAbsolutePath()));
+        if (bodyPath != null && !Files.exists(bodyPath)) errors.add(replaceArgs("Field '%s.body' points to file '%s', which doesn't exist!", webhookPath, bodyPath.toAbsolutePath()));
     }
 }

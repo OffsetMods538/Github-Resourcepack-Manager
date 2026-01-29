@@ -27,6 +27,7 @@ import java.util.Optional;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.GIT_FOLDER;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.LOGGER;
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.config;
+import static top.offsetmonkey538.offsetutils538.api.text.ArgReplacer.replaceArgs;
 
 public class GitHandler {
 
@@ -161,8 +162,8 @@ public class GitHandler {
             final Repository repository = git.getRepository();
 
             final ObjectId headCommit = repository.resolve("HEAD^{tree}");
-            final ObjectId startingCommit = repository.resolve("%s^{tree}".formatted(startingHash));
-            if (startingCommit == null) throw new IllegalArgumentException("Previous commit (hash '%s') doesn't exist!".formatted(startingHash));
+            final ObjectId startingCommit = repository.resolve(startingHash + "^{tree}");
+            if (startingCommit == null) throw new IllegalArgumentException(replaceArgs("Previous commit (hash '%s') doesn't exist!", startingHash));
 
             try (final ObjectReader repoReader = repository.newObjectReader()) {
                 final CanonicalTreeParser headTreeParser = new CanonicalTreeParser();

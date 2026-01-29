@@ -28,6 +28,7 @@ import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.gener
 import static top.offsetmonkey538.gitpackmanager.GithubResourcepackManager.resourcePackHandler;
 import static top.offsetmonkey538.monkeylib538.common.api.command.CommandAbstractionApi.literal;
 import static top.offsetmonkey538.monkeylib538.common.api.command.CommandAbstractionApi.sendText;
+import static top.offsetmonkey538.offsetutils538.api.text.ArgReplacer.replaceArgs;
 
 public final class GitPackManagerCommand {
 
@@ -78,11 +79,11 @@ public final class GitPackManagerCommand {
 
     private static void runTriggerUpdate(CommandContext<Object> context, boolean force) {
         final OffsetLogger.LogListener infoListener = (message, error) -> {
-            sendText(context, MonkeyLibText.of(String.format("[%s] %s", MOD_ID, message)).applyStyle(style -> style.withColor(MonkeyLibStyle.Color.GRAY)));
+            sendText(context, MonkeyLibText.of(replaceArgs("[%s] %s", MOD_ID, message)).applyStyle(style -> style.withColor(MonkeyLibStyle.Color.GRAY)));
         };
         final OffsetLogger.LogListener warnListener = (message, error) -> {
             final MonkeyLibText text = MonkeyLibText
-                    .of("[%s] %s".formatted(MOD_ID, message))
+                    .of(replaceArgs("[%s] %s", MOD_ID, message))
                     .applyStyle(style -> style.withColor(MonkeyLibStyle.Color.YELLOW));
 
             if (error != null) text.applyStyle(style -> style.withShowText(MonkeyLibText.of(ExceptionUtils.getRootCauseMessage(error))));
