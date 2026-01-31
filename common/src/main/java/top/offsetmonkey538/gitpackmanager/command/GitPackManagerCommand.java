@@ -38,7 +38,7 @@ public final class GitPackManagerCommand {
     }
 
     private static LiteralArgumentBuilder<?> createCommand() {
-        return literal("gh-rp-manager")
+        return literal(MOD_ID)
                 .then(literal("request-pack")
                         .requires(CommandAbstractionApi::executedByPlayer)
                         .executes(PlatformCommand.INSTANCE::executeRequestPackCommand)

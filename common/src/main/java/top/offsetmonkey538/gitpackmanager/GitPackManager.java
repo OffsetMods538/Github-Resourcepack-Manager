@@ -81,6 +81,13 @@ public final class GitPackManager {
     public static void initialize() {
         TelemetryRegistry.register(MOD_ID);
 
+        GitPackManagerCommand.register();
+        ConfigCommandApi.registerConfigCommand(
+                config,
+                () -> disabled = ConfigHandler.handleConfig(),
+                MOD_ID, "config"
+        );
+
         // Have to run all this stuff (definitely initializing config at least) after other mods have initialized. Namely, after MESH-Lib has its rule serialization stuff to the jankson event
         ServerLifecycleApi.STARTED.listen(() ->  {
             addLogToAdminListeners();
@@ -95,13 +102,6 @@ public final class GitPackManager {
 
             // config should be initialized after the error listeners
             ConfigManager.init(config);
-
-            GitPackManagerCommand.register();
-            ConfigCommandApi.registerConfigCommand(
-                    config,
-                    () -> disabled = ConfigHandler.handleConfig(),
-                    "gh-rp-manager", "config"
-            );
 
             disabled = ConfigHandler.handleConfig();
 
