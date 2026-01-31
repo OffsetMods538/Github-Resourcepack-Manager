@@ -17,6 +17,7 @@ allprojects {
         mixin("git-pack-manager.modded.mixins.json")
 
         depends("fabric-api", "*")
+        depends("adventure-platform-fabric", "*")
         depends("monkeylib538", ">=${rootProject.monkeylib538_version}")
         depends("meshlib", ">=${rootProject.meshlib_version}")
     }
@@ -29,10 +30,15 @@ allprojects {
 
         modCompileOnly("top.offsetmonkey538.monkeylib538:monkeylib538-fabric:${rootProject.monkeylib538_version}+fabric") {
             exclude(group: "net.fabricmc.fabric-api")
+            exclude(group: "net.kyori")
         }
         modCompileOnly("top.offsetmonkey538.meshlib:meshlib-fabric:${rootProject.meshlib_version}+fabric") {
             exclude(group: "net.fabricmc.fabric-api")
+            exclude(group: "net.kyori")
             exclude(group: "top.offsetmonkey538.monkeylib538")
+        }
+        modImplementation("net.kyori:adventure-platform-fabric:${project.adventure_version}") {
+            exclude(group: "net.fabricmc.fabric-api")
         }
     }
 }
@@ -41,9 +47,11 @@ subprojects {
     dependencies {
         modImplementation("top.offsetmonkey538.monkeylib538:monkeylib538-fabric-${project.monkeylib538_suffix}:${rootProject.monkeylib538_version}+fabric+${project.monkeylib538_suffix}") {
             exclude(group: "net.fabricmc.fabric-api")
+            exclude(group: "net.kyori")
         }
         modImplementation("top.offsetmonkey538.meshlib:meshlib-fabric-${project.meshlib_suffix}:${rootProject.meshlib_version}+fabric+${project.meshlib_suffix}") {
             exclude(group: "net.fabricmc.fabric-api")
+            exclude(group: "net.kyori")
             exclude(group: "top.offsetmonkey538.monkeylib538")
         }
 
@@ -53,6 +61,7 @@ subprojects {
     modrinth {
         dependencies {
             required.project "fabric-api"
+            required.project "adventure-platform-mod"
             required.project "monkeylib538"
             required.project "mesh-lib"
         }

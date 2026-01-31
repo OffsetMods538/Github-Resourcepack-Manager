@@ -13,8 +13,14 @@ repositories {
 }
 
 dependencies {
-    compileOnlyApi "top.offsetmonkey538.monkeylib538:monkeylib538-common:${rootProject.monkeylib538_version}+common"
-    compileOnlyApi "top.offsetmonkey538.meshlib:meshlib-common:${rootProject.meshlib_version}+common"
+    compileOnlyApi("top.offsetmonkey538.monkeylib538:monkeylib538-common:${rootProject.monkeylib538_version}+common") {
+        exclude(group: "net.kyori")
+    }
+    compileOnlyApi("top.offsetmonkey538.meshlib:meshlib-common:${rootProject.meshlib_version}+common") {
+        exclude(group: "net.kyori")
+    }
+
+    compileOnlyApi "net.kyori:adventure-api:${project.adventure_api_version}"
 
     api "org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}"
 
