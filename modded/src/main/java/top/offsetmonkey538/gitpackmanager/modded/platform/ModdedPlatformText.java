@@ -13,13 +13,8 @@ public class ModdedPlatformText implements PlatformText {
         assert ModdedPlatformMain.getServer() != null : "Literally HOW?? Why are we trying to send the update message when the server hasn't started yet!??!?!?";
         final PlayerList playerList = ModdedPlatformMain.getServer().getPlayerList();
 
-        if (!adminsOnly) {
-            ((Audience) ModdedPlatformMain.getServer()).sendMessage(updateMessage);
-            return;
-        }
-
         for (final ServerPlayer player : playerList.getPlayers()) {
-            if (!ModdedPlayerApi.isPlayerOp(playerList, player)) continue;
+            if (adminsOnly && !ModdedPlayerApi.isPlayerOp(playerList, player)) continue;
             ((Audience) player).sendMessage(updateMessage);
         }
     }
