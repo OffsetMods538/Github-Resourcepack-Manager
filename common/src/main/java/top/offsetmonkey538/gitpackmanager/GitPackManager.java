@@ -5,6 +5,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jspecify.annotations.Nullable;
@@ -65,21 +66,11 @@ public final class GitPackManager {
     public static final Pattern RESOURCEPACK_NAME_PATTERN = Pattern.compile("\\d+-");
     public static final UUID RESOURCEPACK_UUID = UUID.fromString("60ab8dc7-08d1-4f5f-a9a8-9a01d048b7b9");
 
-    public static final Map<String, String> STATIC_PLACEHOLDERS = Map.of("{packUpdateCommand}", "/git-pack-manager request-pack");
-
     private static final Executor EXECUTOR = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(MOD_ID + "-%d").build());
 
     private static final List<Component> MESSAGE_QUEUE = new ArrayList<>();
 
-    private static final Component MESSAGE_QUEUE_EMPTY_MESSAGE;
-    static {
-        try {
-            MESSAGE_QUEUE_EMPTY_MESSAGE = Component.text("TODO");
-            // TODO: Use MiniMessage: MESSAGE_QUEUE_EMPTY_MESSAGE = TextFormattingApi.styleText("Admin message queue can be emptied using the &{hoverText,'Click to run','&{runCommand,'/gh-rp-manager reset-admin-message-queue','[/gh-rp-manager reset-admin-message-queue]'}'} command.");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final Component MESSAGE_QUEUE_EMPTY_MESSAGE = MiniMessage.miniMessage().deserialize(replaceArgs("Admin message queue can be emptied using the <hover:show_text:'Click to run'><click:run_command:/%s reset-admin-message-queue>[/%s reset-admin-message-queue]</click></hover> command.", MOD_ID, MOD_ID));;
 
     public static ConfigHolder<ModConfig> config = ConfigHolder.create(ModConfig::new, LOGGER);
 
@@ -347,12 +338,7 @@ public final class GitPackManager {
         for (int lineIndex = 0; lineIndex < updateMessage.length; lineIndex++) {
             final String line = StringUtils.replacePlaceholders(updateMessage[lineIndex], placeholders, true, false).replace("\\n", "\n");
 
-            try {
-                result[lineIndex] = Component.text("TODO (UNFORMATTED): " + line);
-                // TODO: use MiniMessage: result[lineIndex] = TextFormattingApi.styleText(line);
-            } catch (Exception e) {
-                throw new GitPackManagerException("Failed to style update message at line %s!", e, lineIndex);
-            }
+            result[lineIndex] = MiniMessage.miniMessage().deserialize(line);
         }
 
         return result;
@@ -363,7 +349,6 @@ public final class GitPackManager {
 
         if (gitHandler.getCommitProperties() != null) placeholders.putAll(gitHandler.getCommitProperties().toPlaceholdersMap());
         if (resourcePackHandler != null) placeholders.put("{downloadUrl}", config.get().getPackUrl(Objects.requireNonNull(resourcePackHandler.getOutputPackName())));
-        placeholders.putAll(STATIC_PLACEHOLDERS);
         placeholders.put("{packType}", packType);
         placeholders.put("{updateType}", updateType.name());
         placeholders.put("{wasUpdated}", String.valueOf(wasUpdated));

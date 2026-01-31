@@ -6,6 +6,7 @@ import blue.endless.jankson.JsonElement;
 import blue.endless.jankson.JsonNull;
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.api.Marshaller;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jspecify.annotations.Nullable;
 import top.offsetmonkey538.gitpackmanager.exception.GitPackManagerException;
 import top.offsetmonkey538.gitpackmanager.utils.StringUtils;
@@ -14,6 +15,7 @@ import top.offsetmonkey538.meshlib.common.api.MESHLibApi;
 import top.offsetmonkey538.meshlib.common.api.rule.HttpRule;
 import top.offsetmonkey538.meshlib.common.api.rule.rules.PathHttpRule;
 import top.offsetmonkey538.monkeylib538.common.api.platform.LoaderUtil;
+import top.offsetmonkey538.monkeylib538.common.api.text.TextFormattingApi;
 import top.offsetmonkey538.offsetutils538.api.config.Config;
 import top.offsetmonkey538.offsetutils538.api.config.Datafixer;
 
@@ -30,7 +32,7 @@ import static top.offsetmonkey538.gitpackmanager.GitPackManager.UpdateType;
 import static top.offsetmonkey538.gitpackmanager.GitPackManager.config;
 import static top.offsetmonkey538.offsetutils538.api.text.ArgReplacer.replaceArgs;
 
-public class ModConfig implements Config {
+public final class ModConfig implements Config {
 
     @Comment("!!!! Please check the wiki for how to set up the mod. It should be available here: https://git-pack-manager.docs.offsetmonkey538.top and is also linked on the Modrinth page. !!!!")
     public ServerInfo serverInfo = new ServerInfo();
@@ -72,8 +74,8 @@ public class ModConfig implements Config {
 
         @Comment("Messages sent in chat when pack has been updated. Each entry will be on a new line. May be 'null' or empty to disable.")
         public @Nullable String[] updateMessage = new String[] {
-                "&{hoverText,'{longDescription}','Server resource pack has been updated!'}",
-                "&{hoverText,'{longDescription}','Please click &{hoverText,'Click to update pack','&{runCommand,'{packUpdateCommand}','[HERE]'}'} to get the most up to date pack.'}"
+                "<hover:show_text:'{longDescription}'>Server resource pack has been updated!</hover>",
+                "<hover:show_text:'{longDescription}'>Please click <hover:show_text:'Click to update pack'><click:run_command:/git-pack-manager request-pack>[HERE]</click></hover> to get the most up to date pack.</hover>"
         };
 
         @Comment("Webhook to be sent when pack updating succeeded")
@@ -99,9 +101,9 @@ public class ModConfig implements Config {
         public String rootLocation = "/datapacks";
         @Comment("Messages sent TO ADMINS in chat when pack has been updated. Each entry will be on a new line. May be 'null' or empty to disable.")
         public String[] updateMessage = new String[] {
-                "&{hoverText,'{longDescription}','Server datapacks have been updated!'}",
-                "&{hoverText,'{longDescription}','New packs (if any) will need to be enabled with the &{hoverText,'Click to suggest','&{suggestCommand,'/datapack enable','&n/datapack enable'}'} command.'}",
-                "&{hoverText,'{longDescription}','Please run &{hoverText,'Click to suggest','&{suggestCommand,'/reload','&n/reload'}'} or restart the server to reload datapacks.'}"
+                "<hover:show_text:'{longDescription}'>Server datapacks have been updated!</hover>",
+                "<hover:show_text:'{longDescription}'>New packs (if any) will need to be enabled with the <hover:show_text:'Click to suggest'><click:suggest_command:/datapack enable><underlined>/datapack enable</underlined></click></hover> command.</hover>",
+                "<hover:show_text:'{longDescription}'>Please run <hover:show_text:'Click to suggest'><click:suggest_command:/reload><underlined>/reload</underlined></click></hover> or restart the server to reload datapacks.</hover>"
         };
 
         @Comment("Webhook to be sent when pack updating succeeded")
@@ -227,7 +229,14 @@ public class ModConfig implements Config {
                 },
                 (original, jankson) -> {
                     // 4 -> 5
-                    original.remove("proxyPort");
+                    final JsonObject serverInfo = original.getObject("serverInfo");
+                    serverInfo.remove("proxyPort");
+                    original.put("serverInfo", serverInfo);
+
+                    final Marshaller marsh = jankson.getMarshaller();
+
+                    original.put("resourcePackProvider", datafix4to5UpdateMessage((JsonObject) original.get("resourcePackProvider"), marsh));
+                    original.put("dataPackProvider", datafix4to5UpdateMessage((JsonObject) original.get("dataPackProvider"), marsh));
                 }
         };
     }
@@ -273,6 +282,29 @@ public class ModConfig implements Config {
                 newUpdateMessage[i] = replaceArgs("&{hoverText,'%s','%s'}", updateMessageHoverMessage, newUpdateMessage[i].replace("'", "\\'"));
         }
         originalJson.put("updateMessage", new JsonArray(newUpdateMessage, marsh));
+
+        return originalJson;
+    }
+
+    private static JsonObject datafix4to5UpdateMessage(final JsonObject originalJson, final Marshaller marsh) {
+        final JsonArray updateMessageJson = ((JsonArray) originalJson.get("updateMessage"));
+        if (updateMessageJson == null) {
+            originalJson.put("updateMessage", JsonNull.INSTANCE);
+            return originalJson;
+        }
+
+        final String[] updateMessage = new String[updateMessageJson.size()];
+
+        for (int i = 0; i < updateMessage.length; i++) {
+            try {
+                //noinspection deprecation
+                updateMessage[i] = MiniMessage.miniMessage().serialize(TextFormattingApi.styleText(updateMessageJson.getString(i, "").replace("{packUpdateCommand}", "/git-pack-manager request-pack")));
+            } catch (Exception e) {
+                LOGGER.error("Failed to migrate update message at line %s!", e, i);
+            }
+        }
+
+        originalJson.put("updateMessage", new JsonArray(updateMessage, marsh));
 
         return originalJson;
     }

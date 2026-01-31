@@ -21,6 +21,7 @@ dependencies {
     }
 
     compileOnlyApi "net.kyori:adventure-api:${project.adventure_api_version}"
+    compileOnlyApi "net.kyori:adventure-text-minimessage:${project.adventure_api_version}"
 
     api "org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}"
 
