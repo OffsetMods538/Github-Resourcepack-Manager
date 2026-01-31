@@ -4,7 +4,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
-import top.offsetmonkey538.gitpackmanager.platform.PlatformText;
+import top.offsetmonkey538.gitpackmanager.common.platform.PlatformText;
 import top.offsetmonkey538.monkeylib538.modded.api.player.ModdedPlayerApi;
 
 public class ModdedPlatformText implements PlatformText {

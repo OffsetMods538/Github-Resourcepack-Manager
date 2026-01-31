@@ -8,7 +8,7 @@ import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
 import net.minecraft.server.MinecraftServer;
 import org.bukkit.entity.Player;
-import top.offsetmonkey538.gitpackmanager.platform.PlatformCommand;
+import top.offsetmonkey538.gitpackmanager.common.platform.PlatformCommand;
 import top.offsetmonkey538.monkeylib538.paper.api.command.PaperCommandAbstractionApi;
 
 import java.net.URI;

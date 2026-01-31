@@ -5,7 +5,7 @@ import net.kyori.adventure.text.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
-import top.offsetmonkey538.gitpackmanager.platform.PlatformMain;
+import top.offsetmonkey538.gitpackmanager.common.platform.PlatformMain;
 import top.offsetmonkey538.monkeylib538.modded.api.player.ModdedPlayerApi;
 
 public class ModdedPlatformMain implements PlatformMain {

@@ -5,8 +5,8 @@ import net.minecraft.server.MinecraftServer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.java.JavaPlugin;
-import top.offsetmonkey538.gitpackmanager.GitPackManager;
-import top.offsetmonkey538.gitpackmanager.platform.PlatformMain;
+import top.offsetmonkey538.gitpackmanager.common.GitPackManager;
+import top.offsetmonkey538.gitpackmanager.common.platform.PlatformMain;
 
 public class PaperPlatformMain implements PlatformMain {
     @Override

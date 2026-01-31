@@ -6,7 +6,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import top.offsetmonkey538.gitpackmanager.GitPackManager;
+import top.offsetmonkey538.gitpackmanager.common.GitPackManager;
 import top.offsetmonkey538.gitpackmanager.modded.platform.ModdedPlatformMain;
 
 @Mod(

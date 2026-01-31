@@ -4,7 +4,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.ServerOperator;
-import top.offsetmonkey538.gitpackmanager.platform.PlatformText;
+import top.offsetmonkey538.gitpackmanager.common.platform.PlatformText;
 
 import java.util.stream.Stream;
 

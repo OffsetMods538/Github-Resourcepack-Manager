@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import top.offsetmonkey538.gitpackmanager.platform.PlatformCommand;
+import top.offsetmonkey538.gitpackmanager.common.platform.PlatformCommand;
 import top.offsetmonkey538.monkeylib538.modded.api.command.ModdedCommandAbstractionApi;
 
 import java.util.Optional;
