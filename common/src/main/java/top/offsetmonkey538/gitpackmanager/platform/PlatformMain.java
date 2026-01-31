@@ -1,6 +1,6 @@
 package top.offsetmonkey538.gitpackmanager.platform;
 
-import top.offsetmonkey538.monkeylib538.common.api.text.MonkeyLibText;
+import net.kyori.adventure.text.Component;
 
 import static top.offsetmonkey538.gitpackmanager.platform.ServiceLoader.load;
 
@@ -19,5 +19,5 @@ public interface PlatformMain {
      *
      * @param message the message to send
      */
-    void sendMessageToAdmins(final MonkeyLibText message);
+    void sendMessageToAdmins(final Component message);
 }

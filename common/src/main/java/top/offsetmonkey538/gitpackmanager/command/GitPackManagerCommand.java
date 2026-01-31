@@ -2,6 +2,9 @@ package top.offsetmonkey538.gitpackmanager.command;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import top.offsetmonkey538.gitpackmanager.GitPackManager;
 import top.offsetmonkey538.gitpackmanager.exception.GitPackManagerException;
@@ -9,8 +12,6 @@ import top.offsetmonkey538.gitpackmanager.handler.GitHandler;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformCommand;
 import top.offsetmonkey538.monkeylib538.common.api.command.CommandAbstractionApi;
 import top.offsetmonkey538.monkeylib538.common.api.command.CommandRegistrationApi;
-import top.offsetmonkey538.monkeylib538.common.api.text.MonkeyLibStyle;
-import top.offsetmonkey538.monkeylib538.common.api.text.MonkeyLibText;
 import top.offsetmonkey538.offsetutils538.api.log.OffsetLogger;
 
 import java.util.Map;
@@ -79,14 +80,13 @@ public final class GitPackManagerCommand {
 
     private static void runTriggerUpdate(CommandContext<Object> context, boolean force) {
         final OffsetLogger.LogListener infoListener = (message, error) -> {
-            sendText(context, MonkeyLibText.of(replaceArgs("[%s] %s", MOD_ID, message)).applyStyle(style -> style.withColor(MonkeyLibStyle.Color.GRAY)));
+            sendText(context, Component.text(replaceArgs("[%s] %s", MOD_ID, message)).style(style -> style.color(NamedTextColor.GRAY)));
         };
         final OffsetLogger.LogListener warnListener = (message, error) -> {
-            final MonkeyLibText text = MonkeyLibText
-                    .of(replaceArgs("[%s] %s", MOD_ID, message))
-                    .applyStyle(style -> style.withColor(MonkeyLibStyle.Color.YELLOW));
-
-            if (error != null) text.applyStyle(style -> style.withShowText(MonkeyLibText.of(ExceptionUtils.getRootCauseMessage(error))));
+            final Component text = Component
+                    .text(replaceArgs("[%s] %s", MOD_ID, message))
+                    .style(style -> style.color(NamedTextColor.YELLOW))
+                    .style(error == null ? style -> {} : style -> style.hoverEvent(HoverEvent.showText(Component.text(ExceptionUtils.getRootCauseMessage(error)))));
 
             sendText(context, text);
         };
@@ -110,7 +110,7 @@ public final class GitPackManagerCommand {
         }
         final Map<String, String> placeholders = generatePlaceholders(gitHandler, isResource ? resourcePackHandler : null, UpdateType.COMMAND, isResource ? "resource" : "data", true);
 
-        final MonkeyLibText[] text;
+        final Component[] text;
         try {
             text = createUpdateMessage(isResource ? config.get().resourcePackProvider.updateMessage : config.get().dataPackProvider.updateMessage, placeholders);
         } catch (GitPackManagerException e) {
@@ -120,7 +120,7 @@ public final class GitPackManagerCommand {
             return 0;
         }
 
-        for (final MonkeyLibText line : text) CommandAbstractionApi.sendText(context, line);
+        for (final Component line : text) CommandAbstractionApi.sendText(context, line);
         return 1;
     }
 }

@@ -1,6 +1,10 @@
 package top.offsetmonkey538.gitpackmanager;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jspecify.annotations.Nullable;
@@ -22,9 +26,6 @@ import top.offsetmonkey538.monkeylib538.common.api.command.ConfigCommandApi;
 import top.offsetmonkey538.monkeylib538.common.api.lifecycle.ServerLifecycleApi;
 import top.offsetmonkey538.monkeylib538.common.api.platform.LoaderUtil;
 import top.offsetmonkey538.monkeylib538.common.api.telemetry.TelemetryRegistry;
-import top.offsetmonkey538.monkeylib538.common.api.text.MonkeyLibStyle;
-import top.offsetmonkey538.monkeylib538.common.api.text.MonkeyLibText;
-import top.offsetmonkey538.monkeylib538.common.api.text.TextFormattingApi;
 import top.offsetmonkey538.offsetutils538.api.config.ConfigHolder;
 import top.offsetmonkey538.offsetutils538.api.config.ConfigManager;
 import top.offsetmonkey538.offsetutils538.api.log.OffsetLogger;
@@ -68,12 +69,13 @@ public final class GitPackManager {
 
     private static final Executor EXECUTOR = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(MOD_ID + "-%d").build());
 
-    private static final List<MonkeyLibText> MESSAGE_QUEUE = new ArrayList<>();
+    private static final List<Component> MESSAGE_QUEUE = new ArrayList<>();
 
-    private static final MonkeyLibText MESSAGE_QUEUE_EMPTY_MESSAGE;
+    private static final Component MESSAGE_QUEUE_EMPTY_MESSAGE;
     static {
         try {
-            MESSAGE_QUEUE_EMPTY_MESSAGE = TextFormattingApi.styleText("Admin message queue can be emptied using the &{hoverText,'Click to run','&{runCommand,'/gh-rp-manager reset-admin-message-queue','[/gh-rp-manager reset-admin-message-queue]'}'} command.");
+            MESSAGE_QUEUE_EMPTY_MESSAGE = Component.text("TODO");
+            // TODO: Use MiniMessage: MESSAGE_QUEUE_EMPTY_MESSAGE = TextFormattingApi.styleText("Admin message queue can be emptied using the &{hoverText,'Click to run','&{runCommand,'/gh-rp-manager reset-admin-message-queue','[/gh-rp-manager reset-admin-message-queue]'}'} command.");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -92,9 +94,9 @@ public final class GitPackManager {
         ServerLifecycleApi.STARTED.listen(() ->  {
             addLogToAdminListeners();
             LoaderUtil.sendMessagesToAdminsOnJoin(() -> {
-                if (MESSAGE_QUEUE.isEmpty()) return new MonkeyLibText[]{};
+                if (MESSAGE_QUEUE.isEmpty()) return new Component[]{};
 
-                final MonkeyLibText[] result = new MonkeyLibText[MESSAGE_QUEUE.size() + 1];
+                final Component[] result = new Component[MESSAGE_QUEUE.size() + 1];
                 MESSAGE_QUEUE.toArray(result);
                 result[result.length - 1] = MESSAGE_QUEUE_EMPTY_MESSAGE;
                 return result;
@@ -130,17 +132,16 @@ public final class GitPackManager {
     }
 
     private static void addLogToAdminListeners() {
-        LOGGER.addListener(OffsetLogger.LogLevel.ERROR, createLogToAdminListener(MonkeyLibStyle.Color.RED));
-        LOGGER.addListener(OffsetLogger.LogLevel.WARN, createLogToAdminListener(MonkeyLibStyle.Color.YELLOW));
+        LOGGER.addListener(OffsetLogger.LogLevel.ERROR, createLogToAdminListener(NamedTextColor.RED));
+        LOGGER.addListener(OffsetLogger.LogLevel.WARN, createLogToAdminListener(NamedTextColor.YELLOW));
     }
 
-    private static OffsetLogger.LogListener createLogToAdminListener(final int textColor) {
+    private static OffsetLogger.LogListener createLogToAdminListener(final TextColor textColor) {
         return (message, error) -> {
-            final MonkeyLibText text = MonkeyLibText
-                    .of(replaceArgs("[%s] %s", MOD_ID, message))
-                    .applyStyle(style -> style.withColor(textColor));
-
-            if (error != null) text.applyStyle(style -> style.withShowText(MonkeyLibText.of(ExceptionUtils.getRootCauseMessage(error))));
+            final Component text = Component
+                    .text(replaceArgs("[%s] %s", MOD_ID, message))
+                    .style(style -> style.color(textColor))
+                    .style(error == null ? style -> {} : style -> style.hoverEvent(HoverEvent.showText(Component.text(ExceptionUtils.getRootCauseMessage(error)))));
 
             PlatformMain.INSTANCE.sendMessageToAdmins(text);
             MESSAGE_QUEUE.addLast(text);
@@ -336,18 +337,19 @@ public final class GitPackManager {
             return;
         }
 
-        for (final MonkeyLibText line : createUpdateMessage(updateMessage, placeholders))
+        for (final Component line : createUpdateMessage(updateMessage, placeholders))
             PlatformText.INSTANCE.sendUpdateMessage(line, adminsOnly);
     }
 
-    public static MonkeyLibText[] createUpdateMessage(final String[] updateMessage, final Map<String, String> placeholders) throws GitPackManagerException {
-        final MonkeyLibText[] result = new MonkeyLibText[updateMessage.length];
+    public static Component[] createUpdateMessage(final String[] updateMessage, final Map<String, String> placeholders) throws GitPackManagerException {
+        final Component[] result = new Component[updateMessage.length];
 
         for (int lineIndex = 0; lineIndex < updateMessage.length; lineIndex++) {
             final String line = StringUtils.replacePlaceholders(updateMessage[lineIndex], placeholders, true, false).replace("\\n", "\n");
 
             try {
-                result[lineIndex] = TextFormattingApi.styleText(line);
+                result[lineIndex] = Component.text("TODO (UNFORMATTED): " + line);
+                // TODO: use MiniMessage: result[lineIndex] = TextFormattingApi.styleText(line);
             } catch (Exception e) {
                 throw new GitPackManagerException("Failed to style update message at line %s!", e, lineIndex);
             }

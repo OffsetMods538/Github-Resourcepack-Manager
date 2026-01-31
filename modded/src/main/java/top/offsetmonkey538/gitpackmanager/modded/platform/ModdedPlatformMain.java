@@ -1,12 +1,12 @@
 package top.offsetmonkey538.gitpackmanager.modded.platform;
 
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
 import top.offsetmonkey538.gitpackmanager.platform.PlatformMain;
-import top.offsetmonkey538.monkeylib538.common.api.text.MonkeyLibText;
 import top.offsetmonkey538.monkeylib538.modded.api.player.ModdedPlayerApi;
-import top.offsetmonkey538.monkeylib538.modded.api.text.ModdedMonkeyLibText;
 
 public class ModdedPlatformMain implements PlatformMain {
     private static @Nullable MinecraftServer minecraftServer = null;
@@ -20,11 +20,11 @@ public class ModdedPlatformMain implements PlatformMain {
     }
 
     @Override
-    public void sendMessageToAdmins(MonkeyLibText message) {
+    public void sendMessageToAdmins(Component message) {
         if (getServer() == null) return;
         for (final Player player : getServer().getPlayerList().getPlayers()) {
             if (!ModdedPlayerApi.isPlayerOp(getServer().getPlayerList(), player)) continue;
-            player.displayClientMessage(ModdedMonkeyLibText.of(message).getText(), false);
+            ((Audience) player).sendMessage(message);
         }
     }
 
