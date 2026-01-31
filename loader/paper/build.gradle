@@ -10,7 +10,7 @@ allprojects {
     outlet.allowedReleaseTypes = Set.of(ReleaseType.RELEASE)
 
     paperPluginYaml {
-        main = "top.offsetmonkey538.gitpackmanager.paper.platform.PlatformUtilImpl\$GitPackManagerInitializer"
+        main = "top.offsetmonkey538.gitpackmanager.paper.platform.PaperPlatformMain\$GitPackManagerInitializer"
         authors.add("OffsetMonkey538")
         load = "STARTUP"
         dependencies {
