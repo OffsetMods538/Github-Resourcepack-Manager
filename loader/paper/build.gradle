@@ -29,7 +29,9 @@ allprojects {
 
 subprojects {
     dependencies {
-        implementation "org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}" // TODO: does jgit need trasitive = false?
+        include implementation("org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}") {
+            transitive = false
+        }
     }
 
     tasks.runServer {
