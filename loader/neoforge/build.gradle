@@ -43,7 +43,9 @@ subprojects {
             exclude(group: "top.offsetmonkey538.monkeylib538")
         }
 
-        includeRuntime "org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}"
+        includeRuntime("org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}") {
+            transitive = false
+        }
     }
 
     modrinth {
