@@ -42,7 +42,7 @@ public final class ModConfig implements Config {
 
 
     public static class ServerInfo {
-        @Comment("The MESH Lib rule to use for routing to the Git Pack Manager http handler. See MESH Lib docs: https://mesh-lib.docs.offsetmonkey538.top/WHATEVER/PAGE/WILL/TELL/YOU/HOW/TO/USE/RULES") // TODO: real link once meshlib has docs
+        @Comment("The MESH Lib rule to use for routing to the Git Pack Manager http handler. See MESH Lib docs: https://mesh-lib.docs.offsetmonkey538.top/reference/rules/")
         public HttpRule routingRule = new PathHttpRule(MOD_ID);
         @Comment("The public ip of your server. (\"123.45.67.89\" or \"play.coolserver.net\")")
         public @Nullable String publicIp = null;
