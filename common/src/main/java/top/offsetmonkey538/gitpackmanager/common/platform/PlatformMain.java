@@ -15,6 +15,11 @@ public interface PlatformMain {
     void refreshDatapacks();
 
     /**
+     * Reload all enabled datapacks
+     */
+    void reloadEnabledDatapacks();
+
+    /**
      * Sends provided message to currently online admins
      *
      * @param message the message to send

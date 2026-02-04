@@ -70,7 +70,7 @@ public final class GitPackManager {
 
     private static final List<Component> MESSAGE_QUEUE = new ArrayList<>();
 
-    private static final Component MESSAGE_QUEUE_EMPTY_MESSAGE = MiniMessage.miniMessage().deserialize(replaceArgs("Admin message queue can be emptied using the <hover:show_text:'Click to run'><click:run_command:/%s reset-admin-message-queue>[/%s reset-admin-message-queue]</click></hover> command.", MOD_ID, MOD_ID));;
+    private static final Component MESSAGE_QUEUE_EMPTY_MESSAGE = MiniMessage.miniMessage().deserialize(replaceArgs("Admin message queue can be emptied using the <hover:show_text:'Click to run'><click:run_command:/%s reset-admin-message-queue>[/%s reset-admin-message-queue]</click></hover> command.", MOD_ID, MOD_ID));
 
     public static ConfigHolder<ModConfig> config = ConfigHolder.create(ModConfig::new, LOGGER);
 
@@ -293,6 +293,7 @@ public final class GitPackManager {
 
         // Refresh datapack list
         PlatformMain.INSTANCE.refreshDatapacks();
+        if (config.get().dataPackProvider.autoReload) PlatformMain.INSTANCE.reloadEnabledDatapacks();
 
 
         // Generate placeholder map

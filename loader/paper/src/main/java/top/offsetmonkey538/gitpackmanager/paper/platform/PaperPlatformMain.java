@@ -8,10 +8,20 @@ import org.bukkit.plugin.java.JavaPlugin;
 import top.offsetmonkey538.gitpackmanager.common.GitPackManager;
 import top.offsetmonkey538.gitpackmanager.common.platform.PlatformMain;
 
+import static top.offsetmonkey538.gitpackmanager.common.GitPackManager.LOGGER;
+
 public class PaperPlatformMain implements PlatformMain {
     @Override
     public void refreshDatapacks() {
         MinecraftServer.getServer().getPackRepository().reload();
+    }
+
+    @Override
+    public void reloadEnabledDatapacks() {
+        MinecraftServer.getServer().reloadResources(MinecraftServer.getServer().getPackRepository().getSelectedIds()).exceptionally(throwable -> {
+            LOGGER.warn("Failed to execute reload! Keeping old data.", throwable);
+            return null;
+        });
     }
 
     @Override

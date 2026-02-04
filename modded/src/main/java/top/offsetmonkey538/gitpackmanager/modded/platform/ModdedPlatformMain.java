@@ -8,6 +8,8 @@ import org.jspecify.annotations.Nullable;
 import top.offsetmonkey538.gitpackmanager.common.platform.PlatformMain;
 import top.offsetmonkey538.monkeylib538.modded.api.player.ModdedPlayerApi;
 
+import static top.offsetmonkey538.gitpackmanager.common.GitPackManager.LOGGER;
+
 public class ModdedPlatformMain implements PlatformMain {
     private static @Nullable MinecraftServer minecraftServer = null;
 
@@ -31,5 +33,13 @@ public class ModdedPlatformMain implements PlatformMain {
     @Override
     public void refreshDatapacks() {
         getServer().getPackRepository().reload();
+    }
+
+    @Override
+    public void reloadEnabledDatapacks() {
+        getServer().reloadResources(getServer().getPackRepository().getSelectedIds()).exceptionally(throwable -> {
+            LOGGER.warn("Failed to execute reload! Keeping old data.", throwable);
+            return null;
+        });
     }
 }

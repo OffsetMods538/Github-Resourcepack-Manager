@@ -97,13 +97,15 @@ public final class ModConfig implements Config {
     public static class DataPackProvider {
         @Comment("Whether or not the data pack provider is enabled. Default: false")
         public boolean enabled = false;
+        @Comment("Automatically reloads enabled datapacks after an update. May be desirable to disable with mods that break reload functionality. Default: true")
+        public boolean autoReload = true;
         @Comment("Where the mod will search for data packs in the cloned repository. MUST NOT be same as or child of the 'rootLocation' of the resourcepack provider")
         public String rootLocation = "/datapacks";
         @Comment("Messages sent TO ADMINS in chat when pack has been updated. Each entry will be on a new line. May be 'null' or empty to disable.")
         public String[] updateMessage = new String[] {
                 "<hover:show_text:'{longDescription}'>Server datapacks have been updated!</hover>",
                 "<hover:show_text:'{longDescription}'>New packs (if any) will need to be enabled with the <hover:show_text:'Click to suggest'><click:suggest_command:/datapack enable><underlined>/datapack enable</underlined></click></hover> command.</hover>",
-                "<hover:show_text:'{longDescription}'>Please run <hover:show_text:'Click to suggest'><click:suggest_command:/reload><underlined>/reload</underlined></click></hover> or restart the server to reload datapacks.</hover>"
+                "<hover:show_text:'{longDescription}'>If 'autoReload' isn't enabled in the config and datapacks weren't automatically reloaded, please run <hover:show_text:'Click to suggest'><click:suggest_command:/reload><underlined>/reload</underlined></click></hover> or restart the server to reload datapacks.</hover>"
         };
 
         @Comment("Webhook to be sent when pack updating succeeded")
