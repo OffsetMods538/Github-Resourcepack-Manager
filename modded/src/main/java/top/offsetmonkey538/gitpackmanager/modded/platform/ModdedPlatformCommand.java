@@ -32,8 +32,7 @@ public class ModdedPlatformCommand implements PlatformCommand {
                         resourcePackProperties.hash(),
                         resourcePackProperties.isRequired(),
                         Optional.ofNullable(resourcePackProperties.prompt())
-                ),
-                null
+                )
         );
 
         return SINGLE_SUCCESS;
