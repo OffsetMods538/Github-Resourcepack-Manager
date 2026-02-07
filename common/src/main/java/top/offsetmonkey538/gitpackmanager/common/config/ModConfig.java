@@ -73,7 +73,7 @@ public final class ModConfig implements Config {
         public String rootLocation = "/resourcepacks";
 
         @Comment("Messages sent in chat when pack has been updated. Each entry will be on a new line. May be 'null' or empty to disable.")
-        public @Nullable String[] updateMessage = new String[] {
+        public String[] updateMessage = new String[] {
                 "<hover:show_text:'{longDescription}'>Server resource pack has been updated!</hover>",
                 "<hover:show_text:'{longDescription}'>Please click <hover:show_text:'Click to update pack'><click:run_command:/git-pack-manager request-pack>[HERE]</click></hover> to get the most up to date pack.</hover>"
         };
@@ -134,7 +134,7 @@ public final class ModConfig implements Config {
 
         @Comment("The URL to send the webhook to. For example \"https://discord.com/api/webhooks/1234567890123456789/eW91J3JlIG5vdCBzdGVhbGluZyBhIHRva2Vu_bm9wZQ==_eWVyJyBub3Q=\" or something custom like \"https://api.example.com/NDI6IHRoZSBtZWFuaW5nIG9mIGxpZmUsIHRoZSB1bml2ZXJzZSwgYW5kIGV2ZXJ5dGhpbmc=\"")
         public @Nullable String url = null;
-        @Comment("The relative path from the config directory to a webhook body file. For example \"discord/basic_message.json\" or \"discord/embed_message.json\"")
+        @Comment("The relative path from the config directory to a webhook body file. For example \"discord/basic/success.json\" or \"discord/embed/success.json\"")
         public @Nullable String body = null;
 
         public void trigger(final boolean updateSucceeded, final Map<String, String> placeholders, final UpdateType updateType) throws GitPackManagerException {
