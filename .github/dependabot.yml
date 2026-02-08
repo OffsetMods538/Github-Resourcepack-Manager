@@ -1,10 +1,21 @@
-# Set update schedule for GitHub Actions
-
 version: 2
 updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    target-branch: "master"
+    groups:
+      master-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      # Check for updates to GitHub Actions every week
-      interval: "daily"
+      interval: "weekly"
+    target-branch: "docs/master"
+    groups:
+      docs-actions:
+        patterns:
+          - "*"
