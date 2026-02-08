@@ -7,7 +7,7 @@ allprojects {
 		modCompileOnly("top.offsetmonkey538.monkeylib538:monkeylib538-modded:${rootProject.monkeylib538_version}+modded") {
 			exclude(group: "net.kyori")
 		}
-		modCompileOnly("top.offsetmonkey538.meshlib:meshlib-modded:${rootProject.meshlib_version}+modded") {
+		modCompileOnly("top.offsetmonkey538.meshlib:mesh-lib-modded:${rootProject.meshlib_version}+modded") {
 			exclude(group: "net.kyori")
 			exclude(group: "top.offsetmonkey538.monkeylib538")
 		}
@@ -19,7 +19,7 @@ subprojects {
 		modCompileOnly("top.offsetmonkey538.monkeylib538:monkeylib538-modded-${project.monkeylib538_suffix}:${rootProject.monkeylib538_version}+modded+${project.monkeylib538_suffix}") {
 			exclude(group: "net.kyori")
 		}
-		modCompileOnly("top.offsetmonkey538.meshlib:meshlib-modded-${project.meshlib_suffix}:${rootProject.meshlib_version}+modded+${project.meshlib_suffix}") {
+		modCompileOnly("top.offsetmonkey538.meshlib:mesh-lib-modded-${project.meshlib_suffix}:${rootProject.meshlib_version}+modded+${project.meshlib_suffix}") {
 			exclude(group: "net.kyori")
 			exclude(group: "top.offsetmonkey538.monkeylib538")
 		}

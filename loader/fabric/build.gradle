@@ -19,7 +19,7 @@ allprojects {
         depends("fabric-api", "*")
         depends("adventure-platform-fabric", "*")
         depends("monkeylib538", ">=${rootProject.monkeylib538_version}")
-        depends("meshlib", ">=${rootProject.meshlib_version}")
+        depends("mesh-lib", ">=${rootProject.meshlib_version}")
     }
 
     // Gotta have this here cause I can't import it in buildSrc
@@ -32,7 +32,7 @@ allprojects {
             exclude(group: "net.fabricmc.fabric-api")
             exclude(group: "net.kyori")
         }
-        modCompileOnly("top.offsetmonkey538.meshlib:meshlib-fabric:${rootProject.meshlib_version}+fabric") {
+        modCompileOnly("top.offsetmonkey538.meshlib:mesh-lib-fabric:${rootProject.meshlib_version}+fabric") {
             exclude(group: "net.fabricmc.fabric-api")
             exclude(group: "net.kyori")
             exclude(group: "top.offsetmonkey538.monkeylib538")
@@ -49,7 +49,7 @@ subprojects {
             exclude(group: "net.fabricmc.fabric-api")
             exclude(group: "net.kyori")
         }
-        modImplementation("top.offsetmonkey538.meshlib:meshlib-fabric-${project.meshlib_suffix}:${rootProject.meshlib_version}+fabric+${project.meshlib_suffix}") {
+        modImplementation("top.offsetmonkey538.meshlib:mesh-lib-fabric-${project.meshlib_suffix}:${rootProject.meshlib_version}+fabric+${project.meshlib_suffix}") {
             exclude(group: "net.fabricmc.fabric-api")
             exclude(group: "net.kyori")
             exclude(group: "top.offsetmonkey538.monkeylib538")

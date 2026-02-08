@@ -12,7 +12,7 @@ allprojects {
             dependencies {
                 required("adventure_platform_neoforge")
                 required("monkeylib538", "[${rootProject.monkeylib538_version},)")
-                required("meshlib", "[${rootProject.meshlib_version},)")
+                required("mesh_lib", "[${rootProject.meshlib_version},)")
             }
         }
         mixin("git-pack-manager.modded.mixins.json")
@@ -22,7 +22,7 @@ allprojects {
         compileOnly("top.offsetmonkey538.monkeylib538:monkeylib538-neoforge:${rootProject.monkeylib538_version}+neoforge") {
             exclude(group: "net.kyori")
         }
-        compileOnly("top.offsetmonkey538.meshlib:meshlib-neoforge:${rootProject.meshlib_version}+neoforge") {
+        compileOnly("top.offsetmonkey538.meshlib:mesh-lib-neoforge:${rootProject.meshlib_version}+neoforge") {
             exclude(group: "net.kyori")
             exclude(group: "top.offsetmonkey538.monkeylib538")
         }
@@ -38,7 +38,7 @@ subprojects {
         implementation("top.offsetmonkey538.monkeylib538:monkeylib538-neoforge-${project.monkeylib538_suffix}:${rootProject.monkeylib538_version}+neoforge+${project.monkeylib538_suffix}") {
             exclude(group: "net.kyori")
         }
-        implementation ("top.offsetmonkey538.meshlib:meshlib-neoforge-${project.meshlib_suffix}:${rootProject.meshlib_version}+neoforge+${project.meshlib_suffix}") {
+        implementation ("top.offsetmonkey538.meshlib:mesh-lib-neoforge-${project.meshlib_suffix}:${rootProject.meshlib_version}+neoforge+${project.meshlib_suffix}") {
             exclude(group: "net.kyori")
             exclude(group: "top.offsetmonkey538.monkeylib538")
         }

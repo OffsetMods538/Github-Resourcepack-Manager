@@ -21,7 +21,7 @@ allprojects {
 
     dependencies {
         compileOnly("top.offsetmonkey538.monkeylib538:monkeylib538-paper:${rootProject.monkeylib538_version}+paper")
-        compileOnly("top.offsetmonkey538.meshlib:meshlib-paper:${rootProject.meshlib_version}+paper") {
+        compileOnly("top.offsetmonkey538.meshlib:mesh-lib-paper:${rootProject.meshlib_version}+paper") {
             exclude(group: "top.offsetmonkey538.monkeylib538")
         }
     }
@@ -37,7 +37,7 @@ subprojects {
     tasks.runServer {
         downloadPlugins {
             url("https://maven.offsetmonkey538.top/releases/top/offsetmonkey538/monkeylib538/monkeylib538-paper-${project.monkeylib538_suffix}/${rootProject.monkeylib538_version}+paper+${project.monkeylib538_suffix}/monkeylib538-paper-${project.monkeylib538_suffix}-${rootProject.monkeylib538_version}+paper+${project.monkeylib538_suffix}-all.jar")
-            url("https://maven.offsetmonkey538.top/releases/top/offsetmonkey538/meshlib/meshlib-paper-${project.meshlib_suffix}/${rootProject.meshlib_version}+paper+${project.meshlib_suffix}/meshlib-paper-${project.meshlib_suffix}-${rootProject.meshlib_version}+paper+${project.meshlib_suffix}-all.jar")
+            url("https://maven.offsetmonkey538.top/releases/top/offsetmonkey538/meshlib/mesh-lib-paper-${project.meshlib_suffix}/${rootProject.meshlib_version}+paper+${project.meshlib_suffix}/mesh-lib-paper-${project.meshlib_suffix}-${rootProject.meshlib_version}+paper+${project.meshlib_suffix}-all.jar")
         }
     }
 
