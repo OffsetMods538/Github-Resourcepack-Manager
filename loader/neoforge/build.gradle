@@ -1,0 +1,64 @@
+import dex.plugins.outlet.v2.util.ReleaseType
+
+plugins {
+    id 'multiloader-neoforge'
+    id 'multiloader-modrinth-publish' apply false
+}
+
+allprojects {
+    neoForgeModsToml {
+        mitLicense()
+        mod(rootProject.neo_mod_id) {
+            authors = "OffsetMonkey538"
+            dependencies {
+                required("adventure_platform_neoforge")
+                required("monkeylib538", "[${rootProject.monkeylib538_version},)")
+                required("mesh_lib", "[${rootProject.meshlib_version},)")
+            }
+        }
+        mixin("git-pack-manager.modded.mixins.json")
+    }
+
+    // Gotta have this here cause I can't import it in buildSrc
+    outlet.allowedReleaseTypes = Set.of(ReleaseType.RELEASE)
+
+    dependencies {
+        compileOnly("top.offsetmonkey538.monkeylib538:monkeylib538-neoforge:${rootProject.monkeylib538_version}+neoforge") {
+            exclude(group: "net.kyori")
+        }
+        compileOnly("top.offsetmonkey538.meshlib:mesh-lib-neoforge:${rootProject.meshlib_version}+neoforge") {
+            exclude(group: "net.kyori")
+            exclude(group: "top.offsetmonkey538.monkeylib538")
+        }
+        implementation "net.kyori:adventure-platform-neoforge:${project.adventure_version}"
+    }
+}
+
+subprojects {
+    apply plugin: "multiloader-modrinth-publish"
+
+    dependencies {
+        implementation("top.offsetmonkey538.monkeylib538:monkeylib538-neoforge-${project.monkeylib538_suffix}:${rootProject.monkeylib538_version}+neoforge+${project.monkeylib538_suffix}") {
+            exclude(group: "net.kyori")
+        }
+        implementation ("top.offsetmonkey538.meshlib:mesh-lib-neoforge-${project.meshlib_suffix}:${rootProject.meshlib_version}+neoforge+${project.meshlib_suffix}") {
+            exclude(group: "net.kyori")
+            exclude(group: "top.offsetmonkey538.monkeylib538")
+        }
+
+        includeRuntime("org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}") {
+            transitive = false
+        }
+    }
+
+    modrinth {
+        loaders = ["neoforge"]
+        uploadFile = jar
+
+        dependencies {
+            required.project "adventure-platform-mod"
+            required.project "monkeylib538"
+            required.project "mesh-lib"
+        }
+    }
+}

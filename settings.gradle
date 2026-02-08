@@ -9,10 +9,19 @@ pluginManagement {
 	}
 }
 
-rootProject.name = "github-resourcepack-manager"
+rootProject.name = "git-pack-manager"
 
 
 include "common"
 
-include "fabric"
-include "paper"
+include "modded"
+include "modded:1.21.1"
+
+include "loader:fabric"
+include "loader:fabric:1.21.1"
+
+include "loader:neoforge"
+include "loader:neoforge:1.21.1"
+
+include "loader:paper"
+include "loader:paper:1.21.1"

@@ -1,0 +1,56 @@
+import dex.plugins.outlet.v2.util.ReleaseType
+import xyz.jpenilla.resourcefactory.paper.PaperPluginYaml
+
+plugins {
+    id 'multiloader-paper'
+    id 'multiloader-modrinth-publish' apply false
+}
+
+allprojects {
+    // Gotta have this here cause I can't import it in buildSrc
+    outlet.allowedReleaseTypes = Set.of(ReleaseType.RELEASE)
+
+    paperPluginYaml {
+        main = "top.offsetmonkey538.gitpackmanager.paper.platform.PaperPlatformMain\$GitPackManagerInitializer"
+        authors.add("OffsetMonkey538")
+        load = "STARTUP"
+        dependencies {
+            server("MonkeyLib538", PaperPluginYaml.Load.BEFORE, true, true)
+            server("MESH_Lib", PaperPluginYaml.Load.BEFORE, true, true)
+        }
+    }
+
+    dependencies {
+        compileOnly("top.offsetmonkey538.monkeylib538:monkeylib538-paper:${rootProject.monkeylib538_version}+paper")
+        compileOnly("top.offsetmonkey538.meshlib:mesh-lib-paper:${rootProject.meshlib_version}+paper") {
+            exclude(group: "top.offsetmonkey538.monkeylib538")
+        }
+    }
+}
+
+subprojects {
+    apply plugin: "multiloader-modrinth-publish"
+
+    dependencies {
+        include implementation("org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}") {
+            transitive = false
+        }
+    }
+
+    tasks.runServer {
+        downloadPlugins {
+            url("https://maven.offsetmonkey538.top/releases/top/offsetmonkey538/monkeylib538/monkeylib538-paper-${project.monkeylib538_suffix}/${rootProject.monkeylib538_version}+paper+${project.monkeylib538_suffix}/monkeylib538-paper-${project.monkeylib538_suffix}-${rootProject.monkeylib538_version}+paper+${project.monkeylib538_suffix}-all.jar")
+            url("https://maven.offsetmonkey538.top/releases/top/offsetmonkey538/meshlib/mesh-lib-paper-${project.meshlib_suffix}/${rootProject.meshlib_version}+paper+${project.meshlib_suffix}/mesh-lib-paper-${project.meshlib_suffix}-${rootProject.meshlib_version}+paper+${project.meshlib_suffix}-all.jar")
+        }
+    }
+
+    modrinth {
+        loaders = ["paper"]
+        uploadFile = shadowJar
+
+        dependencies {
+            required.project "monkeylib538"
+            required.project "mesh-lib"
+        }
+    }
+}

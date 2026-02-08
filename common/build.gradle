@@ -1,30 +1,36 @@
 plugins {
-    id 'com.gradleup.shadow' version '9.0.0-beta4'
+    id 'multiloader-base'
 }
 
 repositories {
-    mavenCentral()
     maven {
-        name = "OffsetMods538"
-        url = "https://maven.offsetmonkey538.top/releases"
+        name = "Mojang Libraries"
+        url = "https://libraries.minecraft.net"
         content {
-            includeGroup "top.offsetmonkey538.meshlib"
+            includeGroup "com.mojang"
         }
     }
 }
 
 dependencies {
-    implementation "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"
-    implementation "blue.endless:jankson:${project.jankson_version}"
+    compileOnlyApi("top.offsetmonkey538.monkeylib538:monkeylib538-common:${rootProject.monkeylib538_version}+common") {
+        exclude(group: "net.kyori")
+    }
+    compileOnlyApi("top.offsetmonkey538.meshlib:mesh-lib-common:${rootProject.meshlib_version}+common") {
+        exclude(group: "net.kyori")
+    }
 
-    shadow compileOnly("top.offsetmonkey538.meshlib:mesh-lib-api:${project.meshlib_version}")
+    compileOnlyApi "net.kyori:adventure-api:${project.adventure_api_version}"
+    compileOnlyApi "net.kyori:adventure-text-minimessage:${project.adventure_api_version}"
 
-    // should be bundeled with minecraft
-    shadow compileOnly("com.google.guava:guava:${project.guava_version}")
-    shadow compileOnly("commons-io:commons-io:${project.commons_version}")
-    shadow compileOnly("com.google.code.gson:gson:${project.gson_version}")
+    api("org.eclipse.jgit:org.eclipse.jgit:${rootProject.jgit_version}") {
+        transitive = false
+    }
 
-    // Jetbrains annotations for gud code
-    shadow compileOnly("org.jetbrains:annotations:24.0.0")
+    // should be bundled with minecraft
+    compileOnly "com.mojang:brigadier:${rootProject.brigadier_version}"
+    compileOnly "com.google.guava:guava:${rootProject.guava_version}"
+    compileOnly "commons-io:commons-io:${rootProject.commonsio_version}"
+    compileOnly "org.apache.commons:commons-lang3:${rootProject.commonslang_version}"
+    compileOnly "com.google.code.gson:gson:${rootProject.gson_version}"
 }
-tasks.build.dependsOn(shadowJar)

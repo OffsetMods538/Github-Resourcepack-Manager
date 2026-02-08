@@ -1,4 +1,0 @@
-jdk:
-  - openjdk17
-env:
-  DISABLE_PROPERTIES_UPDATE: true
