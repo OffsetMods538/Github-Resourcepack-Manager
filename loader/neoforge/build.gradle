@@ -2,6 +2,7 @@ import dex.plugins.outlet.v2.util.ReleaseType
 
 plugins {
     id 'multiloader-neoforge'
+    id 'multiloader-modrinth-publish' apply false
 }
 
 allprojects {
@@ -18,6 +19,9 @@ allprojects {
         mixin("git-pack-manager.modded.mixins.json")
     }
 
+    // Gotta have this here cause I can't import it in buildSrc
+    outlet.allowedReleaseTypes = Set.of(ReleaseType.RELEASE)
+
     dependencies {
         compileOnly("top.offsetmonkey538.monkeylib538:monkeylib538-neoforge:${rootProject.monkeylib538_version}+neoforge") {
             exclude(group: "net.kyori")
@@ -31,8 +35,7 @@ allprojects {
 }
 
 subprojects {
-    // Gotta have this here cause I can't import it in buildSrc
-    outlet.allowedReleaseTypes = Set.of(ReleaseType.RELEASE)
+    apply plugin: "multiloader-modrinth-publish"
 
     dependencies {
         implementation("top.offsetmonkey538.monkeylib538:monkeylib538-neoforge-${project.monkeylib538_suffix}:${rootProject.monkeylib538_version}+neoforge+${project.monkeylib538_suffix}") {
@@ -49,6 +52,9 @@ subprojects {
     }
 
     modrinth {
+        loaders = ["neoforge"]
+        uploadFile = jar
+
         dependencies {
             required.project "adventure-platform-mod"
             required.project "monkeylib538"
